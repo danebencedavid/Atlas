@@ -1,0 +1,23 @@
+project:
+  name: Atlas
+  tagline: Weekly weather anomaly atlas and renewable energy weather diary
+
+location:
+  name: Debrecen
+  region: Hungary
+  latitude: 47.5316
+  longitude: 21.6273
+  timezone: Europe/Budapest
+
+baseline:
+  years: 10
+  minimum_years: 5
+
+operations:
+  max_week_lag: 4
+  minimum_hourly_coverage: 0.95
+
+outputs:
+  data_dir: data
+  reports_dir: reports
+  site_dir: site
