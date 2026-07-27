@@ -17,6 +17,7 @@ class ProjectConfig:
 class LocationConfig:
     name: str = "Debrecen"
     region: str = "Hungary"
+    station_note: str = "Debrecen only; no multi-city or Hungary-wide expansion is planned"
     latitude: float = 47.5316
     longitude: float = 21.6273
     timezone: str = "Europe/Budapest"

@@ -4,6 +4,7 @@ from atlas.anomalies import Anomaly
 from atlas.config import AtlasConfig, OutputConfig
 from atlas.energy import EnergyIndex
 from atlas.regimes import RegimeClassification
+from atlas.site import archive_site
 from atlas.site import build_site
 
 
@@ -52,3 +53,18 @@ def test_report_generation_smoke(tmp_path: Path):
     html = target.read_text(encoding="utf-8")
     assert "Atlas" in html
     assert "<iframe" in html
+
+
+def test_archive_site_copies_latest_dashboard_assets_and_data(tmp_path: Path):
+    site_dir = tmp_path / "site"
+    (site_dir / "assets").mkdir(parents=True)
+    (site_dir / "data").mkdir()
+    (site_dir / "index.html").write_text("<html>Atlas</html>", encoding="utf-8")
+    (site_dir / "assets" / "meteogram.html").write_text("plot", encoding="utf-8")
+    (site_dir / "data" / "summary.json").write_text("{}", encoding="utf-8")
+
+    archived_index = archive_site(site_dir, tmp_path / "reports" / "weeks" / "2026-07-20_2026-07-26")
+
+    assert archived_index.exists()
+    assert (archived_index.parent / "assets" / "meteogram.html").exists()
+    assert (archived_index.parent / "data" / "summary.json").exists()

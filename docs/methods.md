@@ -1,8 +1,8 @@
 # Methods
 
-Atlas answers a descriptive question: what kind of weather week just happened,
-how unusual was it compared with normal, and what did it imply for solar and
-wind energy potential?
+Atlas answers a Debrecen-only descriptive question: what kind of weather week
+just happened, how unusual was it compared with normal, and what did it imply
+for solar and wind energy potential?
 
 ## Week Window
 
@@ -16,6 +16,18 @@ UTC Monday-Sunday window with a Hungary local Monday-Sunday report.
 For automated runs, Atlas validates hourly completeness before publishing. If
 the most recent week is incomplete because an archive feed is lagging, it checks
 older weeks within the configured lag window and uses the latest complete one.
+
+## Versioned Reports
+
+Each build creates the latest static site in `site/` and a versioned weekly
+archive in `reports/weeks/YYYY-MM-DD_YYYY-MM-DD/`. The archive contains:
+
+- `index.html`
+- interactive Plotly figures in `assets/`
+- report data in `data/`
+
+The GitHub Actions workflow commits `reports/weeks/` back to the repository
+when a new weekly archive is generated.
 
 ## Baseline
 

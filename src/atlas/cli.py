@@ -19,6 +19,7 @@ from atlas.plots import generate_all_figures
 from atlas.quality import DataQualityReport, validate_hourly_week
 from atlas.regimes import classify_week
 from atlas.site import build_site
+from atlas.site import archive_site
 
 
 def parse_date(value: str | None) -> date | None:
@@ -88,7 +89,9 @@ def run_pipeline(
 
     data_dir = config.outputs.data_dir
     processed_dir = data_dir / "processed"
-    figures_dir = config.outputs.reports_dir / "figures" / f"{start.isoformat()}_{end.isoformat()}"
+    week_slug = f"{start.isoformat()}_{end.isoformat()}"
+    archive_dir = config.outputs.reports_dir / "weeks" / week_slug
+    figures_dir = archive_dir / "assets"
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     baseline = fetch_baseline(config, start, end, refresh=refresh)
@@ -146,7 +149,7 @@ def run_pipeline(
         encoding="utf-8",
     )
 
-    return build_site(
+    site_index = build_site(
         config=config,
         week_start=start.isoformat(),
         week_end=end.isoformat(),
@@ -165,6 +168,8 @@ def run_pipeline(
         },
         quality_notes=quality_notes,
     )
+    archive_site(site_index.parent, archive_dir)
+    return site_index
 
 
 def main() -> None:

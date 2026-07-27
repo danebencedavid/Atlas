@@ -1,82 +1,151 @@
 # Atlas
 
-Atlas is a weekly automated GitHub Pages dashboard for Debrecen, Hungary. It
-combines a weather anomaly atlas, a weather regime diary, and renewable-energy
-weather indices.
+Atlas builds a practical weekly weather-regime and renewable-energy weather
+dashboard for Debrecen, Hungary. It describes the most recent complete local
+Monday-Sunday week, compares it with a multi-year normal for the same calendar
+window, and explains what the week implied for solar and wind potential.
 
-Core question:
+This project remains focused on Debrecen only.
 
-> What kind of weather week did Debrecen / Hungary just have, how unusual was it
-> compared with normal, and what did it imply for solar and wind energy
-> potential?
+The main pipeline uses real public APIs:
 
-## What It Builds
-
-The pipeline:
-
-1. Finds the last complete Monday-Sunday week in Europe/Budapest.
-2. Fetches hourly historical weather data from Open-Meteo.
-3. Fetches the same calendar-week window for prior years as a baseline.
-4. Computes temperature, precipitation, wind, pressure, cloud, and solar
-   anomalies.
-5. Computes solar, wind, and combined renewable-weather scores.
-6. Classifies the week into a transparent weather regime.
-7. Renders static meteorological figures.
-8. Builds `site/index.html` for GitHub Pages.
-
-## Included MVP Visuals
-
-- Interactive weekly meteogram
-- Interactive wind rose
-- Interactive pressure tendency plot
-- Interactive temperature-dew point spread plot
-- Interactive solar radiation diurnal curves
-- Interactive weather anomaly bars
-- Interactive solar-wind energy quadrant
-- Interactive daily regime classification strip
-
-The dashboard uses Plotly HTML figures, so readers can zoom, pan, hover, toggle
-series, box-select, and export views directly in the browser.
-
-## Local Use
-
-```powershell
-python -m pip install -e ".[dev]"
-atlas
-```
-
-The generated dashboard is written to `site/index.html`. Generated raw data,
-processed CSV files, and figures are ignored locally because the GitHub Actions
-workflow regenerates them.
-
-To build a specific week:
-
-```powershell
-atlas --week-start 2026-07-20
-```
-
-## GitHub Pages Automation
-
-The workflow in `.github/workflows/pages.yml` runs:
-
-- on pushes to `main` or `master`
-- weekly on Monday morning
-- manually through `workflow_dispatch`
-
-It installs the package, runs tests, builds the dashboard, uploads the static
-`site/` artifact, and deploys it to GitHub Pages.
-
-For unattended weekly runs, Atlas checks that the selected local Monday-Sunday
-week has complete hourly coverage. If the archive API has not yet published a
-complete just-ended week, Atlas steps back to the latest complete week within
-the configured lag window instead of publishing a partial dashboard.
-
-## Data Sources
-
-The MVP uses the Open-Meteo Historical Weather API. NASA POWER is documented as
-a later optional solar-focused fallback. See `docs/data_sources.md`.
-
-## Interpretation
+- Open-Meteo Historical Weather API for hourly recent and historical weather
+- NASA POWER Hourly API as the preferred future solar/energy cross-check
+- HungaroMet ODP as the preferred future official Hungarian station/climate
+  data source
 
 Atlas is descriptive, diagnostic, climatological, and energy-oriented. It is
 not a forecast calibration project.
+
+## Research Question
+
+What kind of weather week did Debrecen just have, how unusual was it compared
+with normal, and what did it imply for solar and wind energy potential?
+
+## Quick Start
+
+```powershell
+python -m pip install -e ".[dev]"
+atlas --refresh
+```
+
+If the package is not installed, run from the repo root:
+
+```powershell
+$env:PYTHONPATH="src"
+python -m atlas.cli --refresh
+```
+
+The command creates:
+
+```text
+data/raw/open_meteo_localweek_*.json
+data/processed/current_hourly.csv
+data/processed/weekly_metrics.csv
+data/processed/baseline_metrics.csv
+data/processed/anomalies.csv
+data/processed/summary.json
+reports/weeks/YYYY-MM-DD_YYYY-MM-DD/index.html
+reports/weeks/YYYY-MM-DD_YYYY-MM-DD/assets/*.html
+reports/weeks/YYYY-MM-DD_YYYY-MM-DD/data/*.csv
+site/index.html
+site/assets/*.html
+site/data/*.csv
+```
+
+## Main Commands
+
+```powershell
+atlas
+atlas --refresh
+atlas --week-start 2026-07-20
+atlas --today 2026-07-27
+atlas --config configs/atlas.yml --refresh
+```
+
+## GitHub Pages
+
+The workflow in `.github/workflows/pages.yml` builds and deploys the static
+dashboard. After pushing to GitHub, set:
+
+```text
+Settings > Pages > Build and deployment > Source > GitHub Actions
+```
+
+Then run the `Build and Deploy Atlas` workflow, or wait for the weekly Monday
+schedule.
+
+The generated static site lives in `site/` locally and is deployed as a Pages
+artifact in CI. Each successful workflow also commits a versioned weekly report
+archive under `reports/weeks/` so the interactive plots, dashboard HTML, and
+data tables are preserved in the repository.
+
+The GitHub Actions build uses Open-Meteo requests with retry/backoff and
+local-week completeness checks. If the just-ended week is not complete in the
+archive API yet, Atlas steps back to the latest complete week within the
+configured lag window instead of publishing a partial report.
+
+## Project Structure
+
+```text
+configs/                 Debrecen-only configuration
+data/raw/                Cached Open-Meteo API responses
+data/processed/          Latest processed metrics and CSV outputs
+docs/                    Methods and data-source notes
+reports/figures/         Legacy scratch figure directory
+reports/weeks/           Versioned weekly dashboard and plot archives
+site/                    Latest GitHub Pages static site artifact
+src/atlas/               Ingestion, baseline, anomaly, regime, energy, plots, CLI
+tests/                   Lightweight offline tests
+```
+
+## Current Scope
+
+Atlas currently targets Debrecen using point coordinates near the city. The MVP
+computes:
+
+- weekly regime label
+- one-sentence weather briefing
+- temperature, precipitation, wind, pressure, cloud, and solar anomalies
+- solar potential index
+- wind potential index
+- combined renewable weather score
+- calm-wind penalty
+- cloud penalty
+- historical percentile ranks
+
+## Interactive Visuals
+
+Atlas uses Plotly HTML figures, so readers can zoom, pan, hover, toggle series,
+box-select, lasso-select where applicable, draw annotations, and export views
+directly in the browser.
+
+Included visuals:
+
+- interactive weekly meteogram
+- interactive wind rose
+- interactive pressure tendency plot
+- interactive temperature-dew point spread plot
+- interactive solar radiation diurnal curves
+- interactive weather anomaly bars
+- interactive solar-wind energy quadrant
+- interactive daily regime classification strip
+
+## Data Sources
+
+Current source:
+
+- Open-Meteo Historical Weather API
+
+Worth adding next:
+
+- HungaroMet ODP for official Hungarian observations and climate station data
+- NASA POWER Hourly API for solar radiation and renewable-energy weather checks
+- NOAA Aviation Weather API for live LHDC METAR sanity checks
+
+Less central for this project:
+
+- NOAA CDO/GHCN, because it needs a token and is better suited to daily climate
+  checks than the hourly weekly dashboard
+
+See `docs/data_sources.md` and `docs/methods.md`.

@@ -16,3 +16,7 @@ site/*
 !data/processed/.gitkeep
 !reports/figures/.gitkeep
 !site/.gitkeep
+
+# Versioned weekly reports are intentionally committed by CI.
+!reports/weeks/
+!reports/weeks/**

@@ -35,6 +35,18 @@ def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str
     return relative
 
 
+def archive_site(site_dir: Path, archive_dir: Path) -> Path:
+    if archive_dir.exists():
+        shutil.rmtree(archive_dir)
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    for name in ["assets", "data"]:
+        source = site_dir / name
+        if source.exists():
+            shutil.copytree(source, archive_dir / name)
+    shutil.copy2(site_dir / "index.html", archive_dir / "index.html")
+    return archive_dir / "index.html"
+
+
 def build_site(
     config: AtlasConfig,
     week_start: str,
@@ -116,7 +128,7 @@ def build_site(
       border-bottom: 1px solid var(--line);
     }}
     .wrap {{
-      max-width: 1180px;
+      max-width: 1320px;
       margin: 0 auto;
       padding: 24px;
     }}

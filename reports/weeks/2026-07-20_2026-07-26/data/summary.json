@@ -1,0 +1,125 @@
+{
+  "week_start": "2026-07-20",
+  "week_end": "2026-07-26",
+  "current_metrics": {
+    "temperature_mean_c": 21.191071428571426,
+    "dew_point_mean_c": 8.493452380952382,
+    "precipitation_total_mm": 1.4000000000000001,
+    "wind_speed_mean_ms": 4.849464285714286,
+    "wind_gust_max_ms": 13.4,
+    "pressure_mean_hpa": 1014.0303571428572,
+    "pressure_range_hpa": 11.399999999999977,
+    "cloud_cover_mean_pct": 29.023809523809526,
+    "shortwave_total_wh_m2": 47465.0,
+    "sunshine_total_s": 363350.01,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 26.600000000000005,
+    "heating_degree_days_c": 4.2625
+  },
+  "baseline_metrics": {
+    "temperature_mean_c": 23.86154761904762,
+    "dew_point_mean_c": 15.094702380952379,
+    "precipitation_total_mm": 11.790000000000001,
+    "wind_speed_mean_ms": 4.205660714285714,
+    "wind_gust_max_ms": 11.79,
+    "pressure_mean_hpa": 1012.8729166666668,
+    "pressure_range_hpa": 10.670000000000005,
+    "cloud_cover_mean_pct": 46.93571428571429,
+    "shortwave_total_wh_m2": 42972.6,
+    "sunshine_total_s": 328834.64499999996,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 41.506249999999994,
+    "heating_degree_days_c": 0.4754166666666667
+  },
+  "energy": {
+    "solar_index": 100.0,
+    "wind_index": 100.0,
+    "combined_score": 100.0,
+    "calm_wind_penalty": 0.0,
+    "cloud_penalty": 0.0,
+    "label": "balanced renewable"
+  },
+  "regime": {
+    "label": "Sunny high-pressure week",
+    "briefing": "Sunny high-pressure week: temperature was -2.7 deg C versus normal, precipitation -10.4 mm, wind +0.6 m/s, and weekly solar radiation +4492 Wh/m2.",
+    "daily_labels": [
+      "sunny",
+      "sunny",
+      "sunny",
+      "sunny",
+      "sunny",
+      "sunny",
+      "sunny"
+    ],
+    "signals": [
+      "above-normal radiation",
+      "reduced cloudiness",
+      "limited rainfall"
+    ]
+  },
+  "anomalies": [
+    {
+      "metric": "temperature_mean_c",
+      "label": "Temperature",
+      "value": 21.191071428571426,
+      "baseline_mean": 23.86154761904762,
+      "anomaly": -2.670476190476194,
+      "z_score": -1.5072119421107146,
+      "percentile": 10.0,
+      "unit": "deg C"
+    },
+    {
+      "metric": "precipitation_total_mm",
+      "label": "Precipitation",
+      "value": 1.4000000000000001,
+      "baseline_mean": 11.790000000000001,
+      "anomaly": -10.39,
+      "z_score": -1.0475467061203207,
+      "percentile": 10.0,
+      "unit": "mm"
+    },
+    {
+      "metric": "wind_speed_mean_ms",
+      "label": "Wind",
+      "value": 4.849464285714286,
+      "baseline_mean": 4.205660714285714,
+      "anomaly": 0.6438035714285721,
+      "z_score": 0.8972885189579997,
+      "percentile": 70.0,
+      "unit": "m/s"
+    },
+    {
+      "metric": "pressure_mean_hpa",
+      "label": "Pressure",
+      "value": 1014.0303571428572,
+      "baseline_mean": 1012.8729166666668,
+      "anomaly": 1.1574404761903452,
+      "z_score": 0.3933514277085393,
+      "percentile": 50.0,
+      "unit": "hPa"
+    },
+    {
+      "metric": "cloud_cover_mean_pct",
+      "label": "Cloud",
+      "value": 29.023809523809526,
+      "baseline_mean": 46.93571428571429,
+      "anomaly": -17.911904761904765,
+      "z_score": -1.4756522646188641,
+      "percentile": 20.0,
+      "unit": "%"
+    },
+    {
+      "metric": "shortwave_total_wh_m2",
+      "label": "Solar radiation",
+      "value": 47465.0,
+      "baseline_mean": 42972.6,
+      "anomaly": 4492.4000000000015,
+      "z_score": 1.035529383203688,
+      "percentile": 80.0,
+      "unit": "Wh/m2"
+    }
+  ],
+  "quality_notes": [
+    "Data completeness check passed with 168/168 expected local-week hours."
+  ]
+}

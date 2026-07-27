@@ -5,6 +5,7 @@ project:
 location:
   name: Debrecen
   region: Hungary
+  station_note: Debrecen only; no multi-city or Hungary-wide expansion is planned
   latitude: 47.5316
   longitude: 21.6273
   timezone: Europe/Budapest
