@@ -1,0 +1,147 @@
+{
+  "period_start": "2026-07-27",
+  "period_end": "2026-07-29",
+  "current_metrics": {
+    "temperature_mean_c": 23.98888888888889,
+    "dew_point_mean_c": 12.041666666666666,
+    "precipitation_total_mm": 3.5999999999999996,
+    "wind_speed_mean_ms": 5.100138888888889,
+    "wind_gust_max_ms": 14.4,
+    "pressure_mean_hpa": 1017.188888888889,
+    "pressure_range_hpa": 16.199999999999932,
+    "cloud_cover_mean_pct": 24.72222222222222,
+    "shortwave_total_wh_m2": 20646.0,
+    "sunshine_total_s": 152247.06,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 18.1875,
+    "heating_degree_days_c": 0.22083333333333352
+  },
+  "baseline_metrics": {
+    "temperature_mean_c": 23.525416666666665,
+    "dew_point_mean_c": 15.811666666666667,
+    "precipitation_total_mm": 5.32,
+    "wind_speed_mean_ms": 4.419152777777778,
+    "wind_gust_max_ms": 11.74,
+    "pressure_mean_hpa": 1012.1115277777777,
+    "pressure_range_hpa": 5.4899999999999975,
+    "cloud_cover_mean_pct": 50.2625,
+    "shortwave_total_wh_m2": 17615.5,
+    "sunshine_total_s": 133831.53100000002,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 17.044583333333332,
+    "heating_degree_days_c": 0.46833333333333343
+  },
+  "energy": {
+    "solar_index": 100.0,
+    "wind_index": 100.0,
+    "combined_score": 100.0,
+    "calm_wind_penalty": 0.0,
+    "cloud_penalty": 0.0,
+    "label": "balanced renewable"
+  },
+  "electricity": {
+    "available": true,
+    "average_load_mw": 4468.76875,
+    "peak_load_mw": 5850.5,
+    "solar_generation_mwh": 97823.4,
+    "wind_generation_mwh": 3932.625,
+    "renewable_share_mean_pct": 36.18298611111111,
+    "residual_load_mean_mw": 3055.4937499999996,
+    "average_price_eur_mwh": 116.6685763888889,
+    "peak_price_eur_mwh": 376.69,
+    "net_import_mean_mw": 2087.5243055555557,
+    "label": "solar-led variable renewable output"
+  },
+  "model_profile": {
+    "valid_time": "2026-07-29T12:00:00+00:00",
+    "source": "Open-Meteo Historical Forecast pressure levels",
+    "diagnostics": {
+      "k_index": 18.284588087218243,
+      "total_totals_index": 41.335751135153,
+      "lapse_rate_850_500_c_km": 5.728924080111785,
+      "freezing_level_m_asl": 4253.777777777777
+    },
+    "notes": [
+      "Model-derived atmospheric profile near Debrecen; it is not an observed radiosonde.",
+      "Dew point is calculated from model temperature and relative humidity."
+    ]
+  },
+  "regime": {
+    "label": "Mixed transition period",
+    "briefing": "Mixed transition period: temperature was +0.5 deg C versus normal, precipitation -1.7 mm, wind +0.7 m/s, and period solar radiation +3030 Wh/m2.",
+    "daily_labels": [
+      "sunny",
+      "sunny",
+      "sunny"
+    ],
+    "signals": [
+      "no single signal dominated",
+      "mixed day-to-day conditions"
+    ]
+  },
+  "anomalies": [
+    {
+      "metric": "temperature_mean_c",
+      "label": "Temperature",
+      "value": 23.98888888888889,
+      "baseline_mean": 23.525416666666665,
+      "anomaly": 0.46347222222222584,
+      "z_score": 0.21693892916563526,
+      "percentile": 60.0,
+      "unit": "deg C"
+    },
+    {
+      "metric": "precipitation_total_mm",
+      "label": "Precipitation",
+      "value": 3.5999999999999996,
+      "baseline_mean": 5.32,
+      "anomaly": -1.7200000000000006,
+      "z_score": -0.2635211588977438,
+      "percentile": 60.0,
+      "unit": "mm"
+    },
+    {
+      "metric": "wind_speed_mean_ms",
+      "label": "Wind",
+      "value": 5.100138888888889,
+      "baseline_mean": 4.419152777777778,
+      "anomaly": 0.6809861111111113,
+      "z_score": 0.6237891374958537,
+      "percentile": 70.0,
+      "unit": "m/s"
+    },
+    {
+      "metric": "pressure_mean_hpa",
+      "label": "Pressure",
+      "value": 1017.188888888889,
+      "baseline_mean": 1012.1115277777777,
+      "anomaly": 5.077361111111259,
+      "z_score": 1.2884468778348077,
+      "percentile": 90.0,
+      "unit": "hPa"
+    },
+    {
+      "metric": "cloud_cover_mean_pct",
+      "label": "Cloud",
+      "value": 24.72222222222222,
+      "baseline_mean": 50.2625,
+      "anomaly": -25.54027777777778,
+      "z_score": -1.2353338957129785,
+      "percentile": 10.0,
+      "unit": "%"
+    },
+    {
+      "metric": "shortwave_total_wh_m2",
+      "label": "Solar radiation",
+      "value": 20646.0,
+      "baseline_mean": 17615.5,
+      "anomaly": 3030.5,
+      "z_score": 1.6154579396636577,
+      "percentile": 90.0,
+      "unit": "Wh/m2"
+    }
+  ],
+  "quality_notes": [
+    "Data completeness check passed with 72/72 expected local-period hours."
+  ]
+}

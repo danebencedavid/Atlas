@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atlas-weather-dashboard"
-version = "0.1.0"
-description = "Weekly weather anomaly and renewable-energy weather dashboard for Debrecen, Hungary."
+version = "0.2.0"
+description = "Rolling weather anomaly, electricity, and renewable-energy dashboard for Debrecen, Hungary."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

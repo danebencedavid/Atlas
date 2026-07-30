@@ -1,6 +1,6 @@
 project:
   name: Atlas
-  tagline: Weekly weather anomaly atlas and renewable energy weather diary
+  tagline: Rolling weather anomaly atlas and renewable energy situation report
 
 location:
   name: Debrecen
@@ -14,9 +14,27 @@ baseline:
   years: 10
   minimum_years: 5
 
+reporting:
+  window_days: 3
+  context_days: 7
+  schedule_days: 3
+
 operations:
-  max_week_lag: 4
+  max_period_lag_days: 7
   minimum_hourly_coverage: 0.95
+
+electricity:
+  enabled: true
+  provider: energy_charts
+  country: hu
+  bidding_zone: HU
+  required: false
+
+profile:
+  enabled: true
+  pressure_levels_hpa: [1000, 925, 850, 700, 500, 400, 300, 250, 200]
+  target_hour_utc: 12
+  required: false
 
 outputs:
   data_dir: data

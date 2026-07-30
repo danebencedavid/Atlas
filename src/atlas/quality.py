@@ -5,7 +5,7 @@ from datetime import date
 
 import pandas as pd
 
-from atlas.dates import local_week_to_utc_bounds
+from atlas.dates import local_period_to_utc_bounds
 
 
 REQUIRED_HOURLY_COLUMNS = [
@@ -33,11 +33,11 @@ class DataQualityReport:
 
 
 def expected_hour_count(start: date, end: date, timezone_name: str) -> int:
-    utc_start, utc_end_exclusive = local_week_to_utc_bounds(start, end, timezone_name)
+    utc_start, utc_end_exclusive = local_period_to_utc_bounds(start, end, timezone_name)
     return len(pd.date_range(utc_start, utc_end_exclusive, freq="h", inclusive="left"))
 
 
-def validate_hourly_week(
+def validate_hourly_period(
     frame: pd.DataFrame,
     start: date,
     end: date,
@@ -65,7 +65,7 @@ def validate_hourly_week(
     if sparse_columns:
         notes.append(f"Sparse required variables: {', '.join(sparse_columns)}.")
     if not notes:
-        notes.append(f"Data completeness check passed with {observed}/{expected} expected local-week hours.")
+        notes.append(f"Data completeness check passed with {observed}/{expected} expected local-period hours.")
 
     return DataQualityReport(
         ok=coverage >= minimum_coverage and not missing_columns and not sparse_columns,
@@ -76,3 +76,14 @@ def validate_hourly_week(
         sparse_columns=sparse_columns,
         notes=notes,
     )
+
+
+def validate_hourly_week(
+    frame: pd.DataFrame,
+    start: date,
+    end: date,
+    timezone_name: str,
+    minimum_coverage: float = 0.95,
+) -> DataQualityReport:
+    """Backward-compatible wrapper around period validation."""
+    return validate_hourly_period(frame, start, end, timezone_name, minimum_coverage)

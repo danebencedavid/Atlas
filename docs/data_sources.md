@@ -1,117 +1,86 @@
 # Data Sources
 
-Atlas is Debrecen-only. The data-source strategy is therefore judged by whether
-it improves a weekly local diagnostic dashboard for Debrecen, not whether it
-supports wider Hungary coverage.
+Atlas remains geographically focused on Debrecen. Hungary-wide electricity data
+is included because no public Debrecen-level electricity feed provides the
+generation and system context needed for this report.
 
-## Current MVP Source
+## Implemented Sources
 
 ### Open-Meteo Historical Weather API
 
-Status: implemented.
+Purpose:
+
+- hourly weather for the rolling three-day report
+- seven-day weather context
+- same-calendar-window baselines over prior years
+
+Variables include temperature, dew point, relative humidity, precipitation,
+cloud cover, sea-level pressure, 10 m and 100 m wind, wind direction, gusts,
+shortwave/direct/diffuse radiation, and sunshine duration.
+
+Official documentation:
+[Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
+
+### Energy-Charts API
 
 Purpose:
 
-- hourly weather variables for the latest complete local week
-- same calendar-week baseline windows over prior years
-- no secrets required
-- reliable GitHub Actions fit
+- Hungary public electricity generation by type
+- load and residual load
+- day-ahead price for the HU bidding zone
+- cross-border physical-flow context
 
-Variables used:
+The API is free, does not require a token for these requests, supports Hungary,
+and publishes most returned data under CC BY 4.0 with source attribution. Much
+of the European power-system data originates from ENTSO-E.
 
-- temperature_2m
-- dew_point_2m
-- relative_humidity_2m
-- precipitation
-- cloud_cover
-- pressure_msl
-- wind_speed_10m
-- wind_speed_100m
-- wind_direction_10m
-- wind_gusts_10m
-- shortwave_radiation
-- direct_radiation
-- diffuse_radiation
-- sunshine_duration
+Official documentation:
+[Energy-Charts API](https://api.energy-charts.info/)
 
-## Government APIs Worth Adding
+### Open-Meteo Historical Forecast API
 
-### HungaroMet ODP
+Purpose:
 
-Status: worth adding.
+- model pressure-level temperature and humidity
+- pressure-level wind speed and direction
+- geopotential height
+- interactive Skew-T-style profile near Debrecen
 
-HungaroMet is the most relevant governmental source for this project because it
-is the Hungarian national meteorological open data portal. It provides official
-Hungarian observation, climate, radar, and model datasets through downloadable
-open-data paths at `odp.met.hu`.
+Official documentation:
+[Open-Meteo Historical Forecast API](https://open-meteo.com/en/docs/historical-forecast-api)
 
-Best Atlas use:
+## Worth Adding Later
 
-- official Debrecen-area station/climate cross-checks
-- official Hungarian climate baseline context
-- possible station metadata and recent observation validation
+### HungaroMet Open Data Portal
 
-Implementation note:
+HungaroMet is the most relevant governmental source for independent official
+Hungarian validation. The best role would be Debrecen-area station and climate
+cross-checks after stable station identifiers, formats, and hourly variable
+coverage are confirmed.
 
-- Treat this as a supplemental validator first, not as a replacement for the
-  current hourly Open-Meteo pipeline.
-- Add it only after identifying the best Debrecen station IDs and variable
-  coverage in the ODP station metadata.
+Portal: [HungaroMet ODP](https://odp.met.hu/)
 
 ### NASA POWER Hourly API
 
-Status: worth adding.
+NASA POWER would provide an independent solar-radiation cross-check and fallback
+for the renewable-weather indices.
 
-NASA POWER is especially useful for Atlas because the project has an explicit
-renewable-energy weather component. The hourly API supports solar and
-meteorological parameters in JSON and CSV, and can return UTC time series.
-
-Best Atlas use:
-
-- solar radiation cross-check
-- renewable-energy weather index fallback
-- sanity check for shortwave radiation anomalies
-
-Implementation note:
-
-- Use POWER as a solar/energy fallback, not as the primary local weather source.
-- Keep requests small because the hourly API limits the number of parameters per
-  request.
+Documentation:
+[NASA POWER Hourly API](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/)
 
 ### NOAA Aviation Weather API
 
-Status: useful but secondary.
+Recent LHDC METAR observations could serve as a live Debrecen International
+Airport sanity check. They do not replace the historical hourly baseline.
 
-The NOAA Aviation Weather Center API provides worldwide METAR data, including
-current and recent terminal observations, with JSON and CSV output. Debrecen
-International Airport is LHDC.
+Documentation:
+[NOAA Aviation Weather API](https://aviationweather.gov/data/api/)
 
-Best Atlas use:
+## Not Prioritized
 
-- live/current LHDC METAR sanity check
-- optional "latest aviation observation" note on the dashboard
-- verifying that the report location remains grounded in a real station context
+ENTSO-E direct API access is not the default because it requires an access token
+and XML parsing. Energy-Charts already exposes the required Hungary series
+without repository secrets while retaining source attribution.
 
-Implementation note:
-
-- It covers only recent aviation observations, not the full historical weekly
-  baseline Atlas needs.
-
-## Government APIs Not Prioritized
-
-### NOAA CDO / GHCN
-
-Status: not a near-term priority.
-
-NOAA Climate Data Online and GHCN are valuable climate archives, but CDO API
-access requires a token and is more natural for daily climate checks than the
-hourly weekly report. It may be useful later for independent daily temperature
-or precipitation validation.
-
-## Not Governmental But Still Useful
-
-### Open-Meteo
-
-Open-Meteo remains the best MVP backbone because it is no-secret, hourly,
-static-site friendly, and already exposes the weather and radiation variables
-needed by Atlas.
+NOAA CDO/GHCN is valuable for independent climate validation but is better
+suited to daily records and requires a token for CDO API access.

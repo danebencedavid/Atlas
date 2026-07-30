@@ -4,7 +4,7 @@ import html
 import json
 import shutil
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +12,9 @@ import pandas as pd
 
 from atlas.anomalies import Anomaly
 from atlas.config import AtlasConfig
+from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex
+from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
 
 
@@ -20,6 +22,12 @@ def _fmt(value: float, digits: int = 1) -> str:
     if pd.isna(value):
         return "n/a"
     return f"{value:.{digits}f}"
+
+
+def _fmt_grouped(value: float, digits: int = 0) -> str:
+    if pd.isna(value):
+        return "n/a"
+    return f"{value:,.{digits}f}"
 
 
 def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str]:
@@ -49,12 +57,15 @@ def archive_site(site_dir: Path, archive_dir: Path) -> Path:
 
 def build_site(
     config: AtlasConfig,
-    week_start: str,
-    week_end: str,
+    period_start: str,
+    period_end: str,
     current_metrics: dict[str, float],
     baseline_metrics: dict[str, float],
     anomalies: list[Anomaly],
     energy: EnergyIndex,
+    electricity: ElectricitySummary,
+    electricity_notes: list[str],
+    profile: ModelProfile,
     regime: RegimeClassification,
     figure_paths: dict[str, Path],
     processed_paths: dict[str, Path],
@@ -82,14 +93,23 @@ def build_site(
     )
     signal_items = "\n".join(f"<li>{html.escape(signal)}</li>" for signal in regime.signals)
     quality_items = "\n".join(f"<li>{html.escape(note)}</li>" for note in (quality_notes or []))
+    electricity_note_items = "\n".join(f"<li>{html.escape(note)}</li>" for note in electricity_notes)
+    profile_note_items = "\n".join(f"<li>{html.escape(note)}</li>" for note in profile.notes)
     baseline_period = processed_paths.get("baseline_metrics", Path("baseline_metrics.csv")).name
 
     payload: dict[str, Any] = {
-        "week_start": week_start,
-        "week_end": week_end,
+        "period_start": period_start,
+        "period_end": period_end,
         "current_metrics": current_metrics,
         "baseline_metrics": baseline_metrics,
         "energy": asdict(energy),
+        "electricity": asdict(electricity),
+        "model_profile": {
+            "valid_time": profile.valid_time.isoformat() if profile.valid_time is not None else None,
+            "source": profile.source,
+            "diagnostics": profile.diagnostics,
+            "notes": profile.notes,
+        },
         "regime": asdict(regime),
         "anomalies": [asdict(item) for item in anomalies],
         "quality_notes": quality_notes or [],
@@ -101,8 +121,8 @@ def build_site(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{html.escape(config.project.name)} - {html.escape(config.location.name)} Weekly Weather Dashboard</title>
-  <meta name="description" content="Weekly weather anomaly and renewable-energy weather report for {html.escape(config.location.name)}, {html.escape(config.location.region)}.">
+  <title>{html.escape(config.project.name)} - {html.escape(config.location.name)} Rolling Weather Dashboard</title>
+  <meta name="description" content="Rolling three-day weather anomaly, electricity, and renewable-energy report for {html.escape(config.location.name)}, {html.escape(config.location.region)}.">
   <style>
     :root {{
       --ink: #172033;
@@ -122,22 +142,23 @@ def build_site(
       color: var(--ink);
       background: var(--paper);
       line-height: 1.5;
+      overflow-x: hidden;
     }}
     header {{
       background: #ffffff;
       border-bottom: 1px solid var(--line);
     }}
     .wrap {{
-      max-width: 1320px;
+      max-width: 1480px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 28px;
     }}
     .hero {{
       display: grid;
       gap: 22px;
       grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
       align-items: end;
-      min-height: 420px;
+      min-height: 350px;
     }}
     h1 {{
       margin: 0 0 10px;
@@ -184,17 +205,23 @@ def build_site(
     }}
     main .wrap {{
       display: grid;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+      width: 100%;
     }}
-    section {{ padding: 18px; }}
-    .grid-two {{
+    main .wrap > *, section, .score {{ min-width: 0; }}
+    section {{ padding: 24px; }}
+    .electricity-summary {{
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0 0 18px;
     }}
     img {{
       display: block;
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
       height: auto;
       border: 1px solid #eef2f7;
       border-radius: 6px;
@@ -203,13 +230,18 @@ def build_site(
     .viz-frame {{
       display: block;
       width: 100%;
-      min-height: 560px;
+      height: 620px;
       border: 1px solid #eef2f7;
       border-radius: 6px;
       background: #ffffff;
+      overflow: hidden;
     }}
-    .viz-frame.tall {{ min-height: 980px; }}
-    .viz-frame.compact {{ min-height: 280px; }}
+    .viz-frame.tall {{ height: 1020px; }}
+    .viz-frame.context {{ height: 760px; }}
+    .viz-frame.electricity {{ height: 860px; }}
+    .viz-frame.relationships {{ height: 820px; }}
+    .viz-frame.profile {{ height: 860px; }}
+    .viz-frame.compact {{ height: 300px; }}
     table {{
       width: 100%;
       border-collapse: collapse;
@@ -224,15 +256,22 @@ def build_site(
     .notes {{
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 24px;
+    }}
+    .table-scroll {{ overflow-x: auto; }}
+    .source-note {{
+      margin: -4px 0 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
     }}
     a {{ color: var(--blue); }}
     ul {{ margin: 8px 0 0; padding-left: 20px; }}
     @media (max-width: 820px) {{
-      .hero, .grid-two, .notes {{ grid-template-columns: 1fr; }}
-      .summary {{ grid-template-columns: 1fr; }}
+      .hero, .notes {{ grid-template-columns: 1fr; }}
+      .summary, .electricity-summary {{ grid-template-columns: 1fr; }}
       .wrap {{ padding: 18px; }}
       h1 {{ font-size: 3.2rem; }}
+      section {{ padding: 14px; }}
     }}
   </style>
 </head>
@@ -240,7 +279,7 @@ def build_site(
   <header>
     <div class="wrap hero">
       <div>
-        <div class="eyebrow">{html.escape(config.location.name)}, {html.escape(config.location.region)} - {html.escape(week_start)} to {html.escape(week_end)}</div>
+        <div class="eyebrow">{html.escape(config.location.name)}, {html.escape(config.location.region)} - {html.escape(period_start)} to {html.escape(period_end)}</div>
         <h1>{html.escape(config.project.name)}</h1>
         <h2>{html.escape(regime.label)}</h2>
         <p class="brief">{html.escape(regime.briefing)}</p>
@@ -256,49 +295,69 @@ def build_site(
   <main>
     <div class="wrap">
       <section>
-        <h2>Weekly Meteogram</h2>
-        <iframe class="viz-frame tall" src="{figures["meteogram"]}" title="Interactive weekly meteogram"></iframe>
+        <h2>Rolling 72-Hour Meteogram</h2>
+        <iframe class="viz-frame tall" src="{figures["meteogram"]}" title="Interactive rolling three-day meteogram" scrolling="no"></iframe>
       </section>
-      <div class="grid-two">
-        <section>
-          <h2>Anomaly Summary</h2>
-          <iframe class="viz-frame" src="{figures["anomaly_bars"]}" title="Interactive bar chart of weekly weather anomalies"></iframe>
-        </section>
-        <section>
-          <h2>Solar-Wind Energy Quadrant</h2>
-          <iframe class="viz-frame" src="{figures["energy_quadrant"]}" title="Interactive solar and wind potential quadrant chart"></iframe>
-        </section>
-      </div>
-      <div class="grid-two">
-        <section>
-          <h2>Wind Rose</h2>
-          <iframe class="viz-frame" src="{figures["wind_rose"]}" title="Interactive wind rose with wind direction frequencies by speed bin"></iframe>
-        </section>
-        <section>
-          <h2>Pressure Tendency</h2>
-          <iframe class="viz-frame" src="{figures["pressure_tendency"]}" title="Interactive sea-level pressure and six-hour pressure tendency"></iframe>
-        </section>
-      </div>
-      <div class="grid-two">
-        <section>
-          <h2>Temperature-Dew Point Spread</h2>
-          <iframe class="viz-frame" src="{figures["dewpoint_spread"]}" title="Interactive temperature and dew point with shaded humid periods"></iframe>
-        </section>
-        <section>
-          <h2>Solar Diurnal Curves</h2>
-          <iframe class="viz-frame" src="{figures["solar_diurnal"]}" title="Interactive daily shortwave radiation curves compared with baseline median"></iframe>
-        </section>
-      </div>
+      <section>
+        <h2>Seven-Day Archive Context</h2>
+        <iframe class="viz-frame context" src="{figures["seven_day_context"]}" title="Interactive seven-day weather context with the current three-day report highlighted" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Anomaly Summary</h2>
+        <iframe class="viz-frame" src="{figures["anomaly_bars"]}" title="Interactive bar chart of three-day weather anomalies" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Solar-Wind Energy Quadrant</h2>
+        <iframe class="viz-frame context" src="{figures["energy_quadrant"]}" title="Interactive solar and wind potential quadrant chart" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Hungary Electricity Context</h2>
+        <p class="source-note">National electricity data from Energy-Charts and ENTSO-E is shown as context for Debrecen's local weather.</p>
+        <div class="electricity-summary" aria-label="Hungary electricity summary">
+          <div class="score"><span>Average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div>
+          <div class="score"><span>Solar generation</span><strong>{_fmt_grouped(electricity.solar_generation_mwh)}</strong><span>MWh over period</span></div>
+          <div class="score"><span>Wind generation</span><strong>{_fmt_grouped(electricity.wind_generation_mwh)}</strong><span>MWh over period</span></div>
+          <div class="score"><span>Average day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div>
+        </div>
+        <iframe class="viz-frame electricity" src="{figures["electricity_overview"]}" title="Interactive Hungary electricity load, renewable generation, and price chart" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Weather-Electricity Relationships</h2>
+        <iframe class="viz-frame relationships" src="{figures["weather_electricity_links"]}" title="Interactive comparison of Debrecen weather and Hungary electricity generation" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Wind Rose</h2>
+        <iframe class="viz-frame context" src="{figures["wind_rose"]}" title="Interactive wind rose with wind direction frequencies by speed bin" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Pressure Tendency</h2>
+        <iframe class="viz-frame context" src="{figures["pressure_tendency"]}" title="Interactive sea-level pressure and six-hour pressure tendency" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Temperature-Dew Point Spread</h2>
+        <iframe class="viz-frame" src="{figures["dewpoint_spread"]}" title="Interactive temperature and dew point with shaded humid periods" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Solar Diurnal Curves</h2>
+        <iframe class="viz-frame" src="{figures["solar_diurnal"]}" title="Interactive daily shortwave radiation curves compared with baseline median" loading="lazy" scrolling="no"></iframe>
+      </section>
+      <section>
+        <h2>Advanced Meteorological Diagnostic</h2>
+        <p class="source-note">Model-derived profile near Debrecen. This is a Skew-T-style diagnostic, not an observed radiosonde.</p>
+        <iframe class="viz-frame profile" src="{figures["model_profile"]}" title="Interactive Skew-T-style model atmospheric profile for Debrecen" loading="lazy" scrolling="no"></iframe>
+      </section>
       <section>
         <h2>Regime Strip</h2>
-        <iframe class="viz-frame compact" src="{figures["regime_strip"]}" title="Interactive daily weather regime classification strip"></iframe>
+        <iframe class="viz-frame compact" src="{figures["regime_strip"]}" title="Interactive daily weather regime classification strip" loading="lazy" scrolling="no"></iframe>
       </section>
       <section class="table-panel">
         <h2>Historical Percentile Ranks</h2>
-        <table>
-          <thead><tr><th>Metric</th><th>This week</th><th>Baseline mean</th><th>Anomaly</th><th>Percentile</th></tr></thead>
-          <tbody>{anomalies_rows}</tbody>
-        </table>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Metric</th><th>This period</th><th>Baseline mean</th><th>Anomaly</th><th>Percentile</th></tr></thead>
+            <tbody>{anomalies_rows}</tbody>
+          </table>
+        </div>
       </section>
       <div class="notes">
         <section>
@@ -307,16 +366,36 @@ def build_site(
         </section>
         <section>
           <h2>Methods And Data</h2>
-          <p>Hourly observations are fetched from the Open-Meteo Historical Weather API. The baseline uses the same calendar-week window over the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
+          <p>Hourly weather fields are fetched from the Open-Meteo Historical Weather API. The baseline uses the same three-day calendar window over the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
           <ul>{quality_items}</ul>
-          <p>Outputs: <a href="{data_links.get("weekly_metrics", "data/weekly_metrics.csv")}">weekly metrics CSV</a>, <a href="{data_links.get("anomalies", "data/anomalies.csv")}">anomalies CSV</a>, <a href="data/summary.json">summary JSON</a>.</p>
+          <ul>{electricity_note_items}</ul>
+          <ul>{profile_note_items}</ul>
+          <p>Outputs: <a href="{data_links.get("period_metrics", "data/period_metrics.csv")}">period metrics CSV</a>, <a href="{data_links.get("electricity", "data/electricity.csv")}">electricity CSV</a>, <a href="{data_links.get("anomalies", "data/anomalies.csv")}">anomalies CSV</a>, <a href="data/summary.json">summary JSON</a>.</p>
         </section>
       </div>
     </div>
   </main>
   <footer>
-    <div class="wrap">Last updated {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}.</div>
+    <div class="wrap">Last updated {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}.</div>
   </footer>
+  <script>
+    const resizePlot = (frame) => {{
+      try {{
+        const doc = frame.contentDocument;
+        if (!doc) return;
+        const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+        if (height > 200) frame.style.height = `${{height + 4}}px`;
+      }} catch (_error) {{
+        // Static same-origin plots normally allow sizing; fixed CSS heights remain as fallback.
+      }}
+    }};
+    document.querySelectorAll(".viz-frame").forEach((frame) => {{
+      frame.addEventListener("load", () => {{
+        resizePlot(frame);
+        window.setTimeout(() => resizePlot(frame), 350);
+      }});
+    }});
+  </script>
 </body>
 </html>
 """

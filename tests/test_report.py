@@ -1,8 +1,12 @@
 from pathlib import Path
 
+import pandas as pd
+
 from atlas.anomalies import Anomaly
 from atlas.config import AtlasConfig, OutputConfig
+from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex
+from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
 from atlas.site import archive_site
 from atlas.site import build_site
@@ -12,6 +16,7 @@ def test_report_generation_smoke(tmp_path: Path):
     figure_paths = {}
     for name in [
         "meteogram",
+        "seven_day_context",
         "wind_rose",
         "pressure_tendency",
         "dewpoint_spread",
@@ -19,13 +24,16 @@ def test_report_generation_smoke(tmp_path: Path):
         "anomaly_bars",
         "energy_quadrant",
         "regime_strip",
+        "electricity_overview",
+        "weather_electricity_links",
+        "model_profile",
     ]:
         path = tmp_path / f"{name}.html"
         path.write_text("placeholder", encoding="utf-8")
         figure_paths[name] = path
 
     processed = {}
-    for name in ["weekly_metrics", "baseline_metrics", "anomalies"]:
+    for name in ["period_metrics", "baseline_metrics", "anomalies", "electricity"]:
         path = tmp_path / f"{name}.csv"
         path.write_text("metric,value\nx,1\n", encoding="utf-8")
         processed[name] = path
@@ -38,13 +46,33 @@ def test_report_generation_smoke(tmp_path: Path):
 
     target = build_site(
         config=config,
-        week_start="2026-07-20",
-        week_end="2026-07-26",
+        period_start="2026-07-27",
+        period_end="2026-07-29",
         current_metrics={},
         baseline_metrics={},
         anomalies=anomalies,
         energy=EnergyIndex(80, 45, 62.5, 10, 0, "solar-favored"),
-        regime=RegimeClassification("Sunny high-pressure week", "Clear and dry.", ["sunny"] * 7, ["dry"]),
+        electricity=ElectricitySummary(
+            True,
+            5000,
+            6500,
+            12000,
+            1500,
+            25,
+            3800,
+            80,
+            140,
+            600,
+            "solar-led variable renewable output",
+        ),
+        electricity_notes=["Hungary-wide electricity context."],
+        profile=ModelProfile(pd.DataFrame(), None, "Open-Meteo", {}, ["Model-derived profile."]),
+        regime=RegimeClassification(
+            "Sunny high-pressure period",
+            "Clear and dry.",
+            ["sunny"] * 3,
+            ["dry"],
+        ),
         figure_paths=figure_paths,
         processed_paths=processed,
     )
@@ -53,6 +81,8 @@ def test_report_generation_smoke(tmp_path: Path):
     html = target.read_text(encoding="utf-8")
     assert "Atlas" in html
     assert "<iframe" in html
+    assert "Hungary Electricity Context" in html
+    assert "Advanced Meteorological Diagnostic" in html
 
 
 def test_archive_site_copies_latest_dashboard_assets_and_data(tmp_path: Path):

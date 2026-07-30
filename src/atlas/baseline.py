@@ -5,12 +5,12 @@ from datetime import date
 import pandas as pd
 
 from atlas.config import AtlasConfig
-from atlas.ingest import fetch_open_meteo_week
-from atlas.quality import validate_hourly_week
+from atlas.ingest import fetch_open_meteo_period
+from atlas.quality import validate_hourly_period
 
 
 def same_calendar_window(start: date, end: date, year: int) -> tuple[date, date]:
-    """Map a week to the same month/day window in another year."""
+    """Map a reporting period to the same month/day window in another year."""
     try:
         mapped_start = start.replace(year=year)
     except ValueError:
@@ -31,8 +31,8 @@ def fetch_baseline(config: AtlasConfig, start: date, end: date, refresh: bool = 
     failures: list[str] = []
     for window_start, window_end in baseline_windows(start, end, config.baseline.years):
         try:
-            frame = fetch_open_meteo_week(config, window_start, window_end, refresh=refresh).copy()
-            quality = validate_hourly_week(
+            frame = fetch_open_meteo_period(config, window_start, window_end, refresh=refresh).copy()
+            quality = validate_hourly_period(
                 frame,
                 window_start,
                 window_end,

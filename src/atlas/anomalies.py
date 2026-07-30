@@ -35,7 +35,7 @@ def _series(frame: pd.DataFrame, column: str) -> pd.Series:
     return pd.to_numeric(frame[column], errors="coerce").dropna()
 
 
-def weekly_metrics(frame: pd.DataFrame) -> dict[str, float]:
+def period_metrics(frame: pd.DataFrame) -> dict[str, float]:
     wind_source = "wind_speed_100m" if "wind_speed_100m" in frame and _series(frame, "wind_speed_100m").notna().any() else "wind_speed_10m"
     return {
         "temperature_mean_c": float(_series(frame, "temperature_2m").mean()),
@@ -59,10 +59,15 @@ def baseline_metric_table(baseline_frame: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("Baseline frame must include a baseline_year column.")
     rows = []
     for year, group in baseline_frame.groupby("baseline_year"):
-        row = weekly_metrics(group)
+        row = period_metrics(group)
         row["baseline_year"] = int(year)
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def weekly_metrics(frame: pd.DataFrame) -> dict[str, float]:
+    """Backward-compatible alias for period metrics."""
+    return period_metrics(frame)
 
 
 def percentile_rank(value: float, samples: Iterable[float]) -> float:

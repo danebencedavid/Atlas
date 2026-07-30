@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from atlas.anomalies import Anomaly, weekly_metrics
+from atlas.anomalies import Anomaly, period_metrics
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ def anomaly_lookup(anomalies: list[Anomaly]) -> dict[str, Anomaly]:
 
 
 def classify_daily(group: pd.DataFrame) -> str:
-    metrics = weekly_metrics(group)
+    metrics = period_metrics(group)
     if metrics["precipitation_total_mm"] >= 8 and metrics["wind_speed_mean_ms"] >= 4:
         return "frontal"
     if metrics["shortwave_total_wh_m2"] >= 2500 and metrics["cloud_cover_mean_pct"] <= 45:
@@ -34,8 +34,8 @@ def classify_daily(group: pd.DataFrame) -> str:
     return "mixed"
 
 
-def classify_week(frame: pd.DataFrame, anomalies: list[Anomaly]) -> RegimeClassification:
-    metrics = weekly_metrics(frame)
+def classify_period(frame: pd.DataFrame, anomalies: list[Anomaly]) -> RegimeClassification:
+    metrics = period_metrics(frame)
     lookup = anomaly_lookup(anomalies)
     temp_z = lookup["temperature_mean_c"].z_score
     precip_z = lookup["precipitation_total_mm"].z_score
@@ -45,25 +45,25 @@ def classify_week(frame: pd.DataFrame, anomalies: list[Anomaly]) -> RegimeClassi
     radiation_z = lookup["shortwave_total_wh_m2"].z_score
 
     signals: list[str] = []
-    label = "Mixed transition week"
+    label = "Mixed transition period"
 
     if radiation_z >= 0.7 and cloud_z <= -0.5 and precip_z <= -0.4 and pressure_z >= 0:
-        label = "Sunny high-pressure week"
+        label = "Sunny high-pressure period"
         signals.extend(["above-normal radiation", "reduced cloudiness", "limited rainfall"])
     elif wind_z <= -0.5 and cloud_z >= 0.6 and radiation_z <= -0.6:
-        label = "Cloudy stagnant week"
+        label = "Cloudy stagnant period"
         signals.extend(["weak wind", "persistent cloud", "suppressed solar radiation"])
     elif precip_z >= 0.8 and metrics["pressure_range_hpa"] >= 10:
-        label = "Wet frontal week"
+        label = "Wet frontal period"
         signals.extend(["rain surplus", "notable pressure swings"])
     elif wind_z >= 0.9 and metrics["pressure_range_hpa"] >= 10:
-        label = "Windy frontal week"
+        label = "Windy frontal period"
         signals.extend(["wind surplus", "active pressure pattern"])
     elif temp_z >= 1.0 and metrics["cooling_degree_days_c"] >= 12:
-        label = "Heat-stress week"
+        label = "Heat-stress period"
         signals.extend(["warm anomaly", "cooling-degree demand"])
     elif temp_z <= -1.0 and metrics["frost_hours"] >= 6:
-        label = "Cold/frost-prone week"
+        label = "Cold/frost-prone period"
         signals.extend(["cold anomaly", "frost-prone hours"])
     else:
         signals.extend(["no single signal dominated", "mixed day-to-day conditions"])
@@ -79,6 +79,11 @@ def classify_week(frame: pd.DataFrame, anomalies: list[Anomaly]) -> RegimeClassi
     return RegimeClassification(label=label, briefing=briefing, daily_labels=daily_labels, signals=signals)
 
 
+def classify_week(frame: pd.DataFrame, anomalies: list[Anomaly]) -> RegimeClassification:
+    """Backward-compatible wrapper for the former weekly public API."""
+    return classify_period(frame, anomalies)
+
+
 def make_briefing(label: str, lookup: dict[str, Anomaly]) -> str:
     temp = lookup["temperature_mean_c"].anomaly
     precip = lookup["precipitation_total_mm"].anomaly
@@ -87,5 +92,5 @@ def make_briefing(label: str, lookup: dict[str, Anomaly]) -> str:
     return (
         f"{label}: temperature was {temp:+.1f} deg C versus normal, "
         f"precipitation {precip:+.1f} mm, wind {wind:+.1f} m/s, "
-        f"and weekly solar radiation {solar:+.0f} Wh/m2."
+        f"and period solar radiation {solar:+.0f} Wh/m2."
     )

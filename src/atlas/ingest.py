@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 
 from atlas.config import AtlasConfig
-from atlas.dates import local_week_to_utc_bounds
+from atlas.dates import local_period_to_utc_bounds
 
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
@@ -52,10 +52,10 @@ def fetch_json_with_retry(url: str, params: dict[str, Any], retries: int = 4, ba
 
 def _cache_path(config: AtlasConfig, start: date, end: date, data_dir: Path) -> Path:
     slug = f"{config.location.name.lower()}_{start.isoformat()}_{end.isoformat()}".replace(" ", "_")
-    return data_dir / "raw" / f"open_meteo_localweek_{slug}.json"
+    return data_dir / "raw" / f"open_meteo_localperiod_{slug}.json"
 
 
-def fetch_open_meteo_week(
+def fetch_open_meteo_period(
     config: AtlasConfig,
     start: date,
     end: date,
@@ -70,7 +70,7 @@ def fetch_open_meteo_week(
     if cache_file.exists() and not refresh:
         payload = json.loads(cache_file.read_text(encoding="utf-8"))
     else:
-        utc_start, utc_end_exclusive = local_week_to_utc_bounds(start, end, config.location.timezone)
+        utc_start, utc_end_exclusive = local_period_to_utc_bounds(start, end, config.location.timezone)
         utc_end_inclusive = utc_end_exclusive - timedelta(hours=1)
         params = {
             "latitude": config.location.latitude,
@@ -90,7 +90,18 @@ def fetch_open_meteo_week(
 
     frame = pd.DataFrame(hourly)
     frame["time"] = pd.to_datetime(frame["time"], utc=True)
-    utc_start, utc_end_exclusive = local_week_to_utc_bounds(start, end, config.location.timezone)
+    utc_start, utc_end_exclusive = local_period_to_utc_bounds(start, end, config.location.timezone)
     frame = frame[(frame["time"] >= utc_start) & (frame["time"] < utc_end_exclusive)]
     frame = frame.sort_values("time").reset_index(drop=True)
     return frame
+
+
+def fetch_open_meteo_week(
+    config: AtlasConfig,
+    start: date,
+    end: date,
+    data_dir: Path | None = None,
+    refresh: bool = False,
+) -> pd.DataFrame:
+    """Backward-compatible wrapper around period ingestion."""
+    return fetch_open_meteo_period(config, start, end, data_dir=data_dir, refresh=refresh)

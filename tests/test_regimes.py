@@ -1,14 +1,14 @@
 import pandas as pd
 
 from atlas.anomalies import Anomaly
-from atlas.regimes import classify_week
+from atlas.regimes import classify_period
 
 
 def _anomaly(metric: str, z: float, anomaly: float = 0.0) -> Anomaly:
     return Anomaly(metric, metric, 0.0, 0.0, anomaly, z, 50.0, "")
 
 
-def test_classify_sunny_high_pressure_week():
+def test_classify_sunny_high_pressure_period():
     frame = pd.DataFrame(
         {
             "time": pd.date_range("2026-07-20", periods=168, freq="h", tz="UTC"),
@@ -33,7 +33,7 @@ def test_classify_sunny_high_pressure_week():
         _anomaly("shortwave_total_wh_m2", 1.2),
     ]
 
-    result = classify_week(frame, anomalies)
+    result = classify_period(frame, anomalies)
 
-    assert result.label == "Sunny high-pressure week"
+    assert result.label == "Sunny high-pressure period"
     assert "above-normal radiation" in result.signals
