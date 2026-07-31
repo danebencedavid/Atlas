@@ -7,21 +7,32 @@ from datetime import date
 from datetime import timedelta
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
+from atlas.analogs import find_historical_analogs
 from atlas.anomalies import anomalies_as_frame, baseline_metric_table, compute_anomalies, period_metrics
 from atlas.baseline import fetch_baseline
 from atlas.config import load_config
 from atlas.dates import last_complete_period
 from atlas.electricity import fetch_energy_charts, summarize_electricity
-from atlas.energy import compute_energy_index
+from atlas.energy import compute_energy_index, compute_physical_energy
+from atlas.fronts import detect_fronts
+from atlas.hungaromet import (
+    fetch_lightning_archive,
+    fetch_radar_archive,
+    fetch_station_observations,
+    station_hourly,
+)
 from atlas.ingest import fetch_open_meteo_period
 from atlas.plots import generate_all_figures
 from atlas.profile import fetch_model_profile
 from atlas.quality import DataQualityReport, validate_hourly_period
 from atlas.regimes import classify_period
+from atlas.serialization import json_ready
 from atlas.site import build_site
 from atlas.site import archive_site
+from atlas.synoptic import fetch_synoptic_archive
 
 
 def parse_date(value: str | None) -> date | None:
@@ -117,9 +128,17 @@ def run_pipeline(
         quality_notes.append(f"Seven-day context was unavailable; the current period is shown instead: {exc}")
 
     baseline = fetch_baseline(config, start, end, refresh=refresh)
+    station = fetch_station_observations(config, start, end, refresh=refresh)
+    radar = fetch_radar_archive(config, start, end, refresh=refresh)
+    lightning = fetch_lightning_archive(config, start, end, refresh=refresh)
+    frontal_source = station_hourly(station) if not station.frame.empty else current
+    fronts = detect_fronts(frontal_source)
+
     electricity_data = fetch_energy_charts(config, start, end, refresh=refresh)
     electricity_summary = summarize_electricity(electricity_data.frame)
-    model_profile = fetch_model_profile(config, end, refresh=refresh)
+    model_profile = fetch_model_profile(config, end, start_date=start, refresh=refresh)
+    analogs = find_historical_analogs(config, current, start, refresh=refresh)
+    synoptic = fetch_synoptic_archive(config, start, end, refresh=refresh)
 
     current_metrics = period_metrics(current)
     baseline_table = baseline_metric_table(baseline)
@@ -130,6 +149,7 @@ def run_pipeline(
     }
     anomalies = compute_anomalies(current_metrics, baseline_table)
     energy = compute_energy_index(current_metrics, baseline_means)
+    physical_energy = compute_physical_energy(config, current)
 
     current_with_local = current.copy()
     current_with_local["local_time"] = pd.to_datetime(current_with_local["time"], utc=True).dt.tz_convert(config.location.timezone)
@@ -144,6 +164,12 @@ def run_pipeline(
         electricity=electricity_data.frame,
         electricity_summary=electricity_summary,
         profile=model_profile,
+        station=station,
+        radar=radar,
+        lightning=lightning,
+        fronts=fronts,
+        synoptic=synoptic,
+        physical_energy=physical_energy,
         regime=regime,
         current_start=start,
         output_dir=figures_dir,
@@ -167,6 +193,16 @@ def run_pipeline(
     context_hourly_path = processed_dir / "seven_day_context_hourly.csv"
     electricity_path = processed_dir / "electricity.csv"
     model_profile_path = processed_dir / "model_profile.csv"
+    model_profile_series_path = processed_dir / "model_profile_series.csv"
+    model_profile_surface_path = processed_dir / "model_profile_surface_series.csv"
+    station_path = processed_dir / "hungaromet_station_observations.csv"
+    radar_timeline_path = processed_dir / "radar_timeline.csv"
+    radar_grid_path = processed_dir / "radar_accumulation.npz"
+    lightning_path = processed_dir / "lightning_events.csv"
+    fronts_path = processed_dir / "frontal_passages.csv"
+    analogs_path = processed_dir / "historical_analogs.csv"
+    synoptic_path = processed_dir / "synoptic_fields.npz"
+    physical_energy_path = processed_dir / "physical_energy.csv"
     summary_path = processed_dir / "summary.json"
 
     metrics_frame.to_csv(period_metrics_path, index=False)
@@ -176,9 +212,42 @@ def run_pipeline(
     context.to_csv(context_hourly_path, index=False)
     electricity_data.frame.to_csv(electricity_path, index=False)
     model_profile.frame.to_csv(model_profile_path, index=False)
+    model_profile.series.to_csv(model_profile_series_path, index=False)
+    model_profile.surface_series.to_csv(model_profile_surface_path, index=False)
+    station.frame.to_csv(station_path, index=False)
+    radar.timeline.to_csv(radar_timeline_path, index=False)
+    np.savez_compressed(
+        radar_grid_path,
+        latitudes=radar.latitudes,
+        longitudes=radar.longitudes,
+        accumulation_mm=radar.accumulation_mm,
+    )
+    lightning.frame.to_csv(lightning_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                **asdict(event),
+                "time": event.time.isoformat(),
+            }
+            for event in fronts.events
+        ]
+    ).to_csv(fronts_path, index=False)
+    pd.DataFrame([asdict(match) for match in analogs.matches]).to_csv(analogs_path, index=False)
+    np.savez_compressed(
+        synoptic_path,
+        times=np.array([timestamp.isoformat() for timestamp in synoptic.times]),
+        latitudes=synoptic.latitudes,
+        longitudes=synoptic.longitudes,
+        pressure_msl_hpa=synoptic.pressure_msl_hpa,
+        height_500m=synoptic.height_500m,
+        temperature_850c=synoptic.temperature_850c,
+        wind_u_850ms=synoptic.wind_u_850ms,
+        wind_v_850ms=synoptic.wind_v_850ms,
+    )
+    physical_energy.series.to_csv(physical_energy_path, index=False)
     summary_path.write_text(
         json.dumps(
-            {
+            json_ready({
                 "period_start": start.isoformat(),
                 "period_end": end.isoformat(),
                 "context_start": context_start.isoformat(),
@@ -196,13 +265,55 @@ def run_pipeline(
                     "diagnostics": model_profile.diagnostics,
                     "notes": model_profile.notes,
                 },
+                "hungaromet_station": {
+                    "station_id": station.station_id,
+                    "station_name": station.station_name,
+                    "records": len(station.frame),
+                    "notes": station.notes,
+                },
+                "radar": {
+                    "frames": len(radar.times),
+                    "maximum_reflectivity_dbz": (
+                        float(radar.timeline["domain_max_dbz"].max())
+                        if not radar.timeline.empty
+                        else None
+                    ),
+                    "notes": radar.notes,
+                },
+                "lightning": {
+                    "events": len(lightning.frame),
+                    "closest_event_km": (
+                        float(lightning.frame["distance_km"].min())
+                        if not lightning.frame.empty
+                        else None
+                    ),
+                    "notes": lightning.notes,
+                },
+                "frontal_passages": [
+                    {**asdict(event), "time": event.time.isoformat()} for event in fronts.events
+                ],
+                "front_notes": fronts.notes,
+                "historical_analogs": [asdict(match) for match in analogs.matches],
+                "analog_notes": analogs.notes,
+                "synoptic": {"frames": len(synoptic.times), "notes": synoptic.notes},
+                "physical_energy": {
+                    "pv_yield_kwh_per_kwp": physical_energy.pv_yield_kwh_per_kwp,
+                    "pv_capacity_factor_pct": physical_energy.pv_capacity_factor_pct,
+                    "wind_full_load_hours": physical_energy.wind_full_load_hours,
+                    "wind_capacity_factor_pct": physical_energy.wind_capacity_factor_pct,
+                    "mean_wind_power_density_w_m2": physical_energy.mean_wind_power_density_w_m2,
+                    "peak_pv_time": physical_energy.peak_pv_time,
+                    "peak_wind_time": physical_energy.peak_wind_time,
+                    "notes": physical_energy.notes,
+                },
                 "regime": asdict(regime),
                 "current_metrics": current_metrics,
                 "baseline_metrics": baseline_means,
                 "data_quality": asdict(quality),
                 "quality_notes": quality_notes,
-            },
+            }),
             indent=2,
+            allow_nan=False,
         ),
         encoding="utf-8",
     )
@@ -218,6 +329,13 @@ def run_pipeline(
         electricity=electricity_summary,
         electricity_notes=electricity_data.notes,
         profile=model_profile,
+        station=station,
+        radar=radar,
+        lightning=lightning,
+        fronts=fronts,
+        analogs=analogs,
+        synoptic=synoptic,
+        physical_energy=physical_energy,
         regime=regime,
         figure_paths=figure_paths,
         processed_paths={
@@ -228,6 +346,16 @@ def run_pipeline(
             "seven_day_context": context_hourly_path,
             "electricity": electricity_path,
             "model_profile": model_profile_path,
+            "model_profile_series": model_profile_series_path,
+            "model_profile_surface": model_profile_surface_path,
+            "hungaromet_station": station_path,
+            "radar_timeline": radar_timeline_path,
+            "radar_accumulation": radar_grid_path,
+            "lightning": lightning_path,
+            "frontal_passages": fronts_path,
+            "historical_analogs": analogs_path,
+            "synoptic_fields": synoptic_path,
+            "physical_energy": physical_energy_path,
             "summary": summary_path,
         },
         quality_notes=quality_notes,

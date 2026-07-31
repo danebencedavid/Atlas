@@ -1,86 +1,71 @@
 # Data Sources
 
-Atlas remains geographically focused on Debrecen. Hungary-wide electricity data
-is included because no public Debrecen-level electricity feed provides the
-generation and system context needed for this report.
+Atlas is geographically focused on Debrecen. Each generated page distinguishes
+station observations, radar/lightning detections, model-derived fields,
+gridded climate context, and Hungary-wide electricity data.
 
-## Implemented Sources
+## HungaroMet Open Data Portal
 
-### Open-Meteo Historical Weather API
+Implemented products:
 
-Purpose:
+- 10-minute station observations for Debrecen Airport, station 64711
+- 1 km national composite radar reflectivity in NetCDF
+- LINET lightning event records
 
-- hourly weather for the rolling three-day report
-- seven-day weather context
-- same-calendar-window baselines over prior years
+The station is the report's official surface-observation ledger. Radar and
+lightning support event reconstruction and retain explicit coverage notes when
+the rolling provider archive does not contain every requested frame.
 
-Variables include temperature, dew point, relative humidity, precipitation,
-cloud cover, sea-level pressure, 10 m and 100 m wind, wind direction, gusts,
+- [10-minute observations](https://odp.met.hu/climate/observations_hungary/10_minutes/)
+- [Radar composites](https://odp.met.hu/weather/radar/composite/)
+- [Radar NetCDF description](https://odp.met.hu/weather/radar/composite/Description-radar_nc-en.pdf)
+- [Lightning data](https://odp.met.hu/weather/lightning/)
+
+## Open-Meteo Historical Weather API
+
+Used for the continuous hourly report, seven-day diary, 10-year same-calendar
+baseline, and 15-year daily analog archive. Variables include temperature, dew
+point, humidity, precipitation, cloud, pressure, 10 m/100 m wind, gusts,
 shortwave/direct/diffuse radiation, and sunshine duration.
 
-Official documentation:
-[Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
+[Official documentation](https://open-meteo.com/en/docs/historical-weather-api)
 
-### Energy-Charts API
+## Open-Meteo Historical Forecast API
 
-Purpose:
+Used for pressure-level profiles, parcel and boundary-layer time series, and
+the Central European synoptic animation. These are model analyses near
+Debrecen, not observed soundings.
 
-- Hungary public electricity generation by type
-- load and residual load
-- day-ahead price for the HU bidding zone
-- cross-border physical-flow context
+[Official documentation](https://open-meteo.com/en/docs/historical-forecast-api)
 
-The API is free, does not require a token for these requests, supports Hungary,
-and publishes most returned data under CC BY 4.0 with source attribution. Much
-of the European power-system data originates from ENTSO-E.
+## Energy-Charts API
 
-Official documentation:
-[Energy-Charts API](https://api.energy-charts.info/)
+Used for Hungary-wide generation by type, load, residual load, day-ahead price,
+and cross-border physical flow. The public API requires no token; much of the
+underlying European power-system data originates from ENTSO-E. National values
+are never labelled as Debrecen measurements.
 
-### Open-Meteo Historical Forecast API
+[Official API](https://api.energy-charts.info/)
 
-Purpose:
+## Scientific Libraries
 
-- model pressure-level temperature and humidity
-- pressure-level wind speed and direction
-- geopotential height
-- interactive Skew-T-style profile near Debrecen
+- [MetPy](https://unidata.github.io/MetPy/latest/) supplies parcel,
+  thermodynamic, and sounding calculations.
+- [pvlib-python](https://pvlib-python.readthedocs.io/) supplies solar position,
+  transposition, and module-temperature calculations.
+- [Plotly Python](https://plotly.com/python/) produces self-contained
+  interactive figures for GitHub Pages.
 
-Official documentation:
-[Open-Meteo Historical Forecast API](https://open-meteo.com/en/docs/historical-forecast-api)
+## Useful Independent Checks
 
-## Worth Adding Later
+NASA POWER can provide an independent radiation cross-check, and NOAA IGRA can
+provide radiosonde context from the nearest available upper-air stations. They
+are not blended into the current products because neither is a superior direct
+observation of the exact Debrecen atmospheric column.
 
-### HungaroMet Open Data Portal
+- [NASA POWER hourly API](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/)
+- [NOAA Integrated Global Radiosonde Archive](https://www.ncei.noaa.gov/products/weather-balloon/integrated-global-radiosonde-archive)
 
-HungaroMet is the most relevant governmental source for independent official
-Hungarian validation. The best role would be Debrecen-area station and climate
-cross-checks after stable station identifiers, formats, and hourly variable
-coverage are confirmed.
-
-Portal: [HungaroMet ODP](https://odp.met.hu/)
-
-### NASA POWER Hourly API
-
-NASA POWER would provide an independent solar-radiation cross-check and fallback
-for the renewable-weather indices.
-
-Documentation:
-[NASA POWER Hourly API](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/)
-
-### NOAA Aviation Weather API
-
-Recent LHDC METAR observations could serve as a live Debrecen International
-Airport sanity check. They do not replace the historical hourly baseline.
-
-Documentation:
-[NOAA Aviation Weather API](https://aviationweather.gov/data/api/)
-
-## Not Prioritized
-
-ENTSO-E direct API access is not the default because it requires an access token
-and XML parsing. Energy-Charts already exposes the required Hungary series
+Direct ENTSO-E ingestion is not the default because it requires an access token
+and XML processing. Energy-Charts supplies the required Hungary system context
 without repository secrets while retaining source attribution.
-
-NOAA CDO/GHCN is valuable for independent climate validation but is better
-suited to daily records and requires a token for CDO API access.

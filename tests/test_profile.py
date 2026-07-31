@@ -26,3 +26,6 @@ def test_model_profile_selects_target_hour_and_computes_diagnostics(tmp_path, mo
     assert profile.valid_time.hour == 12
     assert profile.diagnostics["lapse_rate_850_500_c_km"] > 6
     assert profile.frame["dew_point_c"].notna().all()
+    assert len(profile.series) == 24 * len(levels)
+    assert profile.series["time"].nunique() == 24
+    assert len(profile.surface_series) == 24

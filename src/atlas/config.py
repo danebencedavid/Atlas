@@ -49,10 +49,54 @@ class ElectricityConfig:
 class ProfileConfig:
     enabled: bool = True
     pressure_levels_hpa: list[int] = field(
-        default_factory=lambda: [1000, 925, 850, 700, 500, 400, 300, 250, 200]
+        default_factory=lambda: [1000, 950, 925, 850, 800, 700, 600, 500, 400, 300, 250, 200]
     )
     target_hour_utc: int = 12
     required: bool = False
+
+
+@dataclass(frozen=True)
+class HungaroMetConfig:
+    enabled: bool = True
+    station_id: int = 64711
+    station_name: str = "Debrecen Airport"
+    radar_radius_km: float = 140.0
+    radar_replay_interval_minutes: int = 60
+    radar_accumulation_interval_minutes: int = 30
+    radar_display_stride: int = 3
+    lightning_radius_km: float = 150.0
+    required: bool = False
+
+
+@dataclass(frozen=True)
+class AnalogConfig:
+    enabled: bool = True
+    years: int = 15
+    season_window_days: int = 45
+    count: int = 5
+
+
+@dataclass(frozen=True)
+class SynopticConfig:
+    enabled: bool = True
+    latitude_min: float = 44.0
+    latitude_max: float = 51.0
+    longitude_min: float = 16.0
+    longitude_max: float = 26.0
+    grid_step_degrees: float = 1.0
+    frame_interval_hours: int = 6
+    required: bool = False
+
+
+@dataclass(frozen=True)
+class PhysicalEnergyConfig:
+    pv_tilt_degrees: float = 35.0
+    pv_azimuth_degrees: float = 180.0
+    pv_temperature_coefficient: float = -0.004
+    wind_hub_height_m: float = 100.0
+    wind_cut_in_ms: float = 3.0
+    wind_rated_ms: float = 12.0
+    wind_cut_out_ms: float = 25.0
 
 
 @dataclass(frozen=True)
@@ -77,6 +121,10 @@ class AtlasConfig:
     operations: OperationsConfig = field(default_factory=OperationsConfig)
     electricity: ElectricityConfig = field(default_factory=ElectricityConfig)
     profile: ProfileConfig = field(default_factory=ProfileConfig)
+    hungaromet: HungaroMetConfig = field(default_factory=HungaroMetConfig)
+    analogs: AnalogConfig = field(default_factory=AnalogConfig)
+    synoptic: SynopticConfig = field(default_factory=SynopticConfig)
+    physical_energy: PhysicalEnergyConfig = field(default_factory=PhysicalEnergyConfig)
     outputs: OutputConfig = field(default_factory=OutputConfig)
 
 
@@ -105,6 +153,10 @@ def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
         operations=OperationsConfig(**_section(raw, "operations")),
         electricity=ElectricityConfig(**_section(raw, "electricity")),
         profile=ProfileConfig(**_section(raw, "profile")),
+        hungaromet=HungaroMetConfig(**_section(raw, "hungaromet")),
+        analogs=AnalogConfig(**_section(raw, "analogs")),
+        synoptic=SynopticConfig(**_section(raw, "synoptic")),
+        physical_energy=PhysicalEnergyConfig(**_section(raw, "physical_energy")),
         outputs=OutputConfig(
             data_dir=Path(outputs.get("data_dir", "data")),
             reports_dir=Path(outputs.get("reports_dir", "reports")),

@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electricity | Atlas</title>
+  <meta name="description" content="Renewable weather indices and Hungary electricity context.">
+  <style>
+:root {
+  --ink: #172033;
+  --muted: #667085;
+  --line: #d9e0ea;
+  --paper: #f7f9fc;
+  --panel: #ffffff;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --green: #047857;
+  --gold: #a16207;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--panel);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+a { color: var(--blue); }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.nav-wrap {
+  width: min(100%, 1480px);
+  min-height: 60px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.brand {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+.primary-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.primary-nav::-webkit-scrollbar { display: none; }
+.primary-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 0 13px;
+  color: #475467;
+  border-bottom: 3px solid transparent;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.primary-nav a:hover { color: var(--ink); }
+.primary-nav a[aria-current="page"] {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+.page-shell {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  padding: 34px 28px 54px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+  gap: 40px;
+  align-items: end;
+  min-height: 290px;
+  padding: 20px 0 42px;
+}
+.eyebrow {
+  margin-bottom: 8px;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+h1, h2, h3, p { letter-spacing: 0; }
+h1 {
+  margin: 0 0 12px;
+  font-size: clamp(3.4rem, 7vw, 6.4rem);
+  line-height: 0.94;
+}
+h2 {
+  margin: 0;
+  font-size: 1.36rem;
+  line-height: 1.25;
+}
+.hero-regime {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  font-weight: 760;
+}
+.brief {
+  max-width: 780px;
+  margin: 0 0 12px;
+  color: #344054;
+  font-size: 1.12rem;
+}
+.meta, .source-note, footer {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.page-intro {
+  max-width: 930px;
+  padding: 20px 0 34px;
+}
+.page-intro h1 {
+  margin-bottom: 10px;
+  font-size: clamp(2.3rem, 5vw, 4.2rem);
+}
+.page-intro p {
+  margin: 0;
+  color: #475467;
+  font-size: 1.05rem;
+}
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.score {
+  min-width: 0;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.score strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.score span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.plot-section, .content-section {
+  min-width: 0;
+  padding: 30px 0 38px;
+  border-top: 1px solid var(--line);
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.plot-help {
+  position: relative;
+  z-index: 5;
+}
+.plot-help summary {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  color: var(--blue);
+  background: var(--blue-soft);
+  border: 1px solid #bfdbfe;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  list-style: none;
+  user-select: none;
+}
+.plot-help summary::-webkit-details-marker { display: none; }
+.plot-help summary:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+.help-panel {
+  position: absolute;
+  top: 34px;
+  left: -8px;
+  z-index: 10;
+  width: min(380px, calc(100vw - 56px));
+  padding: 13px 15px;
+  color: #344054;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.15);
+  font-size: 0.9rem;
+  font-weight: 450;
+}
+.viz-frame {
+  display: block;
+  width: 100%;
+  height: 640px;
+  min-width: 0;
+  border: 1px solid #e6eaf0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+.viz-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+.viz-frame.meteogram { height: 1000px; }
+.viz-frame.context { height: 740px; }
+.viz-frame.electricity { height: 840px; }
+.viz-frame.relationships { height: 800px; }
+.viz-frame.profile, .viz-frame.time-pressure { height: 840px; }
+.viz-frame.hodograph { height: 780px; }
+.viz-frame.compact { height: 280px; }
+.metric-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.metric {
+  min-width: 0;
+  padding: 17px 18px;
+  border-right: 1px solid var(--line);
+}
+.metric:last-child { border-right: 0; }
+.metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.metric strong {
+  display: block;
+  margin: 3px 0;
+  font-size: 1.55rem;
+}
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+}
+th, td {
+  padding: 11px 9px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+th:first-child, td:first-child { text-align: left; }
+.methods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 44px;
+}
+.methods-grid section { min-width: 0; }
+ul { margin: 8px 0 0; padding-left: 20px; }
+.download-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 28px;
+  padding: 0;
+  list-style: none;
+}
+.download-list a {
+  display: block;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+footer {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.footer-wrap {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  padding: 22px 28px;
+}
+@media (max-width: 860px) {
+  .nav-wrap { padding: 0 18px; gap: 16px; }
+  .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 10px; }
+  .page-shell { padding: 24px 18px 40px; }
+  .summary, .metric-band, .methods-grid, .download-list { grid-template-columns: 1fr; }
+  .metric { border-right: 0; border-bottom: 1px solid var(--line); }
+  .metric:last-child { border-bottom: 0; }
+  h1 { font-size: 3.5rem; }
+  .viz-frame { height: 570px; }
+  .viz-frame { min-width: 720px; }
+  .viz-frame.compact { min-width: 520px; }
+  .viz-frame.meteogram { height: 940px; }
+  .viz-frame.context, .viz-frame.hodograph { height: 650px; }
+  .viz-frame.electricity, .viz-frame.relationships, .viz-frame.profile,
+  .viz-frame.time-pressure { height: 760px; }
+  .help-panel { left: auto; right: -8px; }
+}
+</style>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html">Atlas</a><nav class="primary-nav" aria-label="Primary"><a href="index.html">Overview</a><a href="weather.html">Weather</a><a href="energy.html" aria-current="page">Electricity</a><a href="upper-air.html">Upper Air</a><a href="methods.html">Methods</a></nav></div></header>
+  <main><div class="page-shell">
+<header class="page-intro">
+  <div class="eyebrow">Debrecen, Hungary - 2026-07-27 to 2026-07-29</div>
+  <h1>Electricity And Renewables</h1>
+  <p>Debrecen weather potential alongside Hungary-wide measured generation, load, residual load, and market-price context.</p>
+</header>
+
+<div class="metric-band" aria-label="Hungary electricity summary">
+  <div class="metric"><span>Average load</span><strong>4,469</strong><span>MW</span></div>
+  <div class="metric"><span>Solar generation</span><strong>97,823</strong><span>MWh over period</span></div>
+  <div class="metric"><span>Wind generation</span><strong>3,933</strong><span>MWh over period</span></div>
+  <div class="metric"><span>Average day-ahead price</span><strong>117</strong><span>EUR/MWh</span></div>
+</div>
+
+<section class="plot-section">
+  <div class="section-heading">
+    <h2>Solar-Wind Energy Quadrant</h2>
+    <details class="plot-help">
+      <summary aria-label="How to read Solar-Wind Energy Quadrant"><span aria-hidden="true">i</span></summary>
+      <div class="help-panel">Move right for stronger solar-weather potential and upward for stronger wind-weather potential. The four backgrounds distinguish balanced, solar-favored, wind-favored, and weak-renewable weather.</div>
+    </details>
+  </div>
+
+  <div class="viz-scroll">
+    <iframe class="viz-frame context" src="assets/energy_quadrant.html" title="Interactive solar and wind potential quadrant" loading="lazy" scrolling="no"></iframe>
+  </div>
+</section>
+
+<section class="plot-section">
+  <div class="section-heading">
+    <h2>Hungary Electricity Context</h2>
+    <details class="plot-help">
+      <summary aria-label="How to read Hungary Electricity Context"><span aria-hidden="true">i</span></summary>
+      <div class="help-panel">Compare total load with residual load after variable renewables, then inspect national solar, wind, interchange, and day-ahead price. These are Hungary-wide measurements, not Debrecen-only electricity data.</div>
+    </details>
+  </div>
+  <p class="source-note">Energy-Charts and ENTSO-E data provide national context for Debrecen&#x27;s local weather.</p>
+
+  <div class="viz-scroll">
+    <iframe class="viz-frame electricity" src="assets/electricity_overview.html" title="Interactive Hungary electricity system overview" loading="lazy" scrolling="no"></iframe>
+  </div>
+</section>
+
+<section class="plot-section">
+  <div class="section-heading">
+    <h2>Weather-Electricity Relationships</h2>
+    <details class="plot-help">
+      <summary aria-label="How to read Weather-Electricity Relationships"><span aria-hidden="true">i</span></summary>
+      <div class="help-panel">Each point aligns an hourly Debrecen weather value with Hungary-wide electricity output. Trend lines summarize association only; they do not establish causation or represent a plant-level power model.</div>
+    </details>
+  </div>
+
+  <div class="viz-scroll">
+    <iframe class="viz-frame relationships" src="assets/weather_electricity_links.html" title="Interactive comparison of weather and electricity generation" loading="lazy" scrolling="no"></iframe>
+  </div>
+</section>
+</div></main>
+  <footer><div class="footer-wrap">Last updated 2026-07-30 18:20 UTC. Debrecen weather with Hungary-wide electricity context.</div></footer>
+</body>
+</html>

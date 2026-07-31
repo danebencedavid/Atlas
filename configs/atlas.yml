@@ -32,9 +32,45 @@ electricity:
 
 profile:
   enabled: true
-  pressure_levels_hpa: [1000, 925, 850, 700, 500, 400, 300, 250, 200]
+  pressure_levels_hpa: [1000, 950, 925, 850, 800, 700, 600, 500, 400, 300, 250, 200]
   target_hour_utc: 12
   required: false
+
+hungaromet:
+  enabled: true
+  station_id: 64711
+  station_name: Debrecen Airport
+  radar_radius_km: 140
+  radar_replay_interval_minutes: 60
+  radar_accumulation_interval_minutes: 30
+  radar_display_stride: 3
+  lightning_radius_km: 150
+  required: false
+
+analogs:
+  enabled: true
+  years: 15
+  season_window_days: 45
+  count: 5
+
+synoptic:
+  enabled: true
+  latitude_min: 44
+  latitude_max: 51
+  longitude_min: 16
+  longitude_max: 26
+  grid_step_degrees: 1
+  frame_interval_hours: 6
+  required: false
+
+physical_energy:
+  pv_tilt_degrees: 35
+  pv_azimuth_degrees: 180
+  pv_temperature_coefficient: -0.004
+  wind_hub_height_m: 100
+  wind_cut_in_ms: 3
+  wind_rated_ms: 12
+  wind_cut_out_ms: 25
 
 outputs:
   data_dir: data
