@@ -4,8 +4,9 @@ on:
   push:
     branches: [main, master]
   schedule:
-    # A daily trigger plus the cadence gate below gives a true 72-hour rhythm
-    # across month boundaries. 05:15 UTC is 07:15 CEST / 06:15 CET.
+    # The public report updates daily. Heavy 72-hour archives retain a true
+    # three-day rhythm across month boundaries.
+    # 05:15 UTC is 07:15 CEST / 06:15 CET.
     - cron: "15 5 * * *"
   workflow_dispatch:
 
@@ -22,26 +23,25 @@ jobs:
   cadence:
     runs-on: ubuntu-latest
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      archive_analysis: ${{ steps.check.outputs.archive_analysis }}
     steps:
-      - name: Check three-day cadence
+      - name: Check heavy-analysis archive cadence
         id: check
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" != "schedule" ]]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "archive_analysis=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           epoch_day=$(($(date -u +%s) / 86400))
           if (( epoch_day % 3 == 0 )); then
-            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "archive_analysis=true" >> "$GITHUB_OUTPUT"
           else
-            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "archive_analysis=false" >> "$GITHUB_OUTPUT"
           fi
 
   build:
     needs: cadence
-    if: needs.cadence.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -59,18 +59,54 @@ jobs:
       - name: Install Atlas
         run: python -m pip install -e ".[dev]"
 
+      - name: Set reference-cache generation
+        id: cache-date
+        shell: bash
+        run: echo "year=$(date -u +%Y)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore provider reference cache
+        id: provider-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/raw/open_meteo_era5_daily_*.json
+          key: atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-bootstrap
+          restore-keys: |
+            atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-
+            atlas-provider-reference-v3-${{ runner.os }}-
+
       - name: Run tests
         run: pytest
 
       - name: Build static dashboard
-        run: atlas --refresh
+        shell: bash
+        run: |
+          if [[ "${{ needs.cadence.outputs.archive_analysis }}" == "true" ]]; then
+            atlas --refresh
+          else
+            atlas --refresh --skip-analysis-archive
+          fi
+
+      - name: Inspect reference-cache progress
+        id: reference-state
+        if: always()
+        shell: bash
+        run: |
+          count=$(find data/raw -maxdepth 1 -name 'open_meteo_era5_daily_*.json' -type f | wc -l)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Preserve provider cache progress
+        if: always() && steps.reference-state.outputs.count != '0'
+        uses: actions/cache/save@v4
+        with:
+          path: data/raw/open_meteo_era5_daily_*.json
+          key: atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-${{ hashFiles('data/raw/open_meteo_era5_daily_*.json') }}
 
       - name: Commit generated rolling report archive
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/periods
+          git add reports/daily reports/periods
           if ! git diff --cached --quiet; then
             git commit -m "Archive Atlas rolling report [skip ci]"
             git pull --rebase origin "${GITHUB_REF_NAME}"

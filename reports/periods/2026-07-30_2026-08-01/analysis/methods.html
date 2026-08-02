@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methods &amp; Evidence | Atlas</title>
+  <meta name="description" content="Atlas methods, source quality and data downloads.">
+  <style>
+:root {
+  --ink: #172033;
+  --muted: #667085;
+  --line: #d9e0ea;
+  --paper: #f7f9fc;
+  --panel: #ffffff;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --green: #047857;
+  --gold: #a16207;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--panel);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+a { color: var(--blue); }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.edition-notice {
+  border-bottom: 1px solid #f0cf78;
+  background: #fff8dc;
+  color: #654b08;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-align: center;
+  padding: 9px 24px;
+}
+.nav-wrap {
+  width: min(100%, 1480px);
+  min-height: 60px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.brand {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+.report-switch {
+  display: flex;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.report-switch a {
+  padding: 7px 10px;
+  color: #475467;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.report-switch a + a { border-left: 1px solid var(--line); }
+.report-switch a[aria-current="true"] { color: #ffffff; background: var(--ink); }
+.primary-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.primary-nav::-webkit-scrollbar { display: none; }
+.primary-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 0 13px;
+  color: #475467;
+  border-bottom: 3px solid transparent;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.primary-nav a:hover { color: var(--ink); }
+.primary-nav a[aria-current="page"] {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+.page-shell {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  padding: 34px 28px 54px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+  gap: 40px;
+  align-items: end;
+  min-height: 290px;
+  padding: 20px 0 42px;
+}
+.eyebrow {
+  margin-bottom: 8px;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+h1, h2, h3, p { letter-spacing: 0; }
+h1 {
+  margin: 0 0 12px;
+  font-size: clamp(3.4rem, 7vw, 6.4rem);
+  line-height: 0.94;
+}
+h2 {
+  margin: 0;
+  font-size: 1.36rem;
+  line-height: 1.25;
+}
+.hero-regime {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  font-weight: 760;
+}
+.brief {
+  max-width: 780px;
+  margin: 0 0 12px;
+  color: #344054;
+  font-size: 1.12rem;
+}
+.meta, .source-note, footer {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.page-intro {
+  max-width: 930px;
+  padding: 20px 0 34px;
+}
+.page-intro h1 {
+  margin-bottom: 10px;
+  font-size: clamp(2.3rem, 5vw, 4.2rem);
+}
+.page-intro p {
+  margin: 0;
+  color: #475467;
+  font-size: 1.05rem;
+}
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.score {
+  min-width: 0;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.score strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.score span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.plot-section, .content-section {
+  min-width: 0;
+  padding: 30px 0 38px;
+  border-top: 1px solid var(--line);
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.plot-help {
+  position: relative;
+  z-index: 5;
+}
+.plot-help summary {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  color: var(--blue);
+  background: var(--blue-soft);
+  border: 1px solid #bfdbfe;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  list-style: none;
+  user-select: none;
+}
+.plot-help summary::-webkit-details-marker { display: none; }
+.plot-help summary:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+.help-panel {
+  position: absolute;
+  top: 34px;
+  left: -8px;
+  z-index: 10;
+  width: min(380px, calc(100vw - 56px));
+  padding: 13px 15px;
+  color: #344054;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.15);
+  font-size: 0.9rem;
+  font-weight: 450;
+}
+.viz-frame {
+  display: block;
+  width: 100%;
+  height: 640px;
+  min-width: 0;
+  border: 1px solid #e6eaf0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+.viz-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+.viz-frame.meteogram { height: 1000px; }
+.viz-frame.context { height: 740px; }
+.viz-frame.electricity { height: 840px; }
+.viz-frame.relationships { height: 800px; }
+.viz-frame.profile, .viz-frame.time-pressure { height: 840px; }
+.viz-frame.hodograph { height: 780px; }
+.viz-frame.radar, .viz-frame.synoptic, .viz-frame.physical-energy { height: 780px; }
+.viz-frame.satellite { height: 860px; }
+.viz-frame.land-surface { height: 940px; }
+.viz-frame.climate-reference { height: 800px; }
+.viz-frame.phenomena { height: 560px; }
+.viz-frame.compact { height: 280px; }
+.metric-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.metric {
+  min-width: 0;
+  padding: 17px 18px;
+  border-right: 1px solid var(--line);
+}
+.metric:last-child { border-right: 0; }
+.metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.metric strong {
+  display: block;
+  margin: 3px 0;
+  font-size: 1.55rem;
+}
+.analysis-lead {
+  max-width: 1020px;
+  margin: 0 0 18px;
+  padding: 18px 0 18px 22px;
+  border-left: 4px solid var(--blue);
+  color: #344054;
+  font-size: 1.08rem;
+}
+.analysis-lead strong { color: var(--ink); }
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.insight {
+  min-width: 0;
+  padding: 20px 22px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.insight:nth-child(2n) { border-right: 0; }
+.insight:nth-last-child(-n+2) { border-bottom: 0; }
+.insight .provenance, .provenance {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: var(--blue);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.insight h3 { margin: 0 0 5px; font-size: 1.04rem; }
+.insight p { margin: 0; color: #475467; }
+.event-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.event-list li {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.event-time { color: var(--muted); font-size: 0.9rem; font-weight: 700; }
+.event-copy strong { display: block; margin-bottom: 4px; }
+.event-copy p { margin: 0; color: #475467; }
+.evidence-meta { margin-top: 5px; color: var(--muted); font-size: 0.82rem; }
+.public-lead { max-width: 850px; font-size: 1.18rem; color: #344054; }
+.public-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.public-facts div { padding: 18px; border-right: 1px solid var(--line); }
+.public-facts div:last-child { border-right: 0; }
+.public-facts span { display: block; color: var(--muted); font-size: .82rem; }
+.public-facts strong { display: block; margin-top: 3px; font-size: 1.3rem; }
+.diagnostic-ledger {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.diagnostic-ledger div { padding: 16px; border-right: 1px solid var(--line); }
+.diagnostic-ledger div:last-child { border-right: 0; }
+.diagnostic-ledger span { display: block; color: var(--muted); font-size: 0.8rem; }
+.diagnostic-ledger strong { display: block; margin-top: 3px; font-size: 1.25rem; }
+.analog-list { border-top: 1px solid var(--line); }
+.analog-row {
+  display: grid;
+  grid-template-columns: 170px 100px minmax(0, 1fr);
+  gap: 20px;
+  align-items: baseline;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.analog-row strong { font-size: 1.08rem; }
+.analog-row span { color: var(--muted); }
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+}
+th, td {
+  padding: 11px 9px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+th:first-child, td:first-child { text-align: left; }
+.methods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 44px;
+}
+.methods-grid section { min-width: 0; }
+ul { margin: 8px 0 0; padding-left: 20px; }
+.download-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 28px;
+  padding: 0;
+  list-style: none;
+}
+.download-list a {
+  display: block;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+footer {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.footer-wrap {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  padding: 22px 28px;
+}
+@media (max-width: 1400px) and (min-width: 861px) {
+  .nav-wrap { padding-top: 8px; flex-wrap: wrap; gap: 0 24px; }
+  .primary-nav {
+    order: 3;
+    flex: 1 0 100%;
+    width: 100%;
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+  .primary-nav a { min-height: 48px; }
+}
+@media (max-width: 860px) {
+  .nav-wrap { padding: 8px 18px 0; gap: 8px 16px; flex-wrap: wrap; }
+  .primary-nav { order: 3; flex: 1 0 100%; width: 100%; }
+  .primary-nav a { min-height: 48px; }
+  .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 10px; }
+  .page-shell { padding: 24px 18px 40px; }
+  .summary, .metric-band, .methods-grid, .download-list, .insight-grid, .public-facts,
+  .diagnostic-ledger { grid-template-columns: 1fr; }
+  .insight, .insight:nth-child(2n), .insight:nth-last-child(-n+2),
+  .diagnostic-ledger div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .insight:last-child, .diagnostic-ledger div:last-child { border-bottom: 0; }
+  .event-list li, .analog-row { grid-template-columns: 1fr; gap: 4px; }
+  .metric { border-right: 0; border-bottom: 1px solid var(--line); }
+  .metric:last-child { border-bottom: 0; }
+  h1 { font-size: 3.5rem; }
+  .viz-frame { height: 570px; }
+  .viz-frame { min-width: 720px; }
+  .viz-frame.compact { min-width: 520px; }
+  .viz-frame.meteogram { height: 940px; }
+  .viz-frame.context, .viz-frame.hodograph { height: 650px; }
+  .viz-frame.electricity, .viz-frame.relationships, .viz-frame.profile,
+  .viz-frame.time-pressure, .viz-frame.radar, .viz-frame.synoptic,
+  .viz-frame.physical-energy { height: 760px; }
+  .viz-frame.satellite, .viz-frame.land-surface { height: 820px; }
+  .help-panel { left: auto; right: -8px; }
+}
+</style>
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="../index.html">Atlas</a><div class="report-switch" aria-label="Report edition"><a href="../index.html">Public report</a><a href="../analysis/index.html" aria-current="true">Meteorological analysis</a></div><nav class="primary-nav" aria-label="Primary"><a href="index.html">Overview</a><a href="surface-synoptic.html">Surface &amp; Synoptic</a><a href="storms-satellite.html">Storms &amp; Satellite</a><a href="upper-air.html">Upper Air &amp; Dynamics</a><a href="climate.html">Climate &amp; Analogs</a><a href="land-energy.html">Land Surface &amp; Energy</a><a href="methods.html" aria-current="page">Methods &amp; Evidence</a></nav></div></header>
+  <main><div class="page-shell">
+<header class="page-intro">
+  <div class="eyebrow">Debrecen, Hungary - 2026-07-30 to 2026-08-01</div>
+  <h1>Methods And Data</h1>
+  <p>Transparent baselines, explainable regime rules, source notes, and downloadable outputs for the current report.</p>
+</header>
+
+<section class="content-section">
+  <h2>Climatological Reference Ledger</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Metric</th><th>This period</th><th>1991-2020 mean (anomaly)</th><th>Recent 10-year mean (anomaly)</th><th>1990-present percentile</th></tr></thead>
+      <tbody><tr><th>Temperature</th><td>28.7</td><td>23.2 (+5.5)</td><td>23.8 (+4.8)</td><td>100th</td></tr>
+<tr><th>Precipitation</th><td>0.0</td><td>7.9 (-7.9)</td><td>5.6 (-5.6)</td><td>14th</td></tr>
+<tr><th>Wind</th><td>3.8</td><td>3.7 (+0.1)</td><td>3.7 (+0.1)</td><td>56th</td></tr>
+<tr><th>Pressure</th><td>1017.1</td><td>1013.6 (+3.5)</td><td>1013.1 (+4.1)</td><td>81th</td></tr>
+<tr><th>Cloud</th><td>1.1</td><td>45.1 (-43.9)</td><td>43.5 (-42.4)</td><td>0th</td></tr>
+<tr><th>Solar radiation</th><td>22170.0</td><td>16741.9 (+5428.1)</td><td>17811.9 (+4358.1)</td><td>100th</td></tr></tbody>
+    </table>
+  </div>
+</section>
+<div class="methods-grid">
+  <section class="content-section">
+    <h2>Classification Signals</h2>
+    <ul><li>above-normal radiation</li>
+<li>reduced cloudiness</li>
+<li>limited rainfall</li></ul>
+  </section>
+  <section class="content-section">
+    <h2>Sources And Quality</h2>
+    <p>HungaroMet supplies Debrecen Airport observations, composite radar, LINET lightning and Meteosat imagery. Open-Meteo supplies the continuous gridded surface record, pressure-level model fields, synoptic grid, land fields and ERA5 climate archive. Standard normals use 1991-2020; the recent comparison retains the prior 10 years and is stored in baseline_metrics.csv.</p>
+    <ul><li>Data completeness check passed with 72/72 expected local-period hours.</li></ul>
+    <ul><li>Hungary-wide electricity context from Energy-Charts (primarily ENTSO-E data).</li></ul>
+    <ul><li>Model-derived atmospheric profile near Debrecen; it is not an observed radiosonde.</li>
+<li>Dew point is calculated from model temperature and relative humidity.</li></ul>
+    <ul><li>HungaroMet station 64711 (Debrecen Airport); 10-minute observations.</li>
+<li>Station coverage: 156/432 expected records (36%).</li>
+<li>Radar archive unavailable: Failed to fetch https://odp.met.hu/weather/radar/composite/nc/refl2D/ after 4 attempts: HTTPSConnectionPool(host=&#x27;odp.met.hu&#x27;, port=443): Max retries exceeded with url: /weather/radar/composite/nc/refl2D/ (Caused by NewConnectionError(&#x27;&lt;urllib3.connection.HTTPSConnection object at 0x0000023E6C891E70&gt;: Failed to establish a new connection: [WinError 10013] A szoftvercsatornához a hozzáférési engedélyeket megsértő módon történt hozzáférés&#x27;))</li>
+<li>HungaroMet LINET events within 150 km of Debrecen.</li>
+<li>Detected 25 lightning events in the reporting period.</li>
+<li>No Meteosat frames were available in the provider&#x27;s rolling archive. First failure: AirmassRGB: Failed to fetch https://odp.met.hu/weather/satellite/MSG/png/AirmassRGB/ after 4 attempts: HTTPSConnectionPool(host=&#x27;odp.met.hu&#x27;, port=443): Max retries exceeded with url: /weather/satellite/MSG/png/AirmassRGB/ (Caused by NewConnectionError(&#x27;&lt;urllib3.connection.HTTPSConnection object at 0x0000023E6CCE1720&gt;: Failed to establish a new connection: [WinError 10013] A szoftvercsatornához a hozzáférési engedélyeket megsértő módon történt hozzáférés&#x27;))</li>
+<li>Frontal passages are objective candidates based on three-hour pressure, temperature, wind and precipitation changes.</li>
+<li>A pressure, precipitation or strong-gust anchor is required to suppress ordinary diurnal temperature and wind cycles.</li>
+<li>The detector identifies local passage signatures; it does not replace a manually analysed synoptic front.</li>
+<li>Phenomena are deterministic candidates based on explicit thresholds; they are not manually quality-controlled reports.</li>
+<li>Observed station evidence is preferred, with gridded or model-derived evidence identified when observations are unavailable.</li>
+<li>Analogs are selected from 15 years of ERA5 daily data within +/-45 calendar days.</li>
+<li>Similarity uses standardized temperature, precipitation, wind, radiation, cloud and pressure; it is descriptive rather than predictive.</li>
+<li>Synoptic fields are model analyses from Open-Meteo Historical Forecast data.</li>
+<li>Frames are sampled every 6 hours on a 1-degree Central European grid.</li>
+<li>Vorticity, thermal advection and kinematic frontogenesis are finite-difference diagnostics derived on the reporting grid.</li>
+<li>A true 2-PVU dynamical-tropopause surface is not exposed by the no-secret provider and is not approximated.</li>
+<li>Standard anomalies use 30 same-calendar ERA5 periods from 1991-2020.</li>
+<li>Full-record percentiles use 36 same-calendar periods from 1990-2025.</li>
+<li>The recent-climate comparison uses 10 periods and remains separate from the WMO standard-normal window.</li>
+<li>Rolling soil, VPD and ET0 fields use Open-Meteo Historical Weather best-match gridded data, not station measurements.</li>
+<li>The 1991-2020 water-balance reference is fixed to ERA5; the rolling best-match series can use newer IFS and ERA5/ERA5-Land inputs.</li>
+<li>Water balance is precipitation minus FAO-56 reference evapotranspiration and does not include runoff or irrigation.</li>
+<li>Dry/wet context uses the 1991-2020 distribution of same-calendar water-balance windows.</li>
+<li>PV yield models a south-facing 35-degree fixed array per installed kWp using plane-of-array irradiance and cell-temperature derating.</li>
+<li>Wind output uses observed/modelled 100 m wind, moist-air density correction, and a generic 3/12/25 m/s cut-in/rated/cut-out power curve.</li>
+<li>These are reference-system weather yields, not metered production or a forecast.</li></ul>
+  </section>
+</div>
+<section class="content-section">
+  <h2>Downloads</h2>
+  <ul class="download-list"><li><a href="../data/current_hourly.csv">Current weather observations</a></li>
+<li><a href="../data/seven_day_context_hourly.csv">Seven-day weather context</a></li>
+<li><a href="../data/period_metrics.csv">Period metrics</a></li>
+<li><a href="../data/baseline_metrics.csv">Baseline metrics</a></li>
+<li><a href="../data/standard_normal_metrics.csv">1991-2020 standard-normal metrics</a></li>
+<li><a href="../data/full_record_metrics.csv">Full-record climate metrics</a></li>
+<li><a href="../data/anomalies.csv">Weather anomalies</a></li>
+<li><a href="../data/electricity.csv">Electricity time series</a></li>
+<li><a href="../data/model_profile.csv">Selected model profile</a></li>
+<li><a href="../data/model_profile_series.csv">Full profile time series</a></li>
+<li><a href="../data/model_profile_surface_series.csv">Parcel and boundary-layer series</a></li>
+<li><a href="../data/hungaromet_station_observations.csv">HungaroMet station observations</a></li>
+<li><a href="../data/radar_timeline.csv">Radar event timeline</a></li>
+<li><a href="../data/radar_accumulation.npz">Radar accumulation grid</a></li>
+<li><a href="../data/lightning_events.csv">LINET lightning events</a></li>
+<li><a href="../data/frontal_passages.csv">Objective frontal passages</a></li>
+<li><a href="../data/weather_phenomena.csv">Objective phenomena ledger</a></li>
+<li><a href="../data/historical_analogs.csv">Historical analogs</a></li>
+<li><a href="../data/synoptic_fields.npz">Synoptic analysis fields</a></li>
+<li><a href="../data/physical_energy.csv">Physical PV and wind yields</a></li>
+<li><a href="../data/land_surface_hourly.csv">Land-surface hourly context</a></li>
+<li><a href="../data/land_surface_daily.csv">Land-surface daily context</a></li>
+<li><a href="../data/summary.json">Machine-readable summary</a></li></ul>
+</section>
+</div></main>
+  <footer><div class="footer-wrap">Last updated 2026-08-02 18:40 UTC. Debrecen weather with Hungary-wide electricity context.</div></footer>
+</body>
+</html>

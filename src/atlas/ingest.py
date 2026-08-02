@@ -29,6 +29,18 @@ HOURLY_VARIABLES = [
     "direct_radiation",
     "diffuse_radiation",
     "sunshine_duration",
+    "rain",
+    "snowfall",
+    "vapour_pressure_deficit",
+    "et0_fao_evapotranspiration",
+    "soil_temperature_0_to_7cm",
+    "soil_temperature_7_to_28cm",
+    "soil_temperature_28_to_100cm",
+    "soil_temperature_100_to_255cm",
+    "soil_moisture_0_to_7cm",
+    "soil_moisture_7_to_28cm",
+    "soil_moisture_28_to_100cm",
+    "soil_moisture_100_to_255cm",
 ]
 
 
@@ -36,7 +48,17 @@ def fetch_json_with_retry(url: str, params: dict[str, Any], retries: int = 4, ba
     last_error: Exception | None = None
     for attempt in range(retries):
         try:
-            response = requests.get(url, params=params, timeout=45)
+            response = requests.get(url, params=params, timeout=90)
+            if response.status_code == 429:
+                retry_after = response.headers.get("Retry-After")
+                delay = float(retry_after) if retry_after and retry_after.isdigit() else 20.0 * (attempt + 1)
+                last_error = requests.HTTPError(
+                    f"429 Too Many Requests; retrying after {delay:.0f} seconds",
+                    response=response,
+                )
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                    continue
             response.raise_for_status()
             payload = response.json()
             if "error" in payload:

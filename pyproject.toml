@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atlas-weather-dashboard"
-version = "0.2.0"
+version = "0.3.0"
 description = "Rolling weather anomaly, electricity, and renewable-energy dashboard for Debrecen, Hungary."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.26",
   "pandas>=2.1",
+  "Pillow>=10.0",
   "plotly>=5.22",
   "metpy>=1.6",
   "pvlib>=0.11",

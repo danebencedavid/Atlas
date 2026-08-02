@@ -1,21 +1,22 @@
 # Methods
 
-Atlas answers a Debrecen-only diagnostic question: what weather occurred during
-the latest three complete local days, how unusual was it, what processes shaped
-it, and what did it imply for renewable energy?
+Atlas answers a Debrecen-only diagnostic question at two resolutions: what
+happened during the last complete day for the public report, and how did the
+weather system evolve through the latest 72 complete hours for expert analysis?
 
 ## Reporting Window And Quality Control
 
-The report ends at local midnight before the run date and covers three complete
-calendar days in `Europe/Budapest`. Provider timestamps are converted to UTC
+Both reports end at local midnight before the run date. The public edition
+covers one complete day and the analysis covers three complete calendar days in
+`Europe/Budapest`. Provider timestamps are converted to UTC
 internally and clipped to exact local boundaries, including daylight-saving
 transitions. The publication requires at least 95% hourly coverage from the
 continuous Open-Meteo series and steps backward within a seven-day lag limit if
 the newest archive is incomplete.
 
 A separate seven-day diary preserves the transition into the active period.
-Every generated edition is copied to
-`reports/periods/YYYY-MM-DD_YYYY-MM-DD/` with its figures and data.
+Daily public editions are copied to `reports/daily/YYYY-MM-DD/`; complete expert
+editions are copied to `reports/periods/YYYY-MM-DD_YYYY-MM-DD/` every three days.
 
 ## Observation Ledger
 
@@ -47,7 +48,16 @@ distance to 150 km from Debrecen, and retains event time, polarity/current,
 type, location quality, and range. It is an event catalogue, not a flash-area
 product.
 
-## Objective Frontal Passages
+## Meteosat Diary
+
+Atlas reads HungaroMet MSG listings for Airmass RGB, Natural Colour, Night
+Microphysics, Fog RGB, and InfraCloud. It samples approximately every three
+hours, resizes the original PNG products, and stores compressed WebP copies with
+the static report. A shared browser timeline selects the nearest radar and
+LINET observations. The products are synchronized in time, not spatially
+overlaid or reprojected.
+
+## Objective Phenomena And Frontal Passages
 
 Station observations are aggregated hourly. Atlas evaluates three-hour changes
 in pressure, temperature, dew point, wind speed and direction, plus three-hour
@@ -60,12 +70,21 @@ Temperature sign separates probable cold- and warm-front signatures; ambiguous
 events are labelled frontal trough or wind-shift line. These are reproducible
 local annotations, not manually analysed fronts or warnings.
 
+The broader phenomenon ledger uses observed station data first and identifies
+fallback provenance explicitly. It detects fog/low visibility, frost, heat,
+heavy rain, strong gusts, model-indicated snow or mixed precipitation,
+radar/LINET thunderstorms, nocturnal model inversions, and frontal candidates.
+Every event retains timing, evidence, confidence, and source. Threshold events
+are diagnostic candidates and are not official warnings.
+
 ## Baseline, Anomalies, And Analogs
 
-The anomaly baseline maps the same three-day calendar window into each of the
-previous 10 years and requires at least five complete years. It reports raw,
-standardized, and percentile anomalies for temperature, precipitation, 100 m
-wind, pressure, cloud, and shortwave radiation.
+Atlas maintains three distinct climate references. The WMO-style standard
+normal uses same-calendar ERA5 periods from 1991-2020. The recent comparison
+retains the previous 10 years and requires at least five complete years. The
+full-record empirical percentile uses same-calendar ERA5 periods from 1990 to
+the year before publication. Temperature, precipitation, 100 m wind, pressure,
+cloud, and shortwave radiation are never blended across those references.
 
 The analog engine searches rolling three-day periods from the previous 15
 years within a plus/minus 45-day seasonal window. It standardizes mean
@@ -94,10 +113,23 @@ claimed.
 
 ## Synoptic Evolution
 
-The Central European animation samples a 1-degree grid every six hours. It
-combines sea-level pressure, 500 hPa geopotential height, 850 hPa temperature,
-and 850 hPa wind. The panel is for circulation and air-mass interpretation, not
-mesoscale warning decisions.
+The Central European animation samples a 1-degree grid every six hours. Its
+selectable modes show surface/air-mass structure, 300 hPa wind and height,
+finite-difference 500 hPa relative vorticity, 700 hPa humidity and vertical
+velocity, and 850 hPa equivalent potential temperature, thermal advection, and
+kinematic frontogenesis. Derived gradients use spherical grid spacing and are
+screening diagnostics on a coarse grid. A true 2-PVU tropopause surface is not
+available from the no-secret provider and is not approximated.
+
+## Land Surface And Water Balance
+
+Open-Meteo Historical Weather best-match fields provide the rolling soil
+temperature and volumetric soil moisture by depth, vapour-pressure deficit,
+precipitation, and FAO-56 reference evapotranspiration. Depending on date, that
+best-match record can use IFS and ERA5/ERA5-Land inputs. Atlas ranks 7-, 30-,
+and 90-day precipitation-minus-ET0 against a separate, fixed ERA5 1991-2020
+reference. This atmospheric water balance excludes runoff, drainage,
+irrigation, and crop-specific ET.
 
 ## Renewable Energy
 

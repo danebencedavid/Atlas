@@ -14,6 +14,17 @@ baseline:
   years: 10
   minimum_years: 5
 
+climatology:
+  standard_start_year: 1991
+  standard_end_year: 2020
+  archive_start_year: 1990
+  minimum_standard_years: 24
+
+land_surface:
+  enabled: true
+  context_days: 90
+  required: false
+
 reporting:
   window_days: 3
   context_days: 7
@@ -45,6 +56,14 @@ hungaromet:
   radar_accumulation_interval_minutes: 30
   radar_display_stride: 3
   lightning_radius_km: 150
+  required: false
+
+satellite:
+  enabled: true
+  products: [AirmassRGB, NaturalRGB, NightRGB, FogRGB, InfraCloud]
+  frame_interval_minutes: 180
+  image_width_px: 960
+  webp_quality: 72
   required: false
 
 analogs:

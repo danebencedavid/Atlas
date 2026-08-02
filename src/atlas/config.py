@@ -30,6 +30,21 @@ class BaselineConfig:
 
 
 @dataclass(frozen=True)
+class ClimatologyConfig:
+    standard_start_year: int = 1991
+    standard_end_year: int = 2020
+    archive_start_year: int = 1990
+    minimum_standard_years: int = 24
+
+
+@dataclass(frozen=True)
+class LandSurfaceConfig:
+    enabled: bool = True
+    context_days: int = 90
+    required: bool = False
+
+
+@dataclass(frozen=True)
 class ReportingConfig:
     window_days: int = 3
     context_days: int = 7
@@ -65,6 +80,24 @@ class HungaroMetConfig:
     radar_accumulation_interval_minutes: int = 30
     radar_display_stride: int = 3
     lightning_radius_km: float = 150.0
+    required: bool = False
+
+
+@dataclass(frozen=True)
+class SatelliteConfig:
+    enabled: bool = True
+    products: list[str] = field(
+        default_factory=lambda: [
+            "AirmassRGB",
+            "NaturalRGB",
+            "NightRGB",
+            "FogRGB",
+            "InfraCloud",
+        ]
+    )
+    frame_interval_minutes: int = 180
+    image_width_px: int = 960
+    webp_quality: int = 72
     required: bool = False
 
 
@@ -117,11 +150,14 @@ class AtlasConfig:
     project: ProjectConfig = field(default_factory=ProjectConfig)
     location: LocationConfig = field(default_factory=LocationConfig)
     baseline: BaselineConfig = field(default_factory=BaselineConfig)
+    climatology: ClimatologyConfig = field(default_factory=ClimatologyConfig)
+    land_surface: LandSurfaceConfig = field(default_factory=LandSurfaceConfig)
     reporting: ReportingConfig = field(default_factory=ReportingConfig)
     operations: OperationsConfig = field(default_factory=OperationsConfig)
     electricity: ElectricityConfig = field(default_factory=ElectricityConfig)
     profile: ProfileConfig = field(default_factory=ProfileConfig)
     hungaromet: HungaroMetConfig = field(default_factory=HungaroMetConfig)
+    satellite: SatelliteConfig = field(default_factory=SatelliteConfig)
     analogs: AnalogConfig = field(default_factory=AnalogConfig)
     synoptic: SynopticConfig = field(default_factory=SynopticConfig)
     physical_energy: PhysicalEnergyConfig = field(default_factory=PhysicalEnergyConfig)
@@ -149,11 +185,14 @@ def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
         project=ProjectConfig(**_section(raw, "project")),
         location=LocationConfig(**_section(raw, "location")),
         baseline=BaselineConfig(**_section(raw, "baseline")),
+        climatology=ClimatologyConfig(**_section(raw, "climatology")),
+        land_surface=LandSurfaceConfig(**_section(raw, "land_surface")),
         reporting=ReportingConfig(**_section(raw, "reporting")),
         operations=OperationsConfig(**_section(raw, "operations")),
         electricity=ElectricityConfig(**_section(raw, "electricity")),
         profile=ProfileConfig(**_section(raw, "profile")),
         hungaromet=HungaroMetConfig(**_section(raw, "hungaromet")),
+        satellite=SatelliteConfig(**_section(raw, "satellite")),
         analogs=AnalogConfig(**_section(raw, "analogs")),
         synoptic=SynopticConfig(**_section(raw, "synoptic")),
         physical_energy=PhysicalEnergyConfig(**_section(raw, "physical_energy")),

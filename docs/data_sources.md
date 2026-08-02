@@ -11,6 +11,7 @@ Implemented products:
 - 10-minute station observations for Debrecen Airport, station 64711
 - 1 km national composite radar reflectivity in NetCDF
 - LINET lightning event records
+- Meteosat Second Generation RGB and infrared PNG products
 
 The station is the report's official surface-observation ledger. Radar and
 lightning support event reconstruction and retain explicit coverage notes when
@@ -20,21 +21,26 @@ the rolling provider archive does not contain every requested frame.
 - [Radar composites](https://odp.met.hu/weather/radar/composite/)
 - [Radar NetCDF description](https://odp.met.hu/weather/radar/composite/Description-radar_nc-en.pdf)
 - [Lightning data](https://odp.met.hu/weather/lightning/)
+- [Meteosat products](https://odp.met.hu/weather/satellite/MSG/)
+- [Meteosat product descriptions](https://odp.met.hu/weather/satellite/MSG/Description_MSG-en.pdf)
 
 ## Open-Meteo Historical Weather API
 
-Used for the continuous hourly report, seven-day diary, 10-year same-calendar
-baseline, and 15-year daily analog archive. Variables include temperature, dew
-point, humidity, precipitation, cloud, pressure, 10 m/100 m wind, gusts,
-shortwave/direct/diffuse radiation, and sunshine duration.
+Used for the continuous hourly report, seven-day diary, best-match 90-day land
+context, fixed-ERA5 10-year and 1991-2020 same-calendar comparisons,
+full-record ERA5 percentiles, and the 15-year daily analog archive. Variables
+include temperature, dew point, humidity, precipitation/snow, cloud, pressure,
+wind, radiation, sunshine, VPD, ET0, soil temperature, and soil moisture.
 
 [Official documentation](https://open-meteo.com/en/docs/historical-weather-api)
 
 ## Open-Meteo Historical Forecast API
 
 Used for pressure-level profiles, parcel and boundary-layer time series, and
-the Central European synoptic animation. These are model analyses near
-Debrecen, not observed soundings.
+the Central European synoptic animation. Synoptic inputs include 300/500/700/
+850 hPa wind, temperature, humidity, vertical velocity, and geopotential height.
+Vorticity, advection, theta-e and frontogenesis are derived locally. These are
+model analyses, not observed soundings or manually analysed maps.
 
 [Official documentation](https://open-meteo.com/en/docs/historical-forecast-api)
 

@@ -1,9 +1,11 @@
 # Atlas: Debrecen Meteorological Atlas
 
-Atlas builds an expert-facing, three-day meteorological situation report for
-Debrecen, Hungary. It reconstructs the latest 72 complete local hours from
-official surface observations, radar, lightning, gridded weather analyses,
-pressure-level model fields, climate analogs, and electricity-system data.
+Atlas builds two linked Debrecen publications from one deterministic weather
+pipeline: a public report for the latest complete local day and an expert
+meteorological analysis covering the latest 72 complete local hours. It uses
+official surface observations, radar, lightning, Meteosat imagery, gridded
+weather and land analyses, pressure-level model fields, climate references,
+historical analogs, and electricity-system data.
 
 The project remains deliberately focused on Debrecen. Hungary-wide electricity
 and Central European synoptic fields provide context; they are not presented as
@@ -12,15 +14,19 @@ local observations.
 The main pipeline uses real public APIs:
 
 - HungaroMet Open Data Portal for Debrecen Airport station observations,
-  Hungarian radar composites, and LINET lightning data
-- Open-Meteo Historical Weather API for continuous hourly weather and the
-  prior-year climatological baseline
+  Hungarian radar composites, LINET lightning, and Meteosat products
+- Open-Meteo Historical Weather API for continuous hourly weather, fixed ERA5
+  climate references, and best-match rolling land fields
 - Open-Meteo Historical Forecast API for pressure-level profiles and Central
   European synoptic fields
 - Energy-Charts API for Hungarian load, generation, residual load,
   cross-border flow, and day-ahead price
 
 No API key or repository secret is required.
+
+The first uncached run bootstraps immutable annual ERA5 reference files. GitHub
+Actions preserves that progress even when a provider throttles a build; later
+daily runs restore the completed years and normally fetch only rolling inputs.
 
 ## Research Question
 
@@ -59,8 +65,14 @@ data/processed/historical_analogs.csv
 data/processed/model_profile*.csv
 data/processed/synoptic_fields.npz
 data/processed/physical_energy.csv
+data/processed/{standard_normal,full_record}_metrics.csv
+data/processed/weather_phenomena.csv
+data/processed/land_surface_{hourly,daily}.csv
+data/processed/satellite_manifest.csv
+reports/daily/YYYY-MM-DD/                     lightweight daily public edition
 reports/periods/YYYY-MM-DD_YYYY-MM-DD/         versioned complete report
-site/                                          latest GitHub Pages artifact
+site/                                          latest public report
+site/analysis/                                 latest 72-hour expert analysis
 ```
 
 ## Main Commands
@@ -71,6 +83,7 @@ atlas --refresh
 atlas --period-start 2026-07-28
 atlas --today 2026-07-31
 atlas --config configs/atlas.yml --refresh
+atlas --refresh --skip-analysis-archive
 pytest
 ```
 
@@ -78,21 +91,32 @@ pytest
 
 ## The Atlas
 
-The site is organized as a meteorological publication rather than a plot wall:
+The site is organized as two meteorological publications rather than a plot
+wall. A persistent switch moves between them.
+
+The **Public Report** updates daily:
+
+- **Overview** summarizes yesterday in plain language.
+- **Weather**, **Events**, and **Energy** retain only the diagnostics needed to
+  understand the day.
+- **Climate Context** compares yesterday with the preceding week, 1991-2020,
+  the recent decade, and the full ERA5 record.
+
+The **Meteorological Analysis** covers 72 hours:
 
 - **Overview** gives the regime, concise situation assessment, physical energy
   yields, historical analog, and an annotated 72-hour meteogram.
-- **Weather** puts HungaroMet station observations first, then explains the
-  synoptic evolution, wind regime, and pressure tendency.
-- **Storms** forms an event diary from radar replay, reflectivity-derived
-  accumulation, LINET lightning, and objective passage candidates.
-- **Upper Air** combines a model Skew-T, hodograph, parcel and boundary-layer
+- **Surface & Synoptic** puts station observations first, then offers
+  selectable jet, vorticity, moisture/ascent, theta-e, and frontogenesis layers.
+- **Storms & Satellite** synchronizes Meteosat imagery with radar and lightning
+  and presents an objective phenomenon evidence ledger.
+- **Upper Air & Dynamics** combines a model Skew-T, hodograph, parcel and boundary-layer
   ledger, and a modified Hovmoller time-pressure curtain.
-- **Climate** places the period among its closest 15-year seasonal analogs,
-  prior-week evolution, anomalies, regimes, and solar climatology.
-- **Energy** translates weather into a reference PV yield and generic turbine
-  capacity factor before showing measured Hungary-wide system conditions.
-- **Methods** records provenance, limitations, baseline statistics, and direct
+- **Climate & Analogs** separates the WMO standard normal, recent decade, and
+  full-record percentile before showing analogs and recent evolution.
+- **Land Surface & Energy** adds soil, VPD, ET0, and 7/30/90-day water balance
+  before physical renewable yields and measured Hungary-wide conditions.
+- **Methods & Evidence** records provenance, limitations, confidence, and direct
   downloads of every generated data product.
 
 All analytical plots are interactive Plotly documents with zoom, pan, hover,
@@ -107,12 +131,20 @@ Atlas includes:
 - sampled 1 km Hungarian radar composite replay and a transparent Z-R
   accumulation proxy
 - LINET lightning events within 150 km of Debrecen
+- sampled Airmass, Natural Colour, Night Microphysics, Fog RGB, and infrared
+  Meteosat products synchronized with radar and lightning
 - explainable local frontal-passage detection with diurnal false-positive
   suppression
+- an observed-first objective ledger for fog, low visibility, inversions,
+  frost, heat, thunder, heavy rain, gusts, snow, and frontal passages
 - MetPy surface-parcel CAPE, CIN, LCL, LFC, EL, precipitable water, wet-bulb
   zero, freezing level, boundary-layer height, and ventilation diagnostics
 - seasonal historical analog ranking over the prior 15 years
-- animated sea-level pressure, 500 hPa height, 850 hPa temperature, and wind
+- selectable animated 300 hPa jet, 500 hPa vorticity, 700 hPa humidity/vertical
+  motion, and 850 hPa theta-e, thermal-advection, and frontogenesis diagnostics
+- WMO 1991-2020 standard-normal anomalies, a separate recent-decade comparison,
+  and same-calendar percentile ranks across ERA5 from 1990
+- 90-day soil-temperature, soil-moisture, VPD, ET0, and water-balance analysis
 - pvlib plane-of-array PV modeling and an air-density-corrected turbine model
 - a separate normalized climatological solar-wind weather index
 
@@ -130,10 +162,10 @@ deploys Atlas. In GitHub, set:
 Settings > Pages > Build and deployment > Source > GitHub Actions
 ```
 
-The workflow runs on pushes, manual dispatches, and a true three-day cadence.
-Scheduled builds commit a self-contained report under `reports/periods/`; the
-latest site is deployed from `site/`. Existing weekly archives remain available
-as longer-context historical editions.
+The workflow runs daily at 05:15 UTC, on pushes, and by manual dispatch. Every
+scheduled build commits a lightweight public edition under `reports/daily/`.
+A full self-contained expert edition is committed under `reports/periods/` on a
+true three-day cadence. The latest versions of both are deployed from `site/`.
 
 ## Project Structure
 
@@ -143,6 +175,7 @@ data/raw/                Cached API responses, ignored locally
 data/processed/          Latest analysis tables and arrays, ignored locally
 docs/                    Data provenance and methods
 reports/periods/         Versioned rolling reports committed by CI
+reports/daily/           Lightweight public daily editions committed by CI
 reports/weeks/           Preserved historical weekly editions
 site/                    Latest generated Pages artifact
 src/atlas/               Ingestion, diagnostics, plotting, site, and CLI code

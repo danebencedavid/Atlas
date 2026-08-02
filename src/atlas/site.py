@@ -12,25 +12,38 @@ import pandas as pd
 
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
+from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex, PhysicalEnergy
 from atlas.fronts import FrontAnalysis
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
+from atlas.land import LandSurfaceAnalysis
+from atlas.phenomena import PhenomenaAnalysis, WeatherPhenomenon
 from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
+from atlas.satellite import SatelliteArchive
 from atlas.serialization import json_ready
 from atlas.synoptic import SynopticArchive
 
 
-PAGES = (
+PUBLIC_PAGES = (
     ("index.html", "Overview"),
     ("weather.html", "Weather"),
-    ("storms.html", "Storms"),
-    ("upper-air.html", "Upper Air"),
-    ("climate.html", "Climate"),
+    ("events.html", "Events"),
     ("energy.html", "Energy"),
+    ("context.html", "Climate Context"),
     ("methods.html", "Methods"),
+)
+
+ANALYSIS_PAGES = (
+    ("index.html", "Overview"),
+    ("surface-synoptic.html", "Surface & Synoptic"),
+    ("storms-satellite.html", "Storms & Satellite"),
+    ("upper-air.html", "Upper Air & Dynamics"),
+    ("climate.html", "Climate & Analogs"),
+    ("land-energy.html", "Land Surface & Energy"),
+    ("methods.html", "Methods & Evidence"),
 )
 
 SHARED_CSS = """
@@ -64,6 +77,15 @@ a { color: var(--blue); }
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(10px);
 }
+.edition-notice {
+  border-bottom: 1px solid #f0cf78;
+  background: #fff8dc;
+  color: #654b08;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-align: center;
+  padding: 9px 24px;
+}
 .nav-wrap {
   width: min(100%, 1480px);
   min-height: 60px;
@@ -80,6 +102,24 @@ a { color: var(--blue); }
   text-decoration: none;
   font-size: 1.05rem;
 }
+.report-switch {
+  display: flex;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.report-switch a {
+  padding: 7px 10px;
+  color: #475467;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.report-switch a + a { border-left: 1px solid var(--line); }
+.report-switch a[aria-current="true"] { color: #ffffff; background: var(--ink); }
 .primary-nav {
   display: flex;
   align-items: stretch;
@@ -261,6 +301,10 @@ h2 {
 .viz-frame.profile, .viz-frame.time-pressure { height: 840px; }
 .viz-frame.hodograph { height: 780px; }
 .viz-frame.radar, .viz-frame.synoptic, .viz-frame.physical-energy { height: 780px; }
+.viz-frame.satellite { height: 860px; }
+.viz-frame.land-surface { height: 940px; }
+.viz-frame.climate-reference { height: 800px; }
+.viz-frame.phenomena { height: 560px; }
 .viz-frame.compact { height: 280px; }
 .metric-band {
   display: grid;
@@ -329,6 +373,13 @@ h2 {
 .event-time { color: var(--muted); font-size: 0.9rem; font-weight: 700; }
 .event-copy strong { display: block; margin-bottom: 4px; }
 .event-copy p { margin: 0; color: #475467; }
+.evidence-meta { margin-top: 5px; color: var(--muted); font-size: 0.82rem; }
+.public-lead { max-width: 850px; font-size: 1.18rem; color: #344054; }
+.public-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.public-facts div { padding: 18px; border-right: 1px solid var(--line); }
+.public-facts div:last-child { border-right: 0; }
+.public-facts span { display: block; color: var(--muted); font-size: .82rem; }
+.public-facts strong { display: block; margin-top: 3px; font-size: 1.3rem; }
 .diagnostic-ledger {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -392,11 +443,24 @@ footer {
   margin: 0 auto;
   padding: 22px 28px;
 }
+@media (max-width: 1400px) and (min-width: 861px) {
+  .nav-wrap { padding-top: 8px; flex-wrap: wrap; gap: 0 24px; }
+  .primary-nav {
+    order: 3;
+    flex: 1 0 100%;
+    width: 100%;
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+  .primary-nav a { min-height: 48px; }
+}
 @media (max-width: 860px) {
-  .nav-wrap { padding: 0 18px; gap: 16px; }
+  .nav-wrap { padding: 8px 18px 0; gap: 8px 16px; flex-wrap: wrap; }
+  .primary-nav { order: 3; flex: 1 0 100%; width: 100%; }
+  .primary-nav a { min-height: 48px; }
   .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 10px; }
   .page-shell { padding: 24px 18px 40px; }
-  .summary, .metric-band, .methods-grid, .download-list, .insight-grid,
+  .summary, .metric-band, .methods-grid, .download-list, .insight-grid, .public-facts,
   .diagnostic-ledger { grid-template-columns: 1fr; }
   .insight, .insight:nth-child(2n), .insight:nth-last-child(-n+2),
   .diagnostic-ledger div { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -413,6 +477,7 @@ footer {
   .viz-frame.electricity, .viz-frame.relationships, .viz-frame.profile,
   .viz-frame.time-pressure, .viz-frame.radar, .viz-frame.synoptic,
   .viz-frame.physical-energy { height: 760px; }
+  .viz-frame.satellite, .viz-frame.land-surface { height: 820px; }
   .help-panel { left: auto; right: -8px; }
 }
 """
@@ -440,16 +505,33 @@ def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str
         target = assets_dir / source.name
         shutil.copy2(source, target)
         relative[name] = f"assets/{target.name}"
+    accessory_names = {"satellite_media"}
+    for parent in {source.parent for source in figure_paths.values()}:
+        for accessory_name in accessory_names:
+            accessory = parent / accessory_name
+            if not accessory.is_dir():
+                continue
+            target = assets_dir / accessory_name
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.copytree(accessory, target)
     return relative
 
 
-def _navigation(active: str) -> str:
+def _navigation(active: str, family: str) -> str:
+    nested = family == "analysis"
+    prefix = "../" if nested else ""
+    pages = ANALYSIS_PAGES if nested else PUBLIC_PAGES
     links = []
-    for filename, label in PAGES:
+    for filename, label in pages:
         current = ' aria-current="page"' if filename == active else ""
         links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
+    public_current = ' aria-current="true"' if family == "public" else ""
+    analysis_current = ' aria-current="true"' if family == "analysis" else ""
     return (
-        '<div class="nav-wrap"><a class="brand" href="index.html">Atlas</a>'
+        f'<div class="nav-wrap"><a class="brand" href="{prefix}index.html">Atlas</a>'
+        f'<div class="report-switch" aria-label="Report edition"><a href="{prefix}index.html"{public_current}>Public report</a>'
+        f'<a href="{prefix}analysis/index.html"{analysis_current}>Meteorological analysis</a></div>'
         f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav></div>'
     )
 
@@ -488,8 +570,15 @@ def _page_document(
     description: str,
     content: str,
     updated: str,
+    family: str,
+    edition_notice: str | None = None,
 ) -> str:
     title = config.project.name if active == "index.html" else f"{page_name} | {config.project.name}"
+    notice_line = (
+        f'  <div class="edition-notice" role="note">{html.escape(edition_notice)}</div>\n'
+        if edition_notice
+        else ""
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -500,8 +589,8 @@ def _page_document(
   <style>{SHARED_CSS}</style>
 </head>
 <body>
-  <header class="site-header">{_navigation(active)}</header>
-  <main><div class="page-shell">{content}</div></main>
+  <header class="site-header">{_navigation(active, family)}</header>
+{notice_line}  <main><div class="page-shell">{content}</div></main>
   <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
 </body>
 </html>
@@ -522,12 +611,33 @@ def archive_site(site_dir: Path, archive_dir: Path) -> Path:
     if archive_dir.exists():
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
-    for name in ["assets", "data"]:
-        source = site_dir / name
+    for source in site_dir.iterdir():
+        if source.name == ".gitkeep":
+            continue
+        target = archive_dir / source.name
+        if source.is_dir():
+            shutil.copytree(source, target)
+        else:
+            shutil.copy2(source, target)
+    return archive_dir / "index.html"
+
+
+def archive_public_site(
+    site_dir: Path,
+    archive_dir: Path,
+    asset_names: set[str],
+) -> Path:
+    if archive_dir.exists():
+        shutil.rmtree(archive_dir)
+    (archive_dir / "assets").mkdir(parents=True, exist_ok=True)
+    for filename, _ in PUBLIC_PAGES:
+        source = site_dir / filename
         if source.exists():
-            shutil.copytree(source, archive_dir / name)
-    for source in site_dir.glob("*.html"):
-        shutil.copy2(source, archive_dir / source.name)
+            shutil.copy2(source, archive_dir / filename)
+    for name in asset_names:
+        source = site_dir / "assets" / name
+        if source.exists():
+            shutil.copy2(source, archive_dir / "assets" / name)
     return archive_dir / "index.html"
 
 
@@ -535,29 +645,49 @@ def build_site(
     config: AtlasConfig,
     period_start: str,
     period_end: str,
+    daily_date: str,
     current_metrics: dict[str, float],
+    daily_metrics: dict[str, float],
     baseline_metrics: dict[str, float],
     anomalies: list[Anomaly],
+    climate_reference: ClimateReference,
+    daily_climate_reference: ClimateReference,
     energy: EnergyIndex,
+    daily_energy: EnergyIndex,
     electricity: ElectricitySummary,
     electricity_notes: list[str],
     profile: ModelProfile,
     station: StationObservations,
     radar: RadarArchive,
     lightning: LightningArchive,
+    satellite: SatelliteArchive,
     fronts: FrontAnalysis,
+    phenomena: PhenomenaAnalysis,
     analogs: AnalogAnalysis,
     synoptic: SynopticArchive,
+    land: LandSurfaceAnalysis,
     physical_energy: PhysicalEnergy,
+    daily_physical_energy: PhysicalEnergy,
     regime: RegimeClassification,
+    daily_regime: RegimeClassification,
     figure_paths: dict[str, Path],
     processed_paths: dict[str, Path],
     site_dir: Path | None = None,
     quality_notes: list[str] | None = None,
+    edition_notice: str | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
-    figures = _copy_assets(figure_paths, site_dir)
+    analysis_dir = site_dir / "analysis"
+    if analysis_dir.exists():
+        shutil.rmtree(analysis_dir)
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    for stale in ["storms.html", "upper-air.html", "climate.html"]:
+        stale_path = site_dir / stale
+        if stale_path.exists():
+            stale_path.unlink()
+    public_figures = _copy_assets(figure_paths, site_dir)
+    figures = {name: f"../{path}" for name, path in public_figures.items()}
 
     data_dir = site_dir / "data"
     if data_dir.exists():
@@ -567,14 +697,17 @@ def build_site(
     for name, source in processed_paths.items():
         target = data_dir / source.name
         shutil.copy2(source, target)
-        data_links[name] = f"data/{target.name}"
+        data_links[name] = f"../data/{target.name}"
 
     payload: dict[str, Any] = {
         "period_start": period_start,
         "period_end": period_end,
+        "daily_date": daily_date,
         "current_metrics": current_metrics,
+        "daily_metrics": daily_metrics,
         "baseline_metrics": baseline_metrics,
         "energy": asdict(energy),
+        "daily_energy": asdict(daily_energy),
         "electricity": asdict(electricity),
         "model_profile": {
             "valid_time": profile.valid_time.isoformat() if profile.valid_time is not None else None,
@@ -602,12 +735,35 @@ def build_site(
             ),
             "notes": lightning.notes,
         },
+        "satellite": {
+            "frames": satellite.frame_count,
+            "products": {name: len(frames) for name, frames in satellite.frames.items()},
+            "notes": satellite.notes,
+        },
         "frontal_passages": [
             {**asdict(event), "time": event.time.isoformat()} for event in fronts.events
         ],
+        "phenomena": [asdict(event) for event in phenomena.events],
         "historical_analogs": [asdict(match) for match in analogs.matches],
         "analog_notes": analogs.notes,
         "synoptic": {"frames": len(synoptic.times), "notes": synoptic.notes},
+        "climatology": {
+            "standard_period": (
+                f"{config.climatology.standard_start_year}-"
+                f"{config.climatology.standard_end_year}"
+            ),
+            "full_record_start_year": config.climatology.archive_start_year,
+            "standard_anomalies": [asdict(item) for item in climate_reference.standard_anomalies],
+            "recent_anomalies": [asdict(item) for item in climate_reference.recent_anomalies],
+            "full_record_percentiles": climate_reference.full_record_percentiles,
+            "notes": climate_reference.notes,
+        },
+        "land_surface": {
+            "metrics": land.metrics,
+            "water_balance_percentiles": land.water_balance_percentiles,
+            "moisture_context": land.moisture_context,
+            "notes": land.notes,
+        },
         "physical_energy": {
             "pv_yield_kwh_per_kwp": physical_energy.pv_yield_kwh_per_kwp,
             "pv_capacity_factor_pct": physical_energy.pv_capacity_factor_pct,
@@ -617,6 +773,7 @@ def build_site(
             "notes": physical_energy.notes,
         },
         "regime": asdict(regime),
+        "daily_regime": asdict(daily_regime),
         "anomalies": [asdict(item) for item in anomalies],
         "quality_notes": quality_notes or [],
     }
@@ -625,6 +782,7 @@ def build_site(
     )
 
     period_label = f"{config.location.name}, {config.location.region} - {period_start} to {period_end}"
+    daily_label = f"{config.location.name}, {config.location.region} - {daily_date}"
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     observed_temp = float(pd.to_numeric(station.frame.get("temperature_c"), errors="coerce").mean()) if not station.frame.empty else float("nan")
@@ -636,8 +794,136 @@ def build_site(
     best_analog = analogs.matches[0] if analogs.matches else None
     cape = profile.diagnostics.get("surface_based_cape_j_kg", float("nan"))
     pbl = profile.diagnostics.get("boundary_layer_height_m", float("nan"))
+    target_day = pd.Timestamp(daily_date).date()
 
-    overview = f"""
+    def on_target_day(frame: pd.DataFrame) -> pd.DataFrame:
+        if frame.empty or "time" not in frame:
+            return frame.iloc[0:0].copy()
+        local_dates = pd.to_datetime(frame["time"], utc=True).dt.tz_convert(
+            config.location.timezone
+        ).dt.date
+        return frame[local_dates == target_day].copy()
+
+    daily_station = on_target_day(station.frame)
+    daily_lightning = on_target_day(lightning.frame)
+    daily_radar = on_target_day(radar.timeline)
+    daily_observed_temp = (
+        float(pd.to_numeric(daily_station["temperature_c"], errors="coerce").mean())
+        if not daily_station.empty
+        else float("nan")
+    )
+    daily_observed_rain = (
+        float(pd.to_numeric(daily_station["precipitation_mm"], errors="coerce").sum())
+        if not daily_station.empty
+        else float("nan")
+    )
+    daily_observed_gust = (
+        float(pd.to_numeric(daily_station["wind_gust_ms"], errors="coerce").max())
+        if not daily_station.empty
+        else float("nan")
+    )
+    daily_radar_max = (
+        float(pd.to_numeric(daily_radar["domain_max_dbz"], errors="coerce").max())
+        if not daily_radar.empty
+        else float("nan")
+    )
+    daily_events = [
+        event
+        for event in phenomena.events
+        if event.start_time.tz_convert(config.location.timezone).date() <= target_day
+        <= event.end_time.tz_convert(config.location.timezone).date()
+    ]
+
+    def phenomenon_items(events: list[WeatherPhenomenon], empty_text: str) -> str:
+        if not events:
+            return (
+                '<li><div class="event-time">Entire period</div><div class="event-copy">'
+                f'<strong>{html.escape(empty_text)}</strong><p>No objective threshold was met.</p></div></li>'
+            )
+        items = []
+        for event in events:
+            start = event.start_time.tz_convert(config.location.timezone)
+            end = event.end_time.tz_convert(config.location.timezone)
+            items.append(
+                f'<li><div class="event-time">{start.strftime("%d %b %H:%M")} - {end.strftime("%H:%M %Z")}</div>'
+                f'<div class="event-copy"><strong>{html.escape(event.kind)}</strong><p>{html.escape(event.evidence)}</p>'
+                f'<div class="evidence-meta">{event.confidence:.0%} confidence | {html.escape(event.source)}</div></div></li>'
+            )
+        return "".join(items)
+
+    day_regime_label = daily_regime.label.replace(" period", " day")
+    day_briefing = daily_regime.briefing.replace(daily_regime.label, day_regime_label, 1).replace(
+        "period solar radiation", "daily solar radiation"
+    )
+    public_overview = f"""
+<header class="hero">
+  <div>
+    <div class="eyebrow">Daily public report | {html.escape(daily_label)}</div>
+    <h1>{html.escape(config.project.name)}</h1>
+    <p class="hero-regime">{html.escape(day_regime_label)}</p>
+    <p class="brief">{html.escape(day_briefing)}</p>
+    <p class="meta">A concise account of the last complete day in Debrecen.</p>
+  </div>
+  <div class="summary" aria-label="Daily renewable weather summary">
+    <div class="score"><span>PV yield</span><strong>{_fmt(daily_physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh per installed kWp</span></div>
+    <div class="score"><span>Wind full-load hours</span><strong>{_fmt(daily_physical_energy.wind_full_load_hours, 1)}</strong><span>generic 100 m turbine</span></div>
+    <div class="score"><span>Weather score</span><strong>{_fmt(daily_energy.combined_score, 0)}</strong><span>{html.escape(daily_energy.label)}</span></div>
+  </div>
+</header>
+<p class="public-lead">Yesterday was classified as <strong>{html.escape(day_regime_label.lower())}</strong>. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {len(daily_lightning):,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>
+<div class="public-facts"><div><span>Airport mean</span><strong>{_fmt(daily_observed_temp)} C</strong></div><div><span>Airport precipitation</span><strong>{_fmt(daily_observed_rain)} mm</strong></div><div><span>Peak airport gust</span><strong>{_fmt(daily_observed_gust)} m/s</strong></div></div>
+"""
+    public_overview += _plot_section(
+        "Yesterday Hour By Hour",
+        public_figures["daily_meteogram"],
+        "Daily Debrecen meteogram",
+        "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation.",
+        "meteogram",
+    )
+
+    public_weather = _page_intro(
+        "Yesterday's Weather",
+        "The observed day at Debrecen Airport with gridded context used where continuous station data is unavailable.",
+        daily_label,
+    )
+    public_weather += f'<p class="analysis-lead"><strong>Observed at the airport.</strong> Mean {_fmt(daily_observed_temp)} C, {_fmt(daily_observed_rain)} mm precipitation and a peak gust of {_fmt(daily_observed_gust)} m/s.</p>'
+    public_weather += _plot_section("Daily Meteogram", public_figures["daily_meteogram"], "Daily weather timeline", "Hover or zoom to inspect the timing of temperature, pressure, wind, rain, cloud and sunshine.", "meteogram")
+
+    public_events = _page_intro(
+        "Weather Events",
+        "Objective events detected during the last complete day, with evidence and data source shown explicitly.",
+        daily_label,
+    )
+    public_events += f'<section class="content-section"><h2>Daily chronology</h2><ul class="event-list">{phenomenon_items(daily_events, "No notable event detected")}</ul></section>'
+
+    public_energy = _page_intro(
+        "Renewable Weather",
+        "Reference-system PV and wind yield implied by yesterday's Debrecen weather.",
+        daily_label,
+    )
+    public_energy += f'<div class="metric-band"><div class="metric"><span>PV weather yield</span><strong>{_fmt(daily_physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>PV capacity factor</span><strong>{_fmt(daily_physical_energy.pv_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Wind full-load hours</span><strong>{_fmt(daily_physical_energy.wind_full_load_hours, 1)}</strong><span>hours</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(daily_physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div></div>'
+    public_energy += _plot_section("Daily PV And Wind Yield", public_figures["daily_physical_energy"], "Daily physical renewable yield", "PV is a fixed reference array and wind is a generic 100 m turbine; neither is a plant forecast.", "physical-energy")
+
+    public_context = _page_intro(
+        "Climate Context",
+        "Yesterday placed within the recent week, the 1991-2020 standard normal, the recent decade and the full ERA5 record.",
+        daily_label,
+    )
+    public_context += _plot_section("Seven-Day Weather Diary", public_figures["seven_day_context"], "Seven-day weather context", "The highlighted final period is the active 72-hour expert analysis; the latest day is the public report.", "context")
+    public_context += _plot_section("How Unusual Was Yesterday?", public_figures["daily_climate_reference"], "Daily climate reference comparison", "The upper panel compares standardized anomalies against 1991-2020 and the recent decade. The lower panel ranks yesterday across the full ERA5 record.", "climate-reference")
+
+    public_methods = _page_intro(
+        "About This Report",
+        "What is observed, what is model-derived, and when the daily publication updates.",
+        daily_label,
+    )
+    public_methods += f"""
+<div class="methods-grid"><section class="content-section"><h2>Publication</h2><p>The public report is rebuilt daily from the last complete Europe/Budapest calendar day. It uses the same deterministic calculations as the meteorological analysis, with shorter explanations and fewer diagnostics.</p></section>
+<section class="content-section"><h2>Evidence</h2><p>HungaroMet station, radar, LINET and Meteosat products are observational or remotely sensed. Open-Meteo supplies continuous gridded surface fields, model pressure levels and ERA5 climate fields. Optional-source failures are reported as unavailable, never treated as observed zeroes.</p></section></div>
+<section class="content-section"><h2>Climate references</h2><p>"Normal" means the 1991-2020 ERA5 standard reference. The recent-decade comparison and full-record percentile are shown separately.</p></section>
+"""
+
+    analysis_overview = f"""
 <header class="hero">
   <div>
     <div class="eyebrow">{html.escape(period_label)}</div>
@@ -660,7 +946,7 @@ def build_site(
   <article class="insight"><span class="provenance">ERA5 analog</span><h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
 </div>
 """
-    overview += _plot_section(
+    analysis_overview += _plot_section(
         "Annotated 72-Hour Meteogram",
         figures["meteogram"],
         "Interactive rolling three-day meteogram with frontal annotations",
@@ -669,7 +955,7 @@ def build_site(
     )
 
     weather = _page_intro(
-        "Weather Analysis",
+        "Surface And Synoptic Analysis",
         "Observed conditions at Debrecen Airport, their relationship to the gridded record, and the synoptic environment in which the period evolved.",
         period_label,
     )
@@ -683,27 +969,20 @@ def build_site(
         "Observed at HungaroMet station 64711, Debrecen Airport.",
     )
     weather += _plot_section(
-        "Synoptic Evolution",
+        "Selectable Synoptic Dynamics",
         figures["synoptic_evolution"],
         "Animated Central European synoptic analysis",
-        "Filled contours show 850 hPa temperature, solid contours sea-level pressure, and dashed contours 500 hPa geopotential height. Animate the sequence to follow air-mass and circulation changes around Debrecen.",
+        "Select air-mass, 300 hPa jet, 500 hPa vorticity, 700 hPa moisture/ascent, or 850 hPa theta-e/frontogenesis mode, then animate the shared timeline.",
         "synoptic",
     )
     weather += _plot_section("Wind Regime", figures["wind_rose"], "Interactive wind rose", "Spokes point toward the direction the wind came from. Length is frequency and color separates speed classes.", "context")
     weather += _plot_section("Pressure And Frontal Tendency", figures["pressure_tendency"], "Interactive pressure tendency", "Six-hour pressure changes expose troughs, frontal passages and the establishment or breakdown of anticyclonic conditions.", "context")
 
-    event_items = []
-    for event in fronts.events:
-        local_event = event.time.tz_convert(config.location.timezone)
-        event_items.append(f'<li><div class="event-time">{local_event.strftime("%d %b %H:%M %Z")}</div><div class="event-copy"><strong>{html.escape(event.kind)} - {event.confidence:.0%} confidence</strong><p>{html.escape(event.briefing)}</p></div></li>')
-    if not lightning.hourly.empty:
-        peak = lightning.hourly.loc[lightning.hourly["flash_count"].idxmax()]
-        peak_time = pd.Timestamp(peak["time"]).tz_convert(config.location.timezone)
-        event_items.append(f'<li><div class="event-time">{peak_time.strftime("%d %b %H:%M %Z")}</div><div class="event-copy"><strong>Peak lightning hour</strong><p>{int(peak["flash_count"]):,} LINET events occurred within the configured Debrecen radius.</p></div></li>')
-    if not event_items:
-        event_items.append('<li><div class="event-time">Entire period</div><div class="event-copy"><strong>No dominant storm or frontal event</strong><p>The objective detectors found no sufficiently coherent event signature.</p></div></li>')
-    storms = _page_intro("Storm And Front Diary", "A chronological reconstruction using radar, lightning and rapid surface changes rather than precipitation totals alone.", period_label)
-    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET registered {lightning_count:,} events within {config.hungaromet.lightning_radius_km:.0f} km, while the surface detector identified {len(fronts.events)} frontal candidate(s).</p><section class="content-section"><h2>Event chronology</h2><ul class="event-list">{"".join(event_items)}</ul></section>'
+    storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
+    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET registered {lightning_count:,} events within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {len(phenomena.events)} objective phenomenon candidate(s).</p>'
+    storms += _plot_section("Meteosat, Radar And Lightning Diary", figures["satellite_diary"], "Synchronized Meteosat satellite diary", "Choose Airmass, Natural Colour, Night Microphysics, Fog RGB or InfraCloud; play the frames while the cursor follows the nearest radar and lightning observations.", "satellite", "HungaroMet MSG imagery sampled every three hours for a practical self-contained archive.")
+    storms += _plot_section("Objective Phenomena Strip", figures["phenomena_timeline"], "Objective weather phenomena chronology", "Each segment is a threshold-based candidate. Hover to inspect evidence, confidence and provenance.", "phenomena")
+    storms += f'<section class="content-section"><h2>Evidence ledger</h2><ul class="event-list">{phenomenon_items(phenomena.events, "No objective phenomenon detected")}</ul></section>'
     storms += _plot_section("Radar Replay And Accumulation", figures["radar_archive"], "Animated radar replay and accumulation proxy", "Play the sampled reflectivity sequence on the left. The right panel integrates a standard Z-R conversion and is an approximate spatial precipitation proxy, not a gauge-adjusted accumulation product.", "radar")
     storms += _plot_section("Lightning Diary", figures["lightning_diary"], "LINET lightning map and hourly diary", "Point color shows peak-current polarity and magnitude, point size scales with absolute current, and the hourly histogram reveals convective timing.", "context")
 
@@ -730,24 +1009,31 @@ def build_site(
         f'<div class="analog-row"><strong>{html.escape(match.start_date)} to {html.escape(match.end_date)}</strong><span>{match.similarity:.0f}% similarity</span><div>{html.escape(match.character)}; {_fmt(match.metrics.get("temperature_mean_c", float("nan")))} C, {_fmt(match.metrics.get("precipitation_total_mm", float("nan")))} mm and {_fmt(match.metrics.get("wind_speed_10m_mean_ms", float("nan")))} m/s mean 10 m wind.</div></div>'
         for match in analogs.matches
     ) or '<p>No robust historical analogs were available.</p>'
-    climate = _page_intro("Debrecen Climate Context", "The current period placed inside its season, recent weekly evolution and closest historical weather analogs.", period_label)
+    climate = _page_intro("Debrecen Climate And Analogs", "The current period compared with the 1991-2020 standard normal, the recent decade, the full ERA5 record and closest seasonal analogs.", period_label)
+    climate += _plot_section("Standard Normal, Recent Decade And Full Record", figures["climate_reference"], "Climatological reference comparison", "Compare standardized anomalies against 1991-2020 and the recent decade, then inspect the empirical percentile across the full ERA5 record.", "climate-reference")
     climate += f'<p class="analysis-lead"><strong>Historical likeness.</strong> {html.escape(best_analog.start_date + " to " + best_analog.end_date) + " was the closest match, described as " + html.escape(best_analog.character) + "." if best_analog else "No robust analog could be selected."}</p><section class="content-section"><h2>Closest seasonal analogs</h2><div class="analog-list">{analog_rows}</div></section>'
     climate += _plot_section("Seven-Day Weather Diary", figures["seven_day_context"], "Seven-day weather context", "The highlighted final three days are the active report; the preceding four days preserve the transition into the current regime.", "context")
     climate += _plot_section("Anomaly Structure", figures["anomaly_bars"], "Weather anomaly bars", "Bars show standard deviations from the same calendar window in prior years. Sign means above or below normal, not favorable or unfavorable.")
     climate += _plot_section("Daily Regime Evolution", figures["regime_strip"], "Daily regime strip", "Each segment is one local day classified with transparent weather rules.", "compact")
     climate += _plot_section("Solar Climatology", figures["solar_diurnal"], "Solar diurnal curves", "Daily radiation profiles are compared with the historical median to distinguish clear, overcast and intermittently cloudy solar regimes.")
 
-    electricity_page = _page_intro("Energy Weather", "Physical reference-system yields for Debrecen weather, followed by Hungary-wide measured electricity-system context.", period_label)
-    electricity_page += f'<p class="analysis-lead"><strong>Weather translated into production.</strong> A fixed south-facing reference array produced an estimated {physical_energy.pv_yield_kwh_per_kwp:.1f} kWh/kWp. A generic 100 m turbine produced {physical_energy.wind_full_load_hours:.1f} full-load hours at a mean capacity factor of {physical_energy.wind_capacity_factor_pct:.1f}%.</p><div class="metric-band" aria-label="Physical and system energy summary"><div class="metric"><span>PV weather yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Hungary average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div><div class="metric"><span>Day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div></div>'
+    electricity_page = _page_intro("Land Surface And Energy", "Ninety-day soil and atmospheric water balance followed by physical renewable yields and Hungary-wide electricity-system context.", period_label)
+    electricity_page += f'<p class="analysis-lead"><strong>{html.escape(land.moisture_context)}.</strong> The 90-day precipitation-minus-ET0 balance was {_fmt(land.metrics.get("water_balance_90d_mm", float("nan")))} mm, at the {_fmt(land.water_balance_percentiles.get(90, float("nan")), 0)}th percentile of 1991-2020.</p>'
+    electricity_page += _plot_section("Land Surface And Water Balance", figures["land_surface"], "Soil, VPD, ET0 and water-balance analysis", "Read soil temperature and moisture by depth, atmospheric vapour-pressure deficit, ET0, and daily/cumulative precipitation minus ET0 across the preceding 90 days.", "land-surface", "Open-Meteo best-match gridded land fields; the 1991-2020 reference is fixed ERA5, and water balance excludes runoff and irrigation.")
+    electricity_page += f'<p class="analysis-lead"><strong>Weather translated into production.</strong> A fixed south-facing reference array produced an estimated {_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)} kWh/kWp. A generic 100 m turbine produced {_fmt(physical_energy.wind_full_load_hours, 1)} full-load hours at a mean capacity factor of {_fmt(physical_energy.wind_capacity_factor_pct, 1)}%.</p><div class="metric-band" aria-label="Physical and system energy summary"><div class="metric"><span>PV weather yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Hungary average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div><div class="metric"><span>Day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div></div>'
     electricity_page += _plot_section("Physical PV And Wind Yield", figures["physical_energy"], "Physically based renewable weather yield", "PV uses solar position, plane-of-array irradiance and cell-temperature derating. Wind uses 100 m speed, moist-air density and a generic turbine power curve.", "physical-energy")
     electricity_page += _plot_section("Solar-Wind Weather Quadrant", figures["energy_quadrant"], "Solar and wind potential quadrant", "The indices provide a normalized climatological view; the physical-yield panel above provides the engineering interpretation.", "context")
     electricity_page += _plot_section("Hungary Electricity Context", figures["electricity_overview"], "Hungary electricity system overview", "Compare national load, residual load, generation and price with the local Debrecen weather chronology.", "electricity", "Energy-Charts and ENTSO-E are Hungary-wide context, not Debrecen metering.")
     electricity_page += _plot_section("Weather-Electricity Relationships", figures["weather_electricity_links"], "Weather and electricity relationships", "Hourly associations are diagnostic and do not establish causality or represent a plant-level power forecast.", "relationships")
 
+    standard_lookup = {item.metric: item for item in climate_reference.standard_anomalies}
+    recent_lookup = {item.metric: item for item in climate_reference.recent_anomalies}
     anomalies_rows = "\n".join(
-        f"<tr><th>{html.escape(item.label)}</th><td>{_fmt(item.value)}</td><td>{_fmt(item.baseline_mean)}</td>"
-        f"<td>{item.anomaly:+.1f} {html.escape(item.unit)}</td><td>{_fmt(item.percentile, 0)}th</td></tr>"
-        for item in anomalies
+        f"<tr><th>{html.escape(standard_lookup[metric].label)}</th><td>{_fmt(standard_lookup[metric].value)}</td>"
+        f"<td>{_fmt(standard_lookup[metric].baseline_mean)} ({standard_lookup[metric].anomaly:+.1f})</td>"
+        f"<td>{_fmt(recent_lookup[metric].baseline_mean)} ({recent_lookup[metric].anomaly:+.1f})</td>"
+        f"<td>{_fmt(climate_reference.full_record_percentiles[metric], 0)}th</td></tr>"
+        for metric in standard_lookup
     )
     signal_items = "\n".join(f"<li>{html.escape(signal)}</li>" for signal in regime.signals)
     quality_items = "\n".join(f"<li>{html.escape(note)}</li>" for note in (quality_notes or []))
@@ -759,9 +1045,13 @@ def build_site(
             station.notes
             + radar.notes
             + lightning.notes
+            + satellite.notes
             + fronts.notes
+            + phenomena.notes
             + analogs.notes
             + synoptic.notes
+            + climate_reference.notes
+            + land.notes
             + physical_energy.notes
         )
     )
@@ -771,6 +1061,8 @@ def build_site(
         ("Seven-day weather context", data_links.get("seven_day_context_hourly")),
         ("Period metrics", data_links.get("period_metrics")),
         ("Baseline metrics", data_links.get("baseline_metrics")),
+        ("1991-2020 standard-normal metrics", data_links.get("standard_normal_metrics")),
+        ("Full-record climate metrics", data_links.get("full_record_metrics")),
         ("Weather anomalies", data_links.get("anomalies")),
         ("Electricity time series", data_links.get("electricity")),
         ("Selected model profile", data_links.get("model_profile")),
@@ -781,10 +1073,13 @@ def build_site(
         ("Radar accumulation grid", data_links.get("radar_accumulation")),
         ("LINET lightning events", data_links.get("lightning")),
         ("Objective frontal passages", data_links.get("frontal_passages")),
+        ("Objective phenomena ledger", data_links.get("phenomena")),
         ("Historical analogs", data_links.get("historical_analogs")),
         ("Synoptic analysis fields", data_links.get("synoptic_fields")),
         ("Physical PV and wind yields", data_links.get("physical_energy")),
-        ("Machine-readable summary", "data/summary.json"),
+        ("Land-surface hourly context", data_links.get("land_surface_hourly")),
+        ("Land-surface daily context", data_links.get("land_surface_daily")),
+        ("Machine-readable summary", "../data/summary.json"),
     ]
     download_items = "\n".join(
         f'<li><a href="{html.escape(path)}">{html.escape(label)}</a></li>'
@@ -798,10 +1093,10 @@ def build_site(
     )
     methods += f"""
 <section class="content-section">
-  <h2>Historical Percentile Ranks</h2>
+  <h2>Climatological Reference Ledger</h2>
   <div class="table-scroll">
     <table>
-      <thead><tr><th>Metric</th><th>This period</th><th>Baseline mean</th><th>Anomaly</th><th>Percentile</th></tr></thead>
+      <thead><tr><th>Metric</th><th>This period</th><th>1991-2020 mean (anomaly)</th><th>Recent 10-year mean (anomaly)</th><th>{config.climatology.archive_start_year}-present percentile</th></tr></thead>
       <tbody>{anomalies_rows}</tbody>
     </table>
   </div>
@@ -813,7 +1108,7 @@ def build_site(
   </section>
   <section class="content-section">
     <h2>Sources And Quality</h2>
-    <p>HungaroMet supplies Debrecen Airport observations, composite radar and LINET lightning. Open-Meteo supplies the continuous gridded surface record, pressure-level model fields, synoptic grid and ERA5 analog archive. The baseline uses the same three-day calendar window over the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
+    <p>HungaroMet supplies Debrecen Airport observations, composite radar, LINET lightning and Meteosat imagery. Open-Meteo supplies the continuous gridded surface record, pressure-level model fields, synoptic grid, land fields and ERA5 climate archive. Standard normals use 1991-2020; the recent comparison retains the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
     <ul>{quality_items}</ul>
     <ul>{electricity_note_items}</ul>
     <ul>{profile_note_items}</ul>
@@ -826,19 +1121,52 @@ def build_site(
 </section>
 """
 
-    documents = {
-        "index.html": ("Overview", "Rolling Debrecen weather and renewable-energy overview.", overview),
-        "weather.html": ("Weather", "Observed and synoptic weather analysis for Debrecen.", weather),
-        "storms.html": ("Storms", "Radar, lightning and frontal-event reconstruction for Debrecen.", storms),
-        "upper-air.html": ("Upper Air", "Parcel, boundary-layer and atmospheric-profile diagnostics over Debrecen.", upper_air),
-        "climate.html": ("Climate", "Historical analogs and climatological context for Debrecen.", climate),
-        "energy.html": ("Energy", "Physical renewable yields and Hungary electricity context.", electricity_page),
-        "methods.html": ("Methods", "Atlas methods, sources, quality notes, and data downloads.", methods),
+    public_documents = {
+        "index.html": ("Daily Overview", "Daily public weather report for Debrecen.", public_overview),
+        "weather.html": ("Daily Weather", "Yesterday's observed weather in Debrecen.", public_weather),
+        "events.html": ("Daily Events", "Objective weather events detected around Debrecen yesterday.", public_events),
+        "energy.html": ("Daily Energy", "Daily PV and wind weather yield for Debrecen.", public_energy),
+        "context.html": ("Climate Context", "Daily Debrecen weather in weekly and climatological context.", public_context),
+        "methods.html": ("About", "Methods and evidence for the Atlas public report.", public_methods),
     }
-    for filename, (page_name, description, content) in documents.items():
+    for filename, (page_name, description, content) in public_documents.items():
         target = site_dir / filename
         target.write_text(
-            _page_document(config, filename, page_name, description, content, updated),
+            _page_document(
+                config,
+                filename,
+                page_name,
+                description,
+                content,
+                updated,
+                "public",
+                edition_notice,
+            ),
+            encoding="utf-8",
+        )
+
+    analysis_documents = {
+        "index.html": ("Analysis Overview", "Rolling 72-hour Debrecen meteorological analysis.", analysis_overview),
+        "surface-synoptic.html": ("Surface & Synoptic", "Observed surface weather and selectable synoptic dynamics.", weather),
+        "storms-satellite.html": ("Storms & Satellite", "Meteosat, radar, lightning and objective phenomena.", storms),
+        "upper-air.html": ("Upper Air & Dynamics", "Parcel, boundary-layer and atmospheric-profile diagnostics.", upper_air),
+        "climate.html": ("Climate & Analogs", "Standard normals, full-record ranks and historical analogs.", climate),
+        "land-energy.html": ("Land Surface & Energy", "Land water balance, renewable yield and electricity context.", electricity_page),
+        "methods.html": ("Methods & Evidence", "Atlas methods, source quality and data downloads.", methods),
+    }
+    for filename, (page_name, description, content) in analysis_documents.items():
+        target = analysis_dir / filename
+        target.write_text(
+            _page_document(
+                config,
+                filename,
+                page_name,
+                description,
+                content,
+                updated,
+                "analysis",
+                edition_notice,
+            ),
             encoding="utf-8",
         )
 

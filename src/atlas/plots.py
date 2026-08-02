@@ -2,21 +2,28 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+import json
 
 import numpy as np
 import pandas as pd
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
+from PIL import Image
+from pvlib.location import Location
 from plotly.subplots import make_subplots
 
 from atlas.anomalies import Anomaly
+from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex, PhysicalEnergy
 from atlas.fronts import FrontAnalysis
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations, station_hourly
+from atlas.land import LandSurfaceAnalysis, SOIL_MOISTURE_COLUMNS, SOIL_TEMPERATURE_COLUMNS
+from atlas.phenomena import PhenomenaAnalysis
 from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
+from atlas.satellite import SatelliteArchive
 from atlas.synoptic import SynopticArchive
 
 
@@ -71,6 +78,7 @@ def plot_meteogram(
     output: Path,
     config: AtlasConfig,
     fronts: FrontAnalysis | None = None,
+    title: str = "Rolling 72-Hour Interactive Meteogram",
 ) -> Path:
     local = _prepare(frame, config.location.timezone)
     x = local["local_time"]
@@ -109,7 +117,7 @@ def plot_meteogram(
             textangle=-90,
             font={"size": 10, "color": "#b42318"},
         )
-    fig.update_layout(title="Rolling 72-Hour Interactive Meteogram", height=980)
+    fig.update_layout(title=title, height=980)
     return _save(fig, output)
 
 
@@ -207,7 +215,7 @@ def plot_seven_day_context(
     fig.update_yaxes(title_text="mm", row=2, col=1)
     fig.update_yaxes(title_text="Wh/m2", row=3, col=1, secondary_y=False)
     fig.update_yaxes(title_text="m/s", row=3, col=1, secondary_y=True)
-    fig.update_layout(title="Seven-Day Weather Context · Highlighted Area Is The Current Report", height=720)
+    fig.update_layout(title="Seven-Day Weather Context - Highlighted Area Is The Current Report", height=720)
     return _save(fig, output)
 
 
@@ -299,18 +307,39 @@ def plot_dewpoint_spread(frame: pd.DataFrame, output: Path, config: AtlasConfig)
     return _save(fig, output)
 
 
-def plot_solar_diurnal(frame: pd.DataFrame, baseline: pd.DataFrame, output: Path, config: AtlasConfig) -> Path:
+def plot_solar_diurnal(
+    frame: pd.DataFrame,
+    climate: ClimateReference,
+    output: Path,
+    config: AtlasConfig,
+) -> Path:
     current = _prepare(frame, config.location.timezone)
-    base = _prepare(baseline, config.location.timezone)
     current["date"] = current["local_time"].dt.date
     current["hour"] = current["local_time"].dt.hour + current["local_time"].dt.minute / 60
-    base["hour"] = base["local_time"].dt.hour
-    typical = base.groupby("hour")["shortwave_radiation"].median()
+    representative_date = pd.Timestamp(sorted(current["date"].unique())[len(current["date"].unique()) // 2])
+    representative_times = pd.date_range(
+        representative_date,
+        periods=24,
+        freq="h",
+        tz=config.location.timezone,
+    )
+    clear_sky = Location(
+        config.location.latitude,
+        config.location.longitude,
+        tz=config.location.timezone,
+    ).get_clearsky(representative_times)["ghi"]
+    standard_daily_total = float(
+        pd.to_numeric(
+            climate.standard_table["shortwave_total_wh_m2"], errors="coerce"
+        ).median()
+        / max(len(current["date"].unique()), 1)
+    )
+    typical = clear_sky * standard_daily_total / max(float(clear_sky.sum()), 1.0)
 
     fig = go.Figure()
     for day, group in current.groupby("date"):
         fig.add_trace(go.Scatter(x=group["hour"], y=group["shortwave_radiation"], mode="lines", name=str(day), opacity=0.7))
-    fig.add_trace(go.Scatter(x=typical.index, y=typical.values, mode="lines", name="baseline median", line={"color": "#111827", "width": 4}))
+    fig.add_trace(go.Scatter(x=representative_times.hour, y=typical.values, mode="lines", name="1991-2020 energy-scaled clear-sky shape", line={"color": "#111827", "width": 4, "dash": "dash"}))
     fig.update_layout(title="Interactive Solar Radiation Diurnal Curves", height=560, xaxis_title="Local hour", yaxis_title="W m-2")
     fig.update_xaxes(range=[0, 23], dtick=3)
     return _save(fig, output)
@@ -480,7 +509,7 @@ def plot_electricity_overview(
     fig.update_yaxes(title_text="MW", row=1, col=1)
     fig.update_yaxes(title_text="MW", row=2, col=1)
     fig.update_yaxes(title_text="EUR/MWh", row=3, col=1)
-    fig.update_layout(title="Hungary Electricity System · Rolling 72-Hour Context", height=820)
+    fig.update_layout(title="Hungary Electricity System - Rolling 72-Hour Context", height=820)
     return _save(fig, output)
 
 
@@ -589,7 +618,7 @@ def plot_weather_electricity_links(
             output,
             720,
         )
-    fig.update_layout(title="Local Weather And National Electricity · Diagnostic Relationship", height=780)
+    fig.update_layout(title="Local Weather And National Electricity - Diagnostic Relationship", height=780)
     return _save(fig, output)
 
 
@@ -743,7 +772,175 @@ def plot_model_profile(profile: ModelProfile, output: Path) -> Path:
     )
     fig.update_xaxes(title_text="Skewed temperature coordinate", row=1, col=1)
     fig.update_xaxes(title_text="Wind speed (m/s)", row=1, col=2)
-    fig.update_layout(title=f"Interactive Skew-T Model Profile · Valid {valid}", height=820, hovermode="closest")
+    fig.update_layout(title=f"Interactive Skew-T Model Profile - Valid {valid}", height=820, hovermode="closest")
+    return _save(fig, output)
+
+
+def plot_climate_reference(
+    climate: ClimateReference,
+    output: Path,
+) -> Path:
+    standard = {item.metric: item for item in climate.standard_anomalies}
+    recent = {item.metric: item for item in climate.recent_anomalies}
+    metrics = [item.metric for item in climate.standard_anomalies]
+    labels = [standard[metric].label for metric in metrics]
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        vertical_spacing=0.16,
+        subplot_titles=(
+            "Standardized Anomaly By Reference Period",
+            "Percentile Across The Full ERA5 Record",
+        ),
+    )
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=[standard[metric].z_score for metric in metrics],
+            name="1991-2020 standard normal",
+            marker={"color": "#2563eb"},
+            customdata=[standard[metric].anomaly for metric in metrics],
+            hovertemplate="%{x}<br>%{y:+.2f} standard deviations<br>raw anomaly %{customdata:+.1f}<extra>1991-2020</extra>",
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=[recent[metric].z_score for metric in metrics],
+            name="Recent ten years",
+            marker={"color": "#a16207"},
+            customdata=[recent[metric].anomaly for metric in metrics],
+            hovertemplate="%{x}<br>%{y:+.2f} standard deviations<br>raw anomaly %{customdata:+.1f}<extra>Recent decade</extra>",
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=[climate.full_record_percentiles[metric] for metric in metrics],
+            name="Full-record percentile",
+            marker={
+                "color": [climate.full_record_percentiles[metric] for metric in metrics],
+                "colorscale": "RdBu_r",
+                "cmin": 0,
+                "cmax": 100,
+            },
+            text=[f"{climate.full_record_percentiles[metric]:.0f}th" for metric in metrics],
+            textposition="outside",
+            hovertemplate="%{x}<br>%{y:.0f}th percentile<extra>Full ERA5 record</extra>",
+        ),
+        row=2,
+        col=1,
+    )
+    fig.add_hline(y=0, line_color="#667085", row=1, col=1)
+    fig.add_hline(y=50, line_color="#667085", line_dash="dot", row=2, col=1)
+    fig.update_yaxes(title_text="standard deviations", row=1, col=1)
+    fig.update_yaxes(title_text="percentile", range=[0, 105], row=2, col=1)
+    fig.update_layout(
+        title="Climatological Reference Comparison",
+        barmode="group",
+        height=760,
+    )
+    return _save(fig, output)
+
+
+def plot_land_surface(
+    land: LandSurfaceAnalysis,
+    output: Path,
+    config: AtlasConfig,
+) -> Path:
+    if land.hourly.empty:
+        return _empty_figure(
+            "Land Surface And Water Balance",
+            "Land-surface fields were unavailable for this reporting period.",
+            output,
+            760,
+        )
+    hourly = land.hourly.copy()
+    hourly["local_time"] = pd.to_datetime(hourly["time"], utc=True).dt.tz_convert(
+        config.location.timezone
+    )
+    daily = land.daily.copy()
+    daily["local_time"] = pd.to_datetime(daily["time"], utc=True).dt.tz_convert(
+        config.location.timezone
+    )
+    daily["cumulative_balance_mm"] = daily["water_balance_mm"].cumsum()
+    fig = make_subplots(
+        rows=4,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.065,
+        subplot_titles=(
+            "Soil Temperature",
+            "Volumetric Soil Moisture",
+            "Atmospheric Demand And Reference ET0",
+            "Daily And Cumulative Precipitation Minus ET0",
+        ),
+        specs=[[{}], [{}], [{"secondary_y": True}], [{"secondary_y": True}]],
+    )
+    depth_labels = ["0-7 cm", "7-28 cm", "28-100 cm", "100-255 cm"]
+    colors = ["#b42318", "#d97706", "#047857", "#2563eb"]
+    for column, label, color in zip(SOIL_TEMPERATURE_COLUMNS, depth_labels, colors):
+        fig.add_trace(go.Scatter(x=hourly["local_time"], y=hourly[column], name=f"Soil T {label}", line={"color": color}), row=1, col=1)
+    for column, label, color in zip(SOIL_MOISTURE_COLUMNS, depth_labels, colors):
+        fig.add_trace(go.Scatter(x=hourly["local_time"], y=hourly[column], name=f"Soil moisture {label}", line={"color": color}), row=2, col=1)
+    fig.add_trace(go.Scatter(x=hourly["local_time"], y=hourly["vapour_pressure_deficit"], name="VPD", line={"color": "#b42318"}), row=3, col=1, secondary_y=False)
+    fig.add_trace(go.Bar(x=daily["local_time"], y=daily["et0_mm"], name="Daily ET0", marker={"color": "#d99100"}), row=3, col=1, secondary_y=True)
+    fig.add_trace(go.Bar(x=daily["local_time"], y=daily["water_balance_mm"], name="Daily P - ET0", marker={"color": np.where(daily["water_balance_mm"] >= 0, "#2563eb", "#b42318")}), row=4, col=1, secondary_y=False)
+    fig.add_trace(go.Scatter(x=daily["local_time"], y=daily["cumulative_balance_mm"], name="Cumulative balance", line={"color": "#172033", "width": 2.5}), row=4, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="deg C", row=1, col=1)
+    fig.update_yaxes(title_text="m3/m3", row=2, col=1)
+    fig.update_yaxes(title_text="kPa", row=3, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="mm/day", row=3, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="mm/day", row=4, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="mm", row=4, col=1, secondary_y=True)
+    fig.update_layout(title=f"Land Surface And Water Balance - {land.moisture_context}", height=900)
+    return _save(fig, output)
+
+
+def plot_phenomena_timeline(
+    phenomena: PhenomenaAnalysis,
+    output: Path,
+    config: AtlasConfig,
+) -> Path:
+    if not phenomena.events:
+        return _empty_figure(
+            "Objective Weather-Phenomena Ledger",
+            "No objective phenomenon met the reporting thresholds.",
+            output,
+            360,
+        )
+    fig = go.Figure()
+    palette = ["#2563eb", "#b42318", "#047857", "#a16207", "#6d28d9", "#475467"]
+    for index, event in enumerate(phenomena.events):
+        start = event.start_time.tz_convert(config.location.timezone)
+        end = event.end_time.tz_convert(config.location.timezone)
+        fig.add_trace(
+            go.Scatter(
+                x=[start, end],
+                y=[event.kind, event.kind],
+                mode="lines+markers",
+                line={"width": 10, "color": palette[index % len(palette)]},
+                marker={"size": 7},
+                name=event.kind,
+                customdata=[[event.evidence, event.confidence, event.source]] * 2,
+                hovertemplate=(
+                    "%{y}<br>%{x}<br>%{customdata[0]}<br>Confidence %{customdata[1]:.0%}"
+                    "<br>%{customdata[2]}<extra></extra>"
+                ),
+                showlegend=False,
+            )
+        )
+    fig.update_layout(
+        title="Objective Weather-Phenomena Chronology",
+        height=max(360, min(720, 170 + len({event.kind for event in phenomena.events}) * 42)),
+        xaxis_title="Local time",
+        yaxis_title="",
+        hovermode="closest",
+    )
     return _save(fig, output)
 
 
@@ -1287,6 +1484,103 @@ def plot_lightning_diary(lightning: LightningArchive, output: Path, config: Atla
     return _save(fig, output)
 
 
+def plot_satellite_diary(
+    satellite: SatelliteArchive,
+    radar: RadarArchive,
+    lightning: LightningArchive,
+    output: Path,
+    config: AtlasConfig,
+) -> Path:
+    if satellite.frame_count == 0:
+        return _empty_figure(
+            "Meteosat Satellite, Radar And Lightning Diary",
+            "HungaroMet Meteosat frames were unavailable for this reporting period.",
+            output,
+            820,
+        )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    media_dir = output.parent / "satellite_media"
+    media_dir.mkdir(parents=True, exist_ok=True)
+    products: dict[str, list[dict[str, str]]] = {}
+    for product, frames in satellite.frames.items():
+        encoded = []
+        for frame in frames:
+            target = media_dir / f"{product}_{frame.time.strftime('%Y%m%d_%H%M')}.webp"
+            if not target.exists():
+                with Image.open(frame.path) as image:
+                    image = image.convert("RGB")
+                    if image.width > config.satellite.image_width_px:
+                        height = round(image.height * config.satellite.image_width_px / image.width)
+                        image = image.resize(
+                            (config.satellite.image_width_px, height), Image.Resampling.LANCZOS
+                        )
+                    image.save(
+                        target,
+                        "WEBP",
+                        quality=config.satellite.webp_quality,
+                        method=6,
+                    )
+            encoded.append(
+                {
+                    "time": frame.time.isoformat(),
+                    "src": f"satellite_media/{target.name}",
+                }
+            )
+        products[product] = encoded
+
+    radar_rows = []
+    if not radar.timeline.empty:
+        for row in radar.timeline.to_dict("records"):
+            radar_rows.append(
+                {
+                    "time": pd.Timestamp(row["time"]).isoformat(),
+                    "maximum": (
+                        None if pd.isna(row.get("domain_max_dbz")) else float(row["domain_max_dbz"])
+                    ),
+                    "debrecen": (
+                        None if pd.isna(row.get("reflectivity_dbz")) else float(row["reflectivity_dbz"])
+                    ),
+                }
+            )
+    lightning_rows = []
+    if not lightning.hourly.empty:
+        for row in lightning.hourly.to_dict("records"):
+            lightning_rows.append(
+                {
+                    "time": pd.Timestamp(row["time"]).isoformat(),
+                    "count": int(row["flash_count"]),
+                }
+            )
+    payload = json.dumps(
+        {"products": products, "radar": radar_rows, "lightning": lightning_rows},
+        allow_nan=False,
+    )
+    output.write_text(
+        f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meteosat Satellite Diary</title><script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
+<style>
+*{{box-sizing:border-box}} body{{margin:0;padding:18px;font-family:Inter,Segoe UI,Arial,sans-serif;color:#172033;background:#fff}}
+.toolbar{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}} select,button{{height:36px;border:1px solid #cfd7e3;background:#fff;color:#172033;padding:0 11px;font:inherit}} button{{cursor:pointer}} input[type=range]{{flex:1;min-width:240px}}
+.layout{{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:16px}} .image-wrap{{background:#0b0f17;min-height:540px;display:grid;place-items:center;overflow:hidden}} #satellite{{display:block;max-width:100%;max-height:620px;object-fit:contain}} .status{{padding:12px 0;color:#475467;font-size:14px}} #timeline{{height:560px}} .stamp{{font-weight:700;min-width:185px}} @media(max-width:800px){{.layout{{grid-template-columns:1fr}} .image-wrap{{min-height:380px}} #timeline{{height:420px}}}}
+</style></head><body>
+<div class="toolbar"><label for="product">Product</label><select id="product"></select><button id="play" type="button">Play</button><button id="pause" type="button">Pause</button><button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">-</button><button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button><button id="zoom-reset" type="button" title="Reset zoom" aria-label="Reset zoom">1:1</button><input id="frame" type="range" min="0" max="0" value="0"><span class="stamp" id="stamp"></span></div>
+<div class="layout"><div><div class="image-wrap"><img id="satellite" alt="HungaroMet Meteosat satellite product"></div><div class="status" id="status"></div></div><div id="timeline"></div></div>
+<script>
+const data={payload}; const product=document.getElementById('product'); const slider=document.getElementById('frame'); const image=document.getElementById('satellite'); const stamp=document.getElementById('stamp'); const status=document.getElementById('status'); let timer=null; let zoom=1;
+Object.keys(data.products).forEach(name=>{{const option=document.createElement('option');option.value=name;option.textContent=name;product.appendChild(option)}});
+function nearest(rows,time){{if(!rows.length)return null;const target=Date.parse(time);return rows.reduce((best,row)=>Math.abs(Date.parse(row.time)-target)<Math.abs(Date.parse(best.time)-target)?row:best)}}
+function drawTimeline(){{Plotly.newPlot('timeline',[{{x:data.radar.map(d=>d.time),y:data.radar.map(d=>d.maximum),name:'Radar maximum',type:'scatter',line:{{color:'#b42318'}}}},{{x:data.lightning.map(d=>d.time),y:data.lightning.map(d=>d.count),name:'LINET events',type:'bar',yaxis:'y2',marker:{{color:'#6d28d9'}}}}],{{title:'Synchronized event timeline',margin:{{l:52,r:50,t:56,b:48}},hovermode:'x unified',xaxis:{{title:'UTC'}},yaxis:{{title:'dBZ'}},yaxis2:{{title:'events/h',overlaying:'y',side:'right'}},legend:{{orientation:'h'}}}},{{displaylogo:false,responsive:true,scrollZoom:true}})}}
+function applyZoom(){{image.style.transform=`scale(${{zoom}})`}}
+function render(){{const frames=data.products[product.value]||[];if(!frames.length)return;slider.max=String(frames.length-1);slider.value=String(Math.min(Number(slider.value),frames.length-1));const frame=frames[Number(slider.value)];image.src=frame.src;const local=new Date(frame.time);stamp.textContent=local.toLocaleString('en-GB',{{timeZone:'Europe/Budapest',dateStyle:'medium',timeStyle:'short'}});const radar=nearest(data.radar,frame.time);const flash=nearest(data.lightning,frame.time);status.textContent=`${{product.value}} valid ${{local.toISOString().slice(0,16).replace('T',' ')}} UTC | nearest radar maximum ${{radar&&radar.maximum!=null?Number(radar.maximum).toFixed(1):'n/a'}} dBZ | nearest LINET hour ${{flash?flash.count:0}} event(s)`;Plotly.relayout('timeline',{{shapes:[{{type:'line',x0:frame.time,x1:frame.time,y0:0,y1:1,yref:'paper',line:{{color:'#111827',width:2}}}}]}})}}
+function setZoom(value){{zoom=Math.min(4,Math.max(1,value));applyZoom()}}
+product.addEventListener('change',()=>{{slider.value='0';setZoom(1);render()}});slider.addEventListener('input',render);document.getElementById('play').addEventListener('click',()=>{{clearInterval(timer);timer=setInterval(()=>{{const max=Number(slider.max);slider.value=String((Number(slider.value)+1)%(max+1));render()}},650)}});document.getElementById('pause').addEventListener('click',()=>clearInterval(timer));document.getElementById('zoom-in').addEventListener('click',()=>setZoom(zoom+0.25));document.getElementById('zoom-out').addEventListener('click',()=>setZoom(zoom-0.25));document.getElementById('zoom-reset').addEventListener('click',()=>setZoom(1));image.addEventListener('wheel',event=>{{event.preventDefault();setZoom(zoom+(event.deltaY < 0 ? 0.25 : -0.25))}},{{passive:false}});drawTimeline();render();
+</script></body></html>""",
+        encoding="utf-8",
+    )
+    return output
+
+
 def plot_column_diagnostics(profile: ModelProfile, output: Path, config: AtlasConfig) -> Path:
     if profile.surface_series.empty:
         return _empty_figure(
@@ -1347,23 +1641,49 @@ def plot_synoptic_evolution(synoptic: SynopticArchive, output: Path, config: Atl
         quiver.showlegend = True
         quiver.hoverinfo = "skip"
         return [
-            go.Contour(x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.temperature_850c[index], colorscale="RdBu_r", zmid=0, contours={"showlines": False}, colorbar={"title": "850 hPa C"}, hovertemplate="%{y:.1f} N %{x:.1f} E<br>850 T %{z:.1f} C<extra></extra>"),
-            go.Contour(x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.pressure_msl_hpa[index], contours={"coloring": "none", "showlabels": True, "start": 980, "end": 1040, "size": 4}, line={"color": "#172033", "width": 1.5}, showscale=False, hovertemplate="MSLP %{z:.0f} hPa<extra></extra>"),
-            go.Contour(x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.height_500m[index], contours={"coloring": "none", "showlabels": True, "size": 60}, line={"color": "#7c2d12", "width": 1.5, "dash": "dash"}, showscale=False, hovertemplate="500 hPa height %{z:.0f} m<extra></extra>"),
+            go.Contour(name="850 hPa temperature", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.temperature_850c[index], colorscale="RdBu_r", zmid=0, contours={"showlines": False}, colorbar={"title": "850 T C"}, hovertemplate="%{y:.1f} N %{x:.1f} E<br>850 T %{z:.1f} C<extra></extra>"),
+            go.Contour(name="MSLP", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.pressure_msl_hpa[index], contours={"coloring": "none", "showlabels": True, "start": 980, "end": 1040, "size": 4}, line={"color": "#172033", "width": 1.5}, showscale=False, hovertemplate="MSLP %{z:.0f} hPa<extra></extra>"),
+            go.Contour(name="500 hPa height", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.height_500m[index], contours={"coloring": "none", "showlabels": True, "size": 60}, line={"color": "#7c2d12", "width": 1.5, "dash": "dash"}, showscale=False, hovertemplate="500 hPa height %{z:.0f} m<extra></extra>"),
             quiver,
+            go.Contour(name="300 hPa wind", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.wind_speed_300ms[index], colorscale="Turbo", zmin=15, zmax=65, contours={"showlines": False}, colorbar={"title": "300 wind m/s"}, hovertemplate="300 hPa wind %{z:.1f} m/s<extra></extra>"),
+            go.Contour(name="300 hPa height", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.height_300m[index], contours={"coloring": "none", "showlabels": True, "size": 90}, line={"color": "#111827", "width": 1.4}, showscale=False, hovertemplate="300 hPa height %{z:.0f} m<extra></extra>"),
+            go.Contour(name="500 hPa vorticity", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.vorticity_500_1e5_s[index], colorscale="PuOr_r", zmid=0, contours={"showlines": False}, colorbar={"title": "vorticity 1e-5 s-1"}, hovertemplate="500 hPa vorticity %{z:.1f} x10^-5 s^-1<extra></extra>"),
+            go.Contour(name="500 hPa height", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.height_500m[index], contours={"coloring": "none", "showlabels": True, "size": 60}, line={"color": "#172033", "width": 1.4}, showscale=False, hovertemplate="500 hPa height %{z:.0f} m<extra></extra>"),
+            go.Contour(name="700 hPa humidity", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.relative_humidity_700pct[index], colorscale="Blues", zmin=0, zmax=100, contours={"showlines": False}, colorbar={"title": "700 RH %"}, hovertemplate="700 hPa RH %{z:.0f}%<extra></extra>"),
+            go.Contour(name="700 hPa vertical velocity", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.vertical_velocity_700ms[index] * 100.0, contours={"coloring": "lines", "showlabels": True, "start": -20, "end": 20, "size": 2}, line={"color": "#b42318", "width": 1.3}, showscale=False, hovertemplate="700 hPa vertical velocity %{z:.1f} cm/s<extra></extra>"),
+            go.Contour(name="850 hPa theta-e", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.theta_e_850k[index], colorscale="Spectral_r", contours={"showlines": False}, colorbar={"title": "theta-e K"}, hovertemplate="850 hPa theta-e %{z:.1f} K<extra></extra>"),
+            go.Contour(name="850 hPa thermal advection", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.temperature_advection_850c_3h[index], contours={"coloring": "lines", "showlabels": True, "start": -8, "end": 8, "size": 1}, line={"color": "#111827", "width": 1.1}, showscale=False, hovertemplate="850 hPa advection %{z:.1f} K/3h<extra></extra>"),
+            go.Contour(name="850 hPa frontogenesis", x=synoptic.longitudes, y=synoptic.latitudes, z=synoptic.frontogenesis_850k_100km_3h[index], contours={"coloring": "none", "showlabels": False, "start": 0.5, "end": 8, "size": 0.5}, line={"color": "#b42318", "width": 2}, showscale=False, hovertemplate="850 hPa frontogenesis %{z:.2f} K/(100 km 3h)<extra></extra>"),
         ]
 
-    fig = go.Figure(data=traces(0))
+    mode_groups = {
+        "Air mass / surface": {0, 1, 2, 3},
+        "300 hPa jet": {4, 5},
+        "500 hPa vorticity": {6, 7},
+        "700 hPa moisture / ascent": {8, 9},
+        "850 hPa theta-e / fronts": {10, 11, 12},
+    }
+    initial = traces(0)
+    for trace_index, trace in enumerate(initial):
+        trace.visible = trace_index in mode_groups["Air mass / surface"]
+    fig = go.Figure(data=initial)
     fig.add_trace(go.Scatter(x=[config.location.longitude], y=[config.location.latitude], mode="markers+text", text=["Debrecen"], textposition="top center", marker={"symbol": "x", "size": 12, "color": "#111827"}, showlegend=False))
-    frames = [go.Frame(name=timestamp.strftime("%Y-%m-%d %H:%M"), data=traces(index), traces=[0, 1, 2, 3]) for index, timestamp in enumerate(local_times)]
+    frames = [go.Frame(name=timestamp.strftime("%Y-%m-%d %H:%M"), data=traces(index), traces=list(range(13))) for index, timestamp in enumerate(local_times)]
     fig.frames = frames
+    layer_buttons = []
+    for label, active_indices in mode_groups.items():
+        visibility = [index in active_indices for index in range(13)] + [True]
+        layer_buttons.append({"label": label, "method": "update", "args": [{"visible": visibility}, {"title": f"Central European Synoptic Dynamics - {label}"}]})
     fig.update_layout(
-        title="Central European Synoptic Evolution - 850 hPa Temperature/Wind, MSLP, 500 hPa Height",
+        title="Central European Synoptic Dynamics - Air mass / surface",
         height=720,
         xaxis_title="Longitude",
         yaxis_title="Latitude",
         yaxis={"scaleanchor": "x"},
-        updatemenus=[{"type": "buttons", "direction": "left", "x": 0.0, "y": 1.10, "buttons": [{"label": "Play", "method": "animate", "args": [None, {"frame": {"duration": 700, "redraw": True}, "fromcurrent": True}]}, {"label": "Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}}]}]}],
+        updatemenus=[
+            {"type": "dropdown", "direction": "down", "x": 0.0, "y": 1.17, "buttons": layer_buttons},
+            {"type": "buttons", "direction": "left", "x": 0.42, "y": 1.17, "buttons": [{"label": "Play", "method": "animate", "args": [None, {"frame": {"duration": 700, "redraw": True}, "fromcurrent": True}]}, {"label": "Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}}]}]},
+        ],
         sliders=[{"currentvalue": {"prefix": "Local time: "}, "steps": [{"label": timestamp.strftime("%d %Hh"), "method": "animate", "args": [[frame.name], {"mode": "immediate", "frame": {"duration": 0, "redraw": True}}]} for timestamp, frame in zip(local_times, frames)]}],
     )
     return _save(fig, output)
@@ -1396,7 +1716,11 @@ def plot_physical_energy(energy: PhysicalEnergy, output: Path, config: AtlasConf
 def generate_all_figures(
     frame: pd.DataFrame,
     context_frame: pd.DataFrame,
-    baseline: pd.DataFrame,
+    climate: ClimateReference,
+    daily_climate: ClimateReference,
+    land: LandSurfaceAnalysis,
+    phenomena: PhenomenaAnalysis,
+    daily_frame: pd.DataFrame,
     anomalies: list[Anomaly],
     energy: EnergyIndex,
     electricity: pd.DataFrame,
@@ -1405,9 +1729,11 @@ def generate_all_figures(
     station: StationObservations,
     radar: RadarArchive,
     lightning: LightningArchive,
+    satellite: SatelliteArchive,
     fronts: FrontAnalysis,
     synoptic: SynopticArchive,
     physical_energy: PhysicalEnergy,
+    daily_physical_energy: PhysicalEnergy,
     regime: RegimeClassification,
     current_start: date,
     output_dir: Path,
@@ -1416,6 +1742,12 @@ def generate_all_figures(
     output_dir.mkdir(parents=True, exist_ok=True)
     return {
         "meteogram": plot_meteogram(frame, output_dir / "meteogram.html", config, fronts),
+        "daily_meteogram": plot_meteogram(
+            daily_frame,
+            output_dir / "daily_meteogram.html",
+            config,
+            title="Yesterday At Debrecen - Interactive Meteogram",
+        ),
         "station_comparison": plot_station_comparison(
             station, frame, output_dir / "station_comparison.html", config
         ),
@@ -1423,11 +1755,21 @@ def generate_all_figures(
         "lightning_diary": plot_lightning_diary(
             lightning, output_dir / "lightning_diary.html", config
         ),
+        "satellite_diary": plot_satellite_diary(
+            satellite,
+            radar,
+            lightning,
+            output_dir / "satellite_diary.html",
+            config,
+        ),
         "synoptic_evolution": plot_synoptic_evolution(
             synoptic, output_dir / "synoptic_evolution.html", config
         ),
         "physical_energy": plot_physical_energy(
             physical_energy, output_dir / "physical_energy.html", config
+        ),
+        "daily_physical_energy": plot_physical_energy(
+            daily_physical_energy, output_dir / "daily_physical_energy.html", config
         ),
         "seven_day_context": plot_seven_day_context(
             context_frame,
@@ -1438,8 +1780,20 @@ def generate_all_figures(
         "wind_rose": plot_wind_rose(frame, output_dir / "wind_rose.html", config),
         "pressure_tendency": plot_pressure_tendency(frame, output_dir / "pressure_tendency.html", config),
         "dewpoint_spread": plot_dewpoint_spread(frame, output_dir / "dewpoint_spread.html", config),
-        "solar_diurnal": plot_solar_diurnal(frame, baseline, output_dir / "solar_diurnal.html", config),
+        "solar_diurnal": plot_solar_diurnal(frame, climate, output_dir / "solar_diurnal.html", config),
         "anomaly_bars": plot_anomaly_bars(anomalies, output_dir / "anomaly_bars.html"),
+        "climate_reference": plot_climate_reference(
+            climate, output_dir / "climate_reference.html"
+        ),
+        "daily_climate_reference": plot_climate_reference(
+            daily_climate, output_dir / "daily_climate_reference.html"
+        ),
+        "land_surface": plot_land_surface(
+            land, output_dir / "land_surface.html", config
+        ),
+        "phenomena_timeline": plot_phenomena_timeline(
+            phenomena, output_dir / "phenomena_timeline.html", config
+        ),
         "energy_quadrant": plot_energy_quadrant(energy, output_dir / "energy_quadrant.html"),
         "regime_strip": plot_regime_strip(frame, regime, output_dir / "regime_strip.html", config),
         "electricity_overview": plot_electricity_overview(
