@@ -26,7 +26,7 @@ from atlas.profile import ModelProfile
 from atlas.regimes import classify_period
 from atlas.satellite import SatelliteArchive, SatelliteFrame
 from atlas.serialization import json_ready
-from atlas.site import build_site
+from atlas.site import build_report_archive, build_site
 from atlas.synoptic import SynopticArchive
 
 
@@ -615,7 +615,7 @@ def run_demo_pipeline(
     )
     processed_paths["summary"] = source_summary
 
-    return build_site(
+    site_index = build_site(
         config=config,
         period_start=start.isoformat(),
         period_end=end.isoformat(),
@@ -650,3 +650,5 @@ def run_demo_pipeline(
         quality_notes=[DEMO_NOTICE],
         edition_notice=DEMO_NOTICE,
     )
+    build_report_archive(config, site_index.parent, config.outputs.reports_dir)
+    return site_index

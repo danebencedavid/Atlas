@@ -71,8 +71,10 @@ data/processed/land_surface_{hourly,daily}.csv
 data/processed/satellite_manifest.csv
 reports/daily/YYYY-MM-DD/                     lightweight daily public edition
 reports/periods/YYYY-MM-DD_YYYY-MM-DD/         versioned complete report
-site/                                          latest public report
+site/index.html                                project overview and publication guide
+site/report.html                               latest daily public report
 site/analysis/                                 latest 72-hour expert analysis
+site/archive/                                  browsable saved-report ledger
 ```
 
 ## Main Commands
@@ -91,8 +93,11 @@ pytest
 
 ## The Atlas
 
-The site is organized as two meteorological publications rather than a plot
-wall. A persistent switch moves between them.
+The landing page is a compact project guide based on this README: it states the
+research question, evidence hierarchy, scientific scope, update cadence, and
+links to the current publications and archive. The reporting area is organized
+as two meteorological publications rather than a plot wall. A persistent switch
+moves between them.
 
 The **Public Report** updates daily:
 
@@ -166,6 +171,10 @@ The workflow runs daily at 05:15 UTC, on pushes, and by manual dispatch. Every
 scheduled build commits a lightweight public edition under `reports/daily/`.
 A full self-contained expert edition is committed under `reports/periods/` on a
 true three-day cadence. The latest versions of both are deployed from `site/`.
+The generated **Archive** page publishes every saved daily, 72-hour, and legacy
+weekly edition with date filtering and direct links to its preserved pages.
+Archived HTML is presented in the current Atlas shell while its original data,
+figures, dates, and deterministic interpretation remain unchanged.
 
 ## Project Structure
 
@@ -177,7 +186,10 @@ docs/                    Data provenance and methods
 reports/periods/         Versioned rolling reports committed by CI
 reports/daily/           Lightweight public daily editions committed by CI
 reports/weeks/           Preserved historical weekly editions
-site/                    Latest generated Pages artifact
+site/index.html          Project home and publication guide
+site/report.html         Latest daily public overview
+site/analysis/           Latest rolling expert analysis
+site/archive/            Generated index and deployable copies of saved reports
 src/atlas/               Ingestion, diagnostics, plotting, site, and CLI code
 tests/                   Offline unit and report smoke tests
 ```

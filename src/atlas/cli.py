@@ -38,6 +38,7 @@ from atlas.regimes import classify_period
 from atlas.satellite import fetch_satellite_archive
 from atlas.serialization import json_ready
 from atlas.site import build_site
+from atlas.site import build_report_archive
 from atlas.site import archive_site
 from atlas.site import archive_public_site
 from atlas.synoptic import fetch_synoptic_archive
@@ -535,6 +536,7 @@ def run_pipeline(
     )
     if archive_analysis:
         archive_site(site_index.parent, archive_dir)
+    build_report_archive(config, site_index.parent, config.outputs.reports_dir)
     return site_index
 
 

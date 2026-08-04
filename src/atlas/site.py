@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 import shutil
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -28,7 +29,7 @@ from atlas.synoptic import SynopticArchive
 
 
 PUBLIC_PAGES = (
-    ("index.html", "Overview"),
+    ("report.html", "Overview"),
     ("weather.html", "Weather"),
     ("events.html", "Events"),
     ("energy.html", "Energy"),
@@ -44,6 +45,25 @@ ANALYSIS_PAGES = (
     ("climate.html", "Climate & Analogs"),
     ("land-energy.html", "Land Surface & Energy"),
     ("methods.html", "Methods & Evidence"),
+)
+
+ARCHIVED_PUBLIC_PAGES = (
+    ("index.html", "Overview"),
+    ("weather.html", "Weather"),
+    ("events.html", "Events"),
+    ("energy.html", "Energy"),
+    ("context.html", "Climate Context"),
+    ("methods.html", "Methods"),
+)
+
+LEGACY_ANALYSIS_PAGES = (
+    ("index.html", "Overview"),
+    ("weather.html", "Weather"),
+    ("storms.html", "Storms"),
+    ("upper-air.html", "Upper Air"),
+    ("climate.html", "Climate"),
+    ("energy.html", "Energy"),
+    ("methods.html", "Methods"),
 )
 
 SHARED_CSS = """
@@ -424,15 +444,84 @@ ul { margin: 8px 0 0; padding-left: 20px; }
 .download-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 28px;
+  gap: 0;
   padding: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
   list-style: none;
 }
-.download-list a {
-  display: block;
-  padding: 9px 0;
+.download-list li {
+  min-width: 0;
   border-bottom: 1px solid var(--line);
+}
+.download-list li:nth-child(odd) { border-right: 1px solid var(--line); }
+.download-list li:last-child,
+.download-list li:nth-last-child(2):nth-child(odd) { border-bottom: 0; }
+.download-list a {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  color: var(--ink);
   text-decoration: none;
+}
+.download-list a:hover { background: var(--rail, var(--paper)); }
+.download-filemark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: var(--rail, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.download-copy { min-width: 0; }
+.download-copy strong,
+.download-copy small { display: block; }
+.download-copy strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.download-copy small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+.download-action {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+.download-list a:hover .download-action { color: var(--blue); }
+.downloads-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 13px;
+}
+.downloads-heading h2 { margin-bottom: 3px; }
+.downloads-heading p { margin: 0; color: var(--muted); font-size: 0.82rem; }
+.download-count {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: var(--muted);
+  background: var(--rail, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.68rem;
 }
 footer {
   border-top: 1px solid var(--line);
@@ -462,6 +551,10 @@ footer {
   .page-shell { padding: 24px 18px 40px; }
   .summary, .metric-band, .methods-grid, .download-list, .insight-grid, .public-facts,
   .diagnostic-ledger { grid-template-columns: 1fr; }
+  .download-list li:nth-child(odd) { border-right: 0; }
+  .download-list li:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--line); }
+  .download-list li:last-child { border-bottom: 0; }
+  .downloads-heading { align-items: flex-start; }
   .insight, .insight:nth-child(2n), .insight:nth-last-child(-n+2),
   .diagnostic-ledger div { border-right: 0; border-bottom: 1px solid var(--line); }
   .insight:last-child, .diagnostic-ledger div:last-child { border-bottom: 0; }
@@ -624,6 +717,38 @@ a { color: inherit; }
   border-bottom-color: transparent;
   font-weight: 600;
 }
+.archive-nav-wrap {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-strong);
+}
+.archive-nav-wrap .nav-label { margin-top: 0; }
+.archive-nav-link {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px 6px 11px;
+  color: var(--ink);
+  background: rgba(255,255,255,.65);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 5px 5px 0;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.archive-nav-link span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+.archive-nav-link:hover { background: var(--hover); }
+.archive-nav-link[aria-current="page"] {
+  color: var(--ink);
+  background: var(--selected);
+  border-left-color: var(--ink);
+}
 .sidebar-note {
   margin: auto 4px 2px;
   padding: 10px;
@@ -780,6 +905,93 @@ h2 { font-size: 19px; font-weight: 620; }
 }
 .page-intro h1 { margin-bottom: 7px; font-size: 31px; }
 .page-intro p { color: var(--ink-soft); font-size: 14px; }
+.home-intro {
+  max-width: 980px;
+  padding: 18px 0 38px;
+}
+.home-intro h1 {
+  margin-bottom: 15px;
+  font-size: 40px;
+}
+.home-question {
+  max-width: 900px;
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  line-height: 1.4;
+}
+.home-summary {
+  max-width: 900px;
+  margin: 18px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.publication-ledger {
+  margin-bottom: 34px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.publication-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 190px;
+  gap: 24px;
+  align-items: center;
+  min-height: 96px;
+  padding: 17px 0;
+  color: inherit;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+.publication-row:last-child { border-bottom: 0; }
+.publication-row:hover { background: var(--rail); }
+.publication-kind,
+.publication-date {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+}
+.publication-copy h2 { margin: 0 0 4px; font-size: 17px; }
+.publication-copy p { margin: 0; color: var(--ink-soft); font-size: 12px; }
+.publication-date { text-align: right; }
+.publication-date strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--blue);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+.home-section-lead {
+  max-width: 960px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.home-definition {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.home-definition div {
+  min-width: 0;
+  padding: 15px 18px;
+  border-right: 1px solid var(--line);
+}
+.home-definition div:first-child { padding-left: 0; }
+.home-definition div:last-child { border-right: 0; }
+.home-definition span,
+.home-definition strong { display: block; }
+.home-definition span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.home-definition strong { margin-top: 4px; font-size: 13px; font-weight: 600; }
 .public-facts,
 .metric-band,
 .diagnostic-ledger {
@@ -845,6 +1057,111 @@ h2 { font-size: 19px; font-weight: 620; }
 .event-list, .analog-list { border-top-color: var(--line-strong); }
 table { font-size: 12px; }
 th, td { border-color: var(--line); }
+.archive-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 4px 0 26px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.archive-stat {
+  min-width: 0;
+  padding: 14px 18px;
+  border-right: 1px solid var(--line);
+}
+.archive-stat:first-child { padding-left: 0; border-top: 2px solid var(--blue); }
+.archive-stat:nth-child(2) { border-top: 2px solid var(--green); }
+.archive-stat:nth-child(3) { border-top: 2px solid var(--gold); }
+.archive-stat:nth-child(4) { border-top: 2px solid var(--red); }
+.archive-stat:last-child { border-right: 0; }
+.archive-stat span,
+.archive-stat small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.archive-stat strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 22px;
+  font-weight: 570;
+}
+.archive-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  padding: 14px 0 22px;
+  border-top: 1px solid var(--line);
+}
+.archive-control { display: grid; gap: 5px; }
+.archive-control:first-child { flex: 1 1 340px; }
+.archive-control span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.archive-control input,
+.archive-control select {
+  min-height: 34px;
+  padding: 6px 9px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font: inherit;
+}
+.archive-control input:focus,
+.archive-control select:focus {
+  border-color: var(--blue);
+  outline: 2px solid var(--blue-soft);
+  outline-offset: 1px;
+}
+.archive-visible-count {
+  margin-left: auto;
+  padding-bottom: 8px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.archive-group { padding: 24px 0 34px; border-top: 1px solid var(--line); }
+.archive-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.archive-group-header span { color: var(--muted); font-size: 10px; }
+.archive-table { width: 100%; border-collapse: collapse; }
+.archive-table th {
+  padding: 8px 10px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+}
+.archive-table td { padding: 12px 10px; vertical-align: middle; }
+.archive-table th:first-child,
+.archive-table td:first-child { padding-left: 0; }
+.archive-date strong,
+.archive-date span { display: block; }
+.archive-date strong { font-weight: 600; }
+.archive-date span { color: var(--muted); font-size: 10px; }
+.archive-open { font-weight: 600; text-decoration: none; white-space: nowrap; }
+.archive-open:hover { color: var(--blue); text-decoration: underline; }
+.archive-empty {
+  display: none;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.archive-group[data-empty="true"] .archive-empty { display: block; }
+.archive-group[data-empty="true"] .table-scroll { display: none; }
 footer {
   margin: 0;
   color: var(--muted);
@@ -892,9 +1209,22 @@ footer {
   .sidebar-scrim.open { display: block; }
   .page-shell { padding: 28px 20px 56px; }
   h1, .page-intro h1 { font-size: 28px; }
+  .home-intro { padding-top: 6px; }
+  .home-intro h1 { font-size: 32px; }
+  .home-question { font-size: 20px; }
+  .publication-row { grid-template-columns: 1fr; gap: 6px; padding: 16px 0; }
+  .publication-date { text-align: left; }
+  .home-definition { grid-template-columns: 1fr; }
+  .home-definition div,
+  .home-definition div:first-child {
+    padding: 12px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-definition div:last-child { border-bottom: 0; }
   .hero { padding-top: 0; }
   .summary, .public-facts, .metric-band, .diagnostic-ledger,
-  .methods-grid, .download-list, .insight-grid { grid-template-columns: 1fr; }
+  .methods-grid, .download-list, .insight-grid, .archive-summary { grid-template-columns: 1fr; }
   .score, .score:first-child, .score:nth-child(2), .score:nth-child(3),
   .metric, .public-facts div, .public-facts div:first-child,
   .public-facts div:nth-child(2), .public-facts div:nth-child(3) {
@@ -903,6 +1233,22 @@ footer {
     border-bottom: 1px solid var(--line);
   }
   .score:last-child, .metric:last-child, .public-facts div:last-child { border-bottom: 0; }
+  .archive-stat,
+  .archive-stat:first-child,
+  .archive-stat:nth-child(2),
+  .archive-stat:nth-child(3),
+  .archive-stat:nth-child(4) {
+    padding: 12px 0;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .archive-stat:last-child { border-bottom: 0; }
+  .archive-toolbar { align-items: stretch; flex-direction: column; }
+  .archive-control:first-child { flex-basis: auto; }
+  .archive-visible-count { margin-left: 0; padding-bottom: 0; }
+  .archive-table th:nth-child(3),
+  .archive-table td:nth-child(3) { display: none; }
   .source-note { margin-left: 0; }
   .viz-frame { min-width: 720px; }
   .footer-wrap { padding: 18px 20px; }
@@ -947,22 +1293,38 @@ def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str
 
 def _navigation(active: str, family: str) -> str:
     nested = family == "analysis"
-    prefix = "../" if nested else ""
-    pages = ANALYSIS_PAGES if nested else PUBLIC_PAGES
+    archive = family == "archive"
+    prefix = "../" if nested or archive else ""
+    pages = () if archive or family == "home" else (ANALYSIS_PAGES if nested else PUBLIC_PAGES)
     links = []
     for filename, label in pages:
         current = ' aria-current="page"' if filename == active else ""
         links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
     public_current = ' aria-current="true"' if family == "public" else ""
     analysis_current = ' aria-current="true"' if family == "analysis" else ""
-    family_label = "Daily public report" if family == "public" else "72-hour analysis"
+    family_label = {
+        "public": "Daily public report",
+        "analysis": "72-hour analysis",
+        "archive": "Saved reports",
+        "home": "Atlas project",
+    }[family]
+    page_navigation = (
+        f'<span class="nav-label">{family_label}</span>'
+        f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav>'
+        if links
+        else ""
+    )
+    archive_current = ' aria-current="page"' if archive else ""
+    archive_href = "index.html" if archive else f"{prefix}archive/index.html"
     return (
         f'<div class="nav-wrap"><a class="brand" href="{prefix}index.html">Atlas</a>'
         f'<span class="nav-label">Report edition</span>'
-        f'<div class="report-switch" aria-label="Report edition"><a href="{prefix}index.html"{public_current}>Public report</a>'
+        f'<div class="report-switch" aria-label="Report edition"><a href="{prefix}report.html"{public_current}>Public report</a>'
         f'<a href="{prefix}analysis/index.html"{analysis_current}>Meteorological analysis</a></div>'
-        f'<span class="nav-label">{family_label}</span>'
-        f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav>'
+        f'{page_navigation}'
+        f'<div class="archive-nav-wrap"><span class="nav-label">History</span>'
+        f'<a class="archive-nav-link" data-atlas-archive-link href="{archive_href}"{archive_current}>'
+        f'Archive <span>Saved editions</span></a></div>'
         f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
         f'Daily public record and rolling expert analysis.</div></div>'
     )
@@ -1011,6 +1373,12 @@ def _page_document(
         if edition_notice
         else ""
     )
+    report_family = {
+        "home": "Project",
+        "public": "Daily report",
+        "analysis": "72-hour analysis",
+        "archive": "Archive",
+    }[family]
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -1027,7 +1395,7 @@ def _page_document(
     <div class="workspace">
       <header class="report-topbar">
         <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation">&#9776;</button>
-        <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape('Daily report' if family == 'public' else '72-hour analysis')}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
+        <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape(report_family)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
       </header>
 {notice_line}      <main><div class="page-shell">{content}</div></main>
       <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
@@ -1060,12 +1428,462 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
 """
 
 
+ARCHIVE_COMPAT_CSS = """
+.archived-legacy-content > header {
+  background: var(--paper);
+  border: 0;
+}
+.archived-legacy-content > header .wrap,
+.archived-legacy-content main .wrap {
+  width: min(100%, 1320px);
+  max-width: none;
+  margin: 0 auto;
+  padding: 34px 48px;
+}
+.archived-legacy-content > header .hero {
+  min-height: 0;
+  display: block;
+  padding-bottom: 12px;
+}
+.archived-legacy-content > header .hero h1 {
+  margin: 0 0 8px;
+  font-size: 31px;
+  font-weight: 620;
+  line-height: 1.2;
+}
+.archived-legacy-content > header .hero h2 {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 650;
+}
+.archived-legacy-content > header .hero .brief {
+  max-width: 940px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.62;
+}
+.archived-legacy-content .summary {
+  gap: 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.archived-legacy-content main .wrap { display: block; }
+.archived-legacy-content main section,
+.archived-legacy-content .table-panel {
+  max-width: 100%;
+  margin: 0;
+  padding: 24px 0 34px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  overflow-x: auto;
+}
+.archived-legacy-content .grid-two,
+.archived-legacy-content .notes {
+  display: block;
+}
+.archived-legacy-content .viz-frame {
+  border-color: var(--line-strong);
+  border-radius: 5px;
+}
+.archived-legacy-content .viz-frame.tall { min-height: 900px; }
+.archived-legacy-content footer .wrap {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  padding: 18px 48px;
+  font-size: 10px;
+}
+@media (max-width: 720px) {
+  .archived-legacy-content > header .wrap,
+  .archived-legacy-content main .wrap { padding: 28px 20px 56px; }
+  .archived-legacy-content > header .hero h1 { font-size: 28px; }
+  .archived-legacy-content .summary { grid-template-columns: 1fr; }
+  .archived-legacy-content footer .wrap { padding: 18px 20px; }
+}
+"""
+
+
+def _saved_report_directories(parent: Path) -> list[Path]:
+    if not parent.is_dir():
+        return []
+    return sorted(
+        (
+            path
+            for path in parent.iterdir()
+            if path.is_dir() and (path / "index.html").is_file()
+        ),
+        key=lambda path: path.name,
+        reverse=True,
+    )
+
+
+def _archive_date_label(value: str) -> str:
+    parsed = datetime.strptime(value, "%Y-%m-%d")
+    return f"{parsed.day} {parsed.strftime('%B %Y')}"
+
+
+def _archive_entry(source: Path, collection: str) -> dict[str, Any]:
+    slug = source.name
+    if collection == "daily":
+        start = end = slug
+        date_label = _archive_date_label(slug)
+        coverage = "One complete local day"
+        edition = "Public report"
+        href = f"daily/{slug}/index.html"
+    else:
+        start, end = slug.split("_", maxsplit=1)
+        date_label = f"{_archive_date_label(start)} - {_archive_date_label(end)}"
+        day_count = (datetime.strptime(end, "%Y-%m-%d") - datetime.strptime(start, "%Y-%m-%d")).days + 1
+        if collection == "periods":
+            coverage = f"{day_count}-day rolling window"
+            edition = "Meteorological analysis"
+            href = (
+                f"periods/{slug}/analysis/index.html"
+                if (source / "analysis" / "index.html").is_file()
+                else f"periods/{slug}/index.html"
+            )
+        else:
+            coverage = f"{day_count}-day historical window"
+            edition = "Legacy weekly report"
+            href = f"weeks/{slug}/index.html"
+
+    page_count = len(list(source.glob("*.html")))
+    if (source / "analysis").is_dir():
+        page_count += len(list((source / "analysis").glob("*.html")))
+    return {
+        "source": source,
+        "slug": slug,
+        "year": start[:4],
+        "date_label": date_label,
+        "coverage": coverage,
+        "edition": edition,
+        "page_count": page_count,
+        "href": href,
+        "start": start,
+        "end": end,
+    }
+
+
+def _archived_navigation(
+    active: str,
+    page_dir: Path,
+    family: str,
+    archive_href: str,
+    root_prefix: str = "",
+) -> tuple[str, str]:
+    if family == "public":
+        candidates = ARCHIVED_PUBLIC_PAGES
+        family_label = "Saved daily report"
+    elif family == "analysis" and root_prefix:
+        candidates = ANALYSIS_PAGES
+        family_label = "Saved 72-hour analysis"
+    elif family == "analysis":
+        candidates = LEGACY_ANALYSIS_PAGES
+        family_label = "Saved 72-hour analysis"
+    else:
+        candidates = (("index.html", "Overview"),)
+        family_label = "Saved weekly report"
+
+    pages = [(filename, label) for filename, label in candidates if (page_dir / filename).is_file()]
+    page_name = dict(pages).get(active, Path(active).stem.replace("-", " ").title())
+    links = []
+    for filename, label in pages:
+        current = ' aria-current="page"' if filename == active else ""
+        links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
+
+    if family == "public":
+        public_href = "index.html"
+        analysis_href = (
+            "analysis/index.html"
+            if (page_dir / "analysis" / "index.html").is_file()
+            else f"{archive_href}#analysis-reports"
+        )
+    elif family == "analysis":
+        public_href = f"{root_prefix}index.html" if root_prefix else f"{archive_href}#daily-reports"
+        analysis_href = "index.html"
+    else:
+        public_href = f"{archive_href}#daily-reports"
+        analysis_href = f"{archive_href}#analysis-reports"
+
+    public_current = ' aria-current="true"' if family == "public" else ""
+    analysis_current = ' aria-current="true"' if family == "analysis" else ""
+    navigation = (
+        f'<div class="nav-wrap"><a class="brand" href="{root_prefix}index.html">Atlas</a>'
+        f'<span class="nav-label">Report edition</span>'
+        f'<div class="report-switch" aria-label="Report edition"><a href="{html.escape(public_href)}"{public_current}>Public report</a>'
+        f'<a href="{html.escape(analysis_href)}"{analysis_current}>Meteorological analysis</a></div>'
+        f'<span class="nav-label">{family_label}</span>'
+        f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav>'
+        f'<div class="archive-nav-wrap"><span class="nav-label">History</span>'
+        f'<a class="archive-nav-link" data-atlas-archive-link href="{html.escape(archive_href)}">'
+        f'Archive <span>Saved editions</span></a></div>'
+        f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
+        f'Archived meteorological record. Values and interpretation are preserved.</div></div>'
+    )
+    return navigation, page_name
+
+
+def _restyle_archived_document(
+    document: str,
+    page: Path,
+    family: str,
+    archive_href: str,
+    root_prefix: str = "",
+) -> str:
+    if 'class="app-shell"' in document or "<body>" not in document:
+        return document
+
+    navigation, page_name = _archived_navigation(
+        page.name,
+        page.parent,
+        family,
+        archive_href,
+        root_prefix,
+    )
+    family_label = {
+        "public": "Daily report",
+        "analysis": "72-hour analysis",
+        "weekly": "Weekly report",
+    }[family]
+    shell_start = f"""
+  <div class="app-shell" data-atlas-restyled="true">
+    <header class="site-header" id="site-navigation">{navigation}</header>
+    <div class="sidebar-scrim" id="sidebar-scrim"></div>
+    <div class="workspace">
+      <header class="report-topbar">
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation">&#9776;</button>
+        <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>Archive</span><span>/</span><span>{html.escape(family_label)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
+      </header>
+"""
+    current_styles = f"<style>{SHARED_CSS}{DATA_FIRST_CSS}{ARCHIVE_COMPAT_CSS}</style>"
+    document = document.replace("</head>", f"{current_styles}\n</head>", 1)
+    document = document.replace("<body>", '<body data-atlas-archive-page="true">', 1)
+
+    old_navigation = re.compile(
+        r'\s*<header class="site-header"[^>]*>.*?</header>',
+        flags=re.DOTALL,
+    )
+    if old_navigation.search(document):
+        document = old_navigation.sub(shell_start, document, count=1)
+        legacy_close = ""
+    else:
+        document = document.replace(
+            '<body data-atlas-archive-page="true">',
+            f'<body data-atlas-archive-page="true">{shell_start}<div class="archived-legacy-content">',
+            1,
+        )
+        legacy_close = "</div>"
+
+    menu_script = """
+      <script>
+        const navigation = document.querySelector('#site-navigation');
+        const scrim = document.querySelector('#sidebar-scrim');
+        const menuButton = document.querySelector('#menu-button');
+        const setMenu = open => {
+          navigation.classList.toggle('open', open);
+          scrim.classList.toggle('open', open);
+        };
+        menuButton.addEventListener('click', () => setMenu(true));
+        scrim.addEventListener('click', () => setMenu(false));
+        navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+      </script>
+"""
+    document = document.replace(
+        "</body>",
+        f"{legacy_close}{menu_script}    </div>\n  </div>\n</body>",
+        1,
+    )
+    return document
+
+
+def _rewrite_published_archive_links(target: Path, collection: str) -> None:
+    analysis_dir = target / "analysis"
+    root_family = (
+        "public"
+        if collection == "daily" or analysis_dir.is_dir()
+        else ("weekly" if collection == "weeks" else "analysis")
+    )
+    for page in target.glob("*.html"):
+        document = page.read_text(encoding="utf-8")
+        document = document.replace('href="archive/index.html"', 'href="../../index.html"')
+        if collection == "daily":
+            document = document.replace(
+                'href="analysis/index.html"',
+                'href="../../index.html#analysis-reports"',
+            )
+            document = document.replace('href="report.html"', 'href="index.html"')
+        document = _restyle_archived_document(
+            document,
+            page,
+            root_family,
+            "../../index.html",
+        )
+        page.write_text(document, encoding="utf-8")
+
+    if analysis_dir.is_dir():
+        for page in analysis_dir.glob("*.html"):
+            document = page.read_text(encoding="utf-8").replace(
+                'href="../archive/index.html"',
+                'href="../../../index.html"',
+            )
+            document = _restyle_archived_document(
+                document,
+                page,
+                "analysis",
+                "../../../index.html",
+                "../",
+            )
+            page.write_text(document, encoding="utf-8")
+
+
+def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -> str:
+    rows = "".join(
+        f"""
+        <tr data-archive-row data-year="{html.escape(entry['year'])}" data-search="{html.escape((entry['slug'] + ' ' + entry['edition']).lower())}">
+          <td class="archive-date"><strong>{html.escape(entry['date_label'])}</strong><span>{html.escape(entry['slug'])}</span></td>
+          <td>{html.escape(entry['edition'])}</td>
+          <td>{html.escape(entry['coverage'])}; {entry['page_count']} saved page{'s' if entry['page_count'] != 1 else ''}</td>
+          <td><a class="archive-open" href="{html.escape(entry['href'])}">Open report &rarr;</a></td>
+        </tr>"""
+        for entry in entries
+    )
+    table = f"""
+      <div class="table-scroll">
+        <table class="archive-table">
+          <thead><tr><th>Date</th><th>Edition</th><th>Coverage</th><th>Report</th></tr></thead>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>""" if rows else ""
+    return f"""
+<section class="archive-group" id="{html.escape(section_id)}" data-archive-group>
+  <div class="archive-group-header"><h2>{html.escape(title)}</h2><span>{len(entries)} saved edition{'s' if len(entries) != 1 else ''}</span></div>
+  {table}
+  <p class="archive-empty">No saved reports match the current filter.</p>
+</section>
+"""
+
+
+def build_report_archive(
+    config: AtlasConfig,
+    site_dir: Path | None = None,
+    reports_dir: Path | None = None,
+    updated: str | None = None,
+) -> Path:
+    site_dir = site_dir or config.outputs.site_dir
+    reports_dir = reports_dir or config.outputs.reports_dir
+    archive_dir = site_dir / "archive"
+    if archive_dir.exists():
+        shutil.rmtree(archive_dir)
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
+    collections = {
+        "daily": [
+            _archive_entry(source, "daily")
+            for source in _saved_report_directories(reports_dir / "daily")
+        ],
+        "periods": [
+            _archive_entry(source, "periods")
+            for source in _saved_report_directories(reports_dir / "periods")
+        ],
+        "weeks": [
+            _archive_entry(source, "weeks")
+            for source in _saved_report_directories(reports_dir / "weeks")
+        ],
+    }
+
+    for collection, entries in collections.items():
+        target_parent = archive_dir / collection
+        for entry in entries:
+            target = target_parent / entry["slug"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(entry["source"], target)
+            _rewrite_published_archive_links(target, collection)
+
+    all_entries = [entry for entries in collections.values() for entry in entries]
+    years = sorted({entry["year"] for entry in all_entries}, reverse=True)
+    earliest = min((entry["start"] for entry in all_entries), default="n/a")
+    total = len(all_entries)
+    year_options = "".join(
+        f'<option value="{html.escape(year)}">{html.escape(year)}</option>' for year in years
+    )
+
+    content = _page_intro(
+        "Report Archive",
+        "Every preserved Atlas public report and meteorological analysis for Debrecen, in reverse chronological order.",
+        "Saved Atlas editions",
+    )
+    content += f"""
+<div class="archive-summary" aria-label="Archive summary">
+  <div class="archive-stat"><span>All editions</span><strong>{total}</strong><small>saved reports</small></div>
+  <div class="archive-stat"><span>Daily public</span><strong>{len(collections['daily'])}</strong><small>complete local days</small></div>
+  <div class="archive-stat"><span>72-hour analysis</span><strong>{len(collections['periods'])}</strong><small>rolling periods</small></div>
+  <div class="archive-stat"><span>Record begins</span><strong>{html.escape(earliest)}</strong><small>earliest saved window</small></div>
+</div>
+<div class="archive-toolbar" aria-label="Archive filters">
+  <label class="archive-control"><span>Find report</span><input id="archive-search" type="search" placeholder="YYYY-MM-DD" autocomplete="off"></label>
+  <label class="archive-control"><span>Year</span><select id="archive-year"><option value="">All years</option>{year_options}</select></label>
+  <div class="archive-visible-count" id="archive-visible-count">{total} reports</div>
+</div>
+"""
+    content += _archive_table(collections["daily"], "daily-reports", "Daily Public Reports")
+    content += _archive_table(collections["periods"], "analysis-reports", "72-Hour Meteorological Analysis")
+    content += _archive_table(collections["weeks"], "weekly-reports", "Legacy Weekly Reports")
+    content += """
+<script>
+  const archiveSearch = document.querySelector('#archive-search');
+  const archiveYear = document.querySelector('#archive-year');
+  const archiveRows = Array.from(document.querySelectorAll('[data-archive-row]'));
+  const archiveGroups = Array.from(document.querySelectorAll('[data-archive-group]'));
+  const archiveVisibleCount = document.querySelector('#archive-visible-count');
+  const filterArchive = () => {
+    const query = archiveSearch.value.trim().toLowerCase();
+    const year = archiveYear.value;
+    let visible = 0;
+    archiveRows.forEach(row => {
+      const matchesQuery = !query || row.dataset.search.includes(query);
+      const matchesYear = !year || row.dataset.year === year;
+      row.hidden = !(matchesQuery && matchesYear);
+      if (!row.hidden) visible += 1;
+    });
+    archiveGroups.forEach(group => {
+      const hasVisibleRows = Array.from(group.querySelectorAll('[data-archive-row]')).some(row => !row.hidden);
+      group.dataset.empty = String(!hasVisibleRows);
+    });
+    archiveVisibleCount.textContent = `${visible} report${visible === 1 ? '' : 's'}`;
+  };
+  archiveSearch.addEventListener('input', filterArchive);
+  archiveYear.addEventListener('change', filterArchive);
+  filterArchive();
+</script>
+"""
+
+    updated = updated or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    index = archive_dir / "index.html"
+    index.write_text(
+        _page_document(
+            config,
+            "index.html",
+            "Report Archive",
+            "Saved daily and 72-hour Debrecen weather reports.",
+            content,
+            updated,
+            "archive",
+        ),
+        encoding="utf-8",
+    )
+    return index
+
+
 def archive_site(site_dir: Path, archive_dir: Path) -> Path:
     if archive_dir.exists():
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
     for source in site_dir.iterdir():
-        if source.name == ".gitkeep":
+        if source.name in {".gitkeep", "archive"}:
             continue
         target = archive_dir / source.name
         if source.is_dir():
@@ -1086,7 +1904,8 @@ def archive_public_site(
     for filename, _ in PUBLIC_PAGES:
         source = site_dir / filename
         if source.exists():
-            shutil.copy2(source, archive_dir / filename)
+            target_name = "index.html" if filename == "report.html" else filename
+            shutil.copy2(source, archive_dir / target_name)
     for name in asset_names:
         source = site_dir / "assets" / name
         if source.exists():
@@ -1308,6 +2127,54 @@ def build_site(
     day_briefing = daily_regime.briefing.replace(daily_regime.label, day_regime_label, 1).replace(
         "period solar radiation", "daily solar radiation"
     )
+    home = f"""
+<header class="home-intro">
+  <div class="eyebrow">Debrecen meteorological record</div>
+  <h1>{html.escape(config.project.name)}</h1>
+  <p class="home-question">What kind of weather did Debrecen just have, how unusual was it, and what did it imply for solar and wind energy potential?</p>
+  <p class="home-summary">Atlas is a deterministic weather diary for Debrecen. It combines airport observations, remote sensing, gridded climate records, atmospheric diagnostics, historical analogs and physically based renewable-energy estimates in two regularly updated publications.</p>
+</header>
+<section aria-labelledby="current-publications">
+  <div class="section-heading"><h2 id="current-publications">Current publications</h2></div>
+  <div class="publication-ledger">
+    <a class="publication-row" href="report.html">
+      <span class="publication-kind">DAILY / PUBLIC</span>
+      <div class="publication-copy"><h2>Daily Public Report</h2><p>The last complete local day, with a concise weather account, objective events, renewable yield and climate context.</p></div>
+      <div class="publication-date">Latest edition<strong>{html.escape(daily_date)} &rarr;</strong></div>
+    </a>
+    <a class="publication-row" href="analysis/index.html">
+      <span class="publication-kind">72 HOURS / EXPERT</span>
+      <div class="publication-copy"><h2>Meteorological Analysis</h2><p>Surface, synoptic, satellite, radar, upper-air, land-surface, climate and energy diagnostics for the latest complete period.</p></div>
+      <div class="publication-date">Current window<strong>{html.escape(period_start)} to {html.escape(period_end)} &rarr;</strong></div>
+    </a>
+    <a class="publication-row" href="archive/index.html">
+      <span class="publication-kind">PRESERVED RECORD</span>
+      <div class="publication-copy"><h2>Report Archive</h2><p>Saved daily reports, rolling analyses and legacy weekly editions, presented in the current Atlas reading environment.</p></div>
+      <div class="publication-date">Browse history<strong>Open archive &rarr;</strong></div>
+    </a>
+  </div>
+</section>
+<section class="content-section">
+  <h2>Evidence, not decoration</h2>
+  <p class="home-section-lead">The report begins with what was observed and labels every gridded, remotely sensed or model-derived contribution. Interactive figures support inspection, while deterministic text records the thresholds and evidence behind each interpretation.</p>
+  <div class="source-key" aria-label="Atlas evidence sources">
+    <span class="source-chip observed"><b>OBS</b> HungaroMet Debrecen Airport</span>
+    <span class="source-chip remote"><b>REMOTE</b> Radar + LINET + Meteosat</span>
+    <span class="source-chip gridded"><b>GRID</b> Open-Meteo + ERA5</span>
+    <span class="source-chip derived"><b>MODEL</b> Column diagnostics + renewable yield</span>
+  </div>
+  <div class="home-definition">
+    <div><span>Geographic scope</span><strong>Debrecen, Hungary</strong></div>
+    <div><span>Climate reference</span><strong>1991-2020 standard normal, recent decade and full record</strong></div>
+    <div><span>Publication cadence</span><strong>Daily public record and rolling 72-hour analysis</strong></div>
+  </div>
+</section>
+<div class="methods-grid">
+  <section class="content-section"><h2>Scientific frame</h2><p>Atlas is descriptive, diagnostic, climatological and energy-oriented. It is not forecast calibration, an operational warning service or a plant-level production forecast.</p></section>
+  <section class="content-section"><h2>Open data</h2><p>The pipeline uses public HungaroMet, Open-Meteo and Energy-Charts endpoints without repository secrets. Optional-source failures remain explicitly unavailable rather than becoming false zeroes.</p></section>
+</div>
+<section class="content-section"><h2>Project notes</h2><p class="home-section-lead">Methods, source provenance and implementation details are maintained in the <a href="https://github.com/danebencedavid/Atlas">Atlas repository</a>. Every analytical page includes its own evidence notes and machine-readable downloads.</p></section>
+"""
     public_overview = f"""
 <header class="hero">
   <div>
@@ -1548,10 +2415,17 @@ def build_site(
         ("Land-surface daily context", data_links.get("land_surface_daily")),
         ("Machine-readable summary", "../data/summary.json"),
     ]
+    available_downloads = [(label, str(path)) for label, path in downloads if path]
     download_items = "\n".join(
-        f'<li><a href="{html.escape(path)}">{html.escape(label)}</a></li>'
-        for label, path in downloads
-        if path
+        '<li><a href="{path}" download>'
+        '<span class="download-filemark" aria-hidden="true">&#8595;</span>'
+        '<span class="download-copy"><strong>{label}</strong><small>{file_type} data</small></span>'
+        '<span class="download-action">Download</span></a></li>'.format(
+            path=html.escape(path),
+            label=html.escape(label),
+            file_type=html.escape(Path(path.split("?", 1)[0]).suffix.lstrip(".").upper() or "DATA"),
+        )
+        for label, path in available_downloads
     )
     methods = _page_intro(
         "Methods And Data",
@@ -1582,14 +2456,28 @@ def build_site(
     <ul>{expert_note_items}</ul>
   </section>
 </div>
-<section class="content-section">
-  <h2>Downloads</h2>
+<section class="content-section downloads-section">
+  <div class="downloads-heading"><div><h2>Data Downloads</h2><p>Generated evidence files for independent inspection and reuse.</p></div><span class="download-count">{len(available_downloads)} files</span></div>
   <ul class="download-list">{download_items}</ul>
 </section>
 """
 
+    (site_dir / "index.html").write_text(
+        _page_document(
+            config,
+            "index.html",
+            "Project Overview",
+            "Atlas is a daily and rolling 72-hour meteorological record for Debrecen.",
+            home,
+            updated,
+            "home",
+            edition_notice,
+        ),
+        encoding="utf-8",
+    )
+
     public_documents = {
-        "index.html": ("Daily Overview", "Daily public weather report for Debrecen.", public_overview),
+        "report.html": ("Daily Overview", "Daily public weather report for Debrecen.", public_overview),
         "weather.html": ("Daily Weather", "Yesterday's observed weather in Debrecen.", public_weather),
         "events.html": ("Daily Events", "Objective weather events detected around Debrecen yesterday.", public_events),
         "energy.html": ("Daily Energy", "Daily PV and wind weather yield for Debrecen.", public_energy),
