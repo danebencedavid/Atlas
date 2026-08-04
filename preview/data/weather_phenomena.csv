@@ -1,0 +1,5 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-07-30 08:00:00+00:00,2026-07-30 18:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 34.2 C.,0.92,HungaroMet station 64711
+2026-07-30 23:00:00+00:00,2026-07-31 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.9 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-07-31 12:00:00+00:00,2026-07-31 15:00:00+00:00,Thunderstorm,25 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-08-01 00:00:00+00:00,2026-08-01 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.9 C during local night.,0.66,Open-Meteo historical-model pressure levels

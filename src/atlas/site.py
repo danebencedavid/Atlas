@@ -483,6 +483,433 @@ footer {
 """
 
 
+DATA_FIRST_CSS = """
+:root {
+  --ink: #232323;
+  --ink-soft: #50504d;
+  --muted: #7b7a77;
+  --line: #e7e7e3;
+  --line-strong: #d8d8d3;
+  --paper: #ffffff;
+  --panel: #ffffff;
+  --canvas: #ffffff;
+  --rail: #f6f6f4;
+  --hover: #ebebe8;
+  --selected: #e7e7e3;
+  --blue: #3f72a4;
+  --blue-soft: #eaf1f7;
+  --green: #43816b;
+  --gold: #b47a27;
+  --red: #cf5146;
+  --sidebar: 208px;
+  --topbar: 48px;
+}
+body {
+  color: var(--ink);
+  background: var(--canvas);
+  font-size: 14px;
+}
+a { color: inherit; }
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+}
+.workspace { min-width: 0; }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 100vh;
+  background: var(--rail);
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 0;
+  backdrop-filter: none;
+}
+.nav-wrap {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+}
+.brand {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  color: var(--ink);
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.brand::before {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--ink);
+  border-radius: 4px;
+  content: "A";
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.brand:hover { background: var(--hover); }
+.nav-label {
+  display: block;
+  margin: 17px 8px 5px;
+  color: #969692;
+  font-size: 11px;
+  font-weight: 600;
+}
+.report-switch {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.report-switch a {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.report-switch a + a { border-left: 0; }
+.report-switch a:hover { background: var(--hover); }
+.report-switch a[aria-current="true"] {
+  color: var(--ink);
+  background: var(--selected);
+}
+.primary-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  order: initial;
+  align-items: stretch;
+  gap: 2px;
+  width: auto;
+  min-width: 0;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+.primary-nav a {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  color: var(--ink-soft);
+  border: 0;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 450;
+}
+.primary-nav a:hover { color: var(--ink); background: var(--hover); }
+.primary-nav a[aria-current="page"] {
+  color: var(--ink);
+  background: var(--selected);
+  border-bottom-color: transparent;
+  font-weight: 600;
+}
+.sidebar-note {
+  margin: auto 4px 2px;
+  padding: 10px;
+  color: var(--muted);
+  background: rgba(255,255,255,.55);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.sidebar-note strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.report-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  height: var(--topbar);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  background: rgba(255,255,255,.94);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.menu-button {
+  width: 28px;
+  height: 28px;
+  display: none;
+  place-items: center;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.menu-button:hover { background: var(--hover); }
+.breadcrumbs {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.breadcrumbs span, .breadcrumbs strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.breadcrumbs strong { color: var(--ink-soft); font-weight: 550; }
+.sidebar-scrim { display: none; }
+.edition-notice {
+  padding: 8px 20px;
+  color: #71541b;
+  background: #f7efdf;
+  border-bottom: 1px solid #e5d5b5;
+  font-size: 11px;
+  font-weight: 550;
+}
+.page-shell {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  padding: 34px 48px 72px;
+}
+.hero {
+  min-height: 0;
+  display: block;
+  padding: 0 0 12px;
+}
+.eyebrow {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 31px;
+  font-weight: 620;
+  line-height: 1.2;
+}
+h2 { font-size: 19px; font-weight: 620; }
+.hero-regime {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 650;
+}
+.brief {
+  max-width: 940px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.62;
+}
+.meta { margin: 9px 0 0; font-size: 10px; }
+.source-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 3px;
+}
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 10px;
+}
+.source-chip b {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+}
+.source-chip.observed b { color: var(--green); }
+.source-chip.gridded b { color: var(--blue); }
+.source-chip.remote b { color: var(--gold); }
+.source-chip.derived b { color: var(--red); }
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.score {
+  min-width: 0;
+  padding: 15px 18px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+}
+.score:first-child { padding-left: 0; border-top: 2px solid var(--gold); }
+.score:nth-child(2) { border-top: 2px solid var(--green); }
+.score:nth-child(3) { border-top: 2px solid var(--blue); }
+.score:last-child { border-right: 0; }
+.score strong { margin: 3px 0; font-size: 27px; font-weight: 570; }
+.score span { font-size: 11px; }
+.page-intro {
+  max-width: 1040px;
+  padding: 0 0 24px;
+}
+.page-intro h1 { margin-bottom: 7px; font-size: 31px; }
+.page-intro p { color: var(--ink-soft); font-size: 14px; }
+.public-facts,
+.metric-band,
+.diagnostic-ledger {
+  border-top-color: var(--line-strong);
+  border-bottom-color: var(--line-strong);
+}
+.public-facts { margin: 10px 0 0; }
+.public-facts div { padding: 15px 18px; }
+.public-facts div:first-child { padding-left: 0; border-top: 2px solid var(--red); }
+.public-facts div:nth-child(2) { border-top: 2px solid var(--blue); }
+.public-facts div:nth-child(3) { border-top: 2px solid var(--green); }
+.public-facts strong { font-size: 24px; font-weight: 570; }
+.metric { padding: 15px 18px; }
+.metric strong { font-size: 24px; font-weight: 570; }
+.plot-section, .content-section {
+  padding: 24px 0 34px;
+  border-top-color: var(--line);
+}
+.plot-section:first-of-type { margin-top: 24px; }
+.section-heading { align-items: flex-start; margin-bottom: 14px; }
+.section-heading::before {
+  flex: 0 0 auto;
+  padding-top: 5px;
+  color: #93928e;
+  content: "DATA";
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 650;
+}
+.section-heading h2 { padding-top: 0; }
+.plot-help summary {
+  color: var(--muted);
+  background: transparent;
+  border-color: var(--line-strong);
+}
+.help-panel { color: var(--ink-soft); border-color: var(--line-strong); }
+.source-note {
+  margin: -7px 0 12px 41px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.viz-scroll { border-radius: 5px; }
+.viz-frame { border-color: var(--line-strong); border-radius: 5px; }
+.analysis-lead,
+.public-lead {
+  max-width: 1040px;
+  margin: 22px 0 18px;
+  padding: 14px 0 14px 15px;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--gold);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.insight-grid { border-color: var(--line-strong); }
+.insight { padding: 16px 18px; }
+.insight .provenance, .provenance {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+}
+.insight p, .event-copy p { color: var(--ink-soft); font-size: 12px; }
+.event-list, .analog-list { border-top-color: var(--line-strong); }
+table { font-size: 12px; }
+th, td { border-color: var(--line); }
+footer {
+  margin: 0;
+  color: var(--muted);
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+}
+.footer-wrap {
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  padding: 18px 48px;
+  font-size: 10px;
+}
+@media (max-width: 980px) and (min-width: 721px) {
+  :root { --sidebar: 190px; }
+  .page-shell { padding-right: 32px; padding-left: 32px; }
+  .nav-wrap { padding: 8px; flex-wrap: nowrap; }
+  .primary-nav { width: auto; flex: 0 0 auto; flex-wrap: nowrap; }
+  .primary-nav a { min-height: 30px; }
+}
+@media (max-width: 720px) {
+  .app-shell { display: block; }
+  .site-header {
+    position: fixed;
+    left: 0;
+    width: min(86vw, 290px);
+    height: 100vh;
+    transform: translateX(-105%);
+    border-right: 1px solid var(--line-strong);
+    box-shadow: 12px 0 30px rgba(0,0,0,.12);
+    transition: transform 180ms ease;
+  }
+  .site-header.open { transform: translateX(0); }
+  .nav-wrap { padding: 8px; flex-wrap: nowrap; gap: 0; }
+  .primary-nav { order: initial; width: auto; flex: 0 0 auto; overflow: visible; }
+  .primary-nav a { min-height: 30px; }
+  .report-topbar { padding: 0 14px; }
+  .menu-button { display: grid; }
+  .breadcrumbs .optional { display: none; }
+  .sidebar-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 28;
+    background: rgba(30,30,28,.25);
+  }
+  .sidebar-scrim.open { display: block; }
+  .page-shell { padding: 28px 20px 56px; }
+  h1, .page-intro h1 { font-size: 28px; }
+  .hero { padding-top: 0; }
+  .summary, .public-facts, .metric-band, .diagnostic-ledger,
+  .methods-grid, .download-list, .insight-grid { grid-template-columns: 1fr; }
+  .score, .score:first-child, .score:nth-child(2), .score:nth-child(3),
+  .metric, .public-facts div, .public-facts div:first-child,
+  .public-facts div:nth-child(2), .public-facts div:nth-child(3) {
+    padding: 13px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .score:last-child, .metric:last-child, .public-facts div:last-child { border-bottom: 0; }
+  .source-note { margin-left: 0; }
+  .viz-frame { min-width: 720px; }
+  .footer-wrap { padding: 18px 20px; }
+}
+"""
+
+
 def _fmt(value: float, digits: int = 1) -> str:
     if pd.isna(value):
         return "n/a"
@@ -528,11 +955,16 @@ def _navigation(active: str, family: str) -> str:
         links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
     public_current = ' aria-current="true"' if family == "public" else ""
     analysis_current = ' aria-current="true"' if family == "analysis" else ""
+    family_label = "Daily public report" if family == "public" else "72-hour analysis"
     return (
         f'<div class="nav-wrap"><a class="brand" href="{prefix}index.html">Atlas</a>'
+        f'<span class="nav-label">Report edition</span>'
         f'<div class="report-switch" aria-label="Report edition"><a href="{prefix}index.html"{public_current}>Public report</a>'
         f'<a href="{prefix}analysis/index.html"{analysis_current}>Meteorological analysis</a></div>'
-        f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav></div>'
+        f'<span class="nav-label">{family_label}</span>'
+        f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav>'
+        f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
+        f'Daily public record and rolling expert analysis.</div></div>'
     )
 
 
@@ -586,12 +1018,33 @@ def _page_document(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
   <meta name="description" content="{html.escape(description)}">
-  <style>{SHARED_CSS}</style>
+  <style>{SHARED_CSS}{DATA_FIRST_CSS}</style>
 </head>
 <body>
-  <header class="site-header">{_navigation(active, family)}</header>
-{notice_line}  <main><div class="page-shell">{content}</div></main>
-  <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
+  <div class="app-shell">
+    <header class="site-header" id="site-navigation">{_navigation(active, family)}</header>
+    <div class="sidebar-scrim" id="sidebar-scrim"></div>
+    <div class="workspace">
+      <header class="report-topbar">
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation">&#9776;</button>
+        <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape('Daily report' if family == 'public' else '72-hour analysis')}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
+      </header>
+{notice_line}      <main><div class="page-shell">{content}</div></main>
+      <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
+    </div>
+  </div>
+  <script>
+    const navigation = document.querySelector('#site-navigation');
+    const scrim = document.querySelector('#sidebar-scrim');
+    const menuButton = document.querySelector('#menu-button');
+    const setMenu = open => {{
+      navigation.classList.toggle('open', open);
+      scrim.classList.toggle('open', open);
+    }};
+    menuButton.addEventListener('click', () => setMenu(true));
+    scrim.addEventListener('click', () => setMenu(false));
+    navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+  </script>
 </body>
 </html>
 """
@@ -863,6 +1316,12 @@ def build_site(
     <p class="hero-regime">{html.escape(day_regime_label)}</p>
     <p class="brief">{html.escape(day_briefing)}</p>
     <p class="meta">A concise account of the last complete day in Debrecen.</p>
+    <div class="source-key" aria-label="Daily report evidence">
+      <span class="source-chip observed"><b>OBS</b> Debrecen Airport</span>
+      <span class="source-chip gridded"><b>GRID</b> Open-Meteo</span>
+      <span class="source-chip remote"><b>REMOTE</b> Radar + lightning</span>
+      <span class="source-chip derived"><b>MODEL</b> Renewable yield</span>
+    </div>
   </div>
   <div class="summary" aria-label="Daily renewable weather summary">
     <div class="score"><span>PV yield</span><strong>{_fmt(daily_physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh per installed kWp</span></div>
@@ -870,7 +1329,6 @@ def build_site(
     <div class="score"><span>Weather score</span><strong>{_fmt(daily_energy.combined_score, 0)}</strong><span>{html.escape(daily_energy.label)}</span></div>
   </div>
 </header>
-<p class="public-lead">Yesterday was classified as <strong>{html.escape(day_regime_label.lower())}</strong>. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {len(daily_lightning):,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>
 <div class="public-facts"><div><span>Airport mean</span><strong>{_fmt(daily_observed_temp)} C</strong></div><div><span>Airport precipitation</span><strong>{_fmt(daily_observed_rain)} mm</strong></div><div><span>Peak airport gust</span><strong>{_fmt(daily_observed_gust)} m/s</strong></div></div>
 """
     public_overview += _plot_section(
@@ -880,6 +1338,7 @@ def build_site(
         "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation.",
         "meteogram",
     )
+    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {len(daily_lightning):,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>'
 
     public_weather = _page_intro(
         "Yesterday's Weather",
@@ -931,6 +1390,12 @@ def build_site(
     <p class="hero-regime">{html.escape(regime.label)}</p>
     <p class="brief">{html.escape(regime.briefing)}</p>
     <p class="meta">{html.escape(config.project.tagline)}</p>
+    <div class="source-key" aria-label="Analysis evidence">
+      <span class="source-chip observed"><b>OBS</b> Station 64711</span>
+      <span class="source-chip remote"><b>REMOTE</b> Radar + LINET + MSG</span>
+      <span class="source-chip gridded"><b>GRID</b> ERA5 + model levels</span>
+      <span class="source-chip derived"><b>MODEL</b> Energy + diagnostics</span>
+    </div>
   </div>
   <div class="summary" aria-label="Renewable weather scores">
     <div class="score"><span>PV yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh per installed kWp</span></div>
@@ -938,13 +1403,6 @@ def build_site(
     <div class="score"><span>Combined weather score</span><strong>{_fmt(energy.combined_score, 0)}</strong><span>{html.escape(energy.label)}</span></div>
   </div>
 </header>
-<p class="analysis-lead"><strong>The report in brief.</strong> {html.escape(regime.briefing)} Atlas found {len(fronts.events)} objective frontal passage candidate(s), {lightning_count:,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
-<div class="insight-grid">
-  <article class="insight"><span class="provenance">Observed</span><h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
-  <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_count:,} lightning events were inside the study radius; the closest was {_fmt(closest_flash)} km from Debrecen.</p></article>
-  <article class="insight"><span class="provenance">Model-derived</span><h3>Atmospheric column</h3><p>Selected-profile surface-based CAPE was {_fmt(cape, 0)} J/kg and boundary-layer height was {_fmt(pbl, 0)} m.</p></article>
-  <article class="insight"><span class="provenance">ERA5 analog</span><h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
-</div>
 """
     analysis_overview += _plot_section(
         "Annotated 72-Hour Meteogram",
@@ -953,6 +1411,15 @@ def build_site(
         "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and radiation. Red vertical markers identify objective frontal-passage candidates.",
         "meteogram",
     )
+    analysis_overview += f"""
+<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {len(fronts.events)} objective frontal passage candidate(s), {lightning_count:,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
+<div class="insight-grid">
+  <article class="insight"><span class="provenance">Observed</span><h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
+  <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_count:,} lightning events were inside the study radius; the closest was {_fmt(closest_flash)} km from Debrecen.</p></article>
+  <article class="insight"><span class="provenance">Model-derived</span><h3>Atmospheric column</h3><p>Selected-profile surface-based CAPE was {_fmt(cape, 0)} J/kg and boundary-layer height was {_fmt(pbl, 0)} m.</p></article>
+  <article class="insight"><span class="provenance">ERA5 analog</span><h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
+</div>
+"""
 
     weather = _page_intro(
         "Surface And Synoptic Analysis",

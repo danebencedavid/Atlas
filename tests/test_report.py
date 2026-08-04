@@ -188,11 +188,16 @@ def test_report_generation_smoke(tmp_path: Path):
     assert (target.parent / "assets" / "satellite_media" / "frame.webp").exists()
     assert "Public report" in html
     assert "Meteorological analysis" in html
+    assert 'class="app-shell"' in html
+    assert 'class="source-key"' in html
+    assert html.index("Yesterday Hour By Hour") < html.index("Deterministic interpretation.")
     assert "Demonstration edition: synthetic data." in html
     analysis_dir = target.parent / "analysis"
-    assert "Demonstration edition: synthetic data." in (
-        analysis_dir / "index.html"
-    ).read_text(encoding="utf-8")
+    analysis_html = (analysis_dir / "index.html").read_text(encoding="utf-8")
+    assert "Demonstration edition: synthetic data." in analysis_html
+    assert analysis_html.index("Annotated 72-Hour Meteogram") < analysis_html.index(
+        "Deterministic interpretation."
+    )
     assert "Wind Regime" in (analysis_dir / "surface-synoptic.html").read_text(encoding="utf-8")
     assert "Meteosat, Radar And Lightning" in (analysis_dir / "storms-satellite.html").read_text(encoding="utf-8")
     assert "Closest seasonal analogs" in (analysis_dir / "climate.html").read_text(encoding="utf-8")
