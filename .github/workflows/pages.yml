@@ -130,7 +130,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 35
+    timeout-minutes: 90
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -145,26 +145,6 @@ jobs:
               throw new Error(`Invalid Pages artifact ID: ${process.env.PAGES_ARTIFACT_ID}`)
             }
 
-            const oidcToken = await core.getIDToken()
-            const { data: deployment } = await github.request(
-              'POST /repos/{owner}/{repo}/pages/deployments',
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: artifactId,
-                pages_build_version: context.sha,
-                oidc_token: oidcToken,
-              },
-            )
-
-            const pageUrl = deployment.page_url || ''
-            const deploymentId =
-              deployment.id ||
-              deployment.status_url?.split('/').filter(Boolean).pop() ||
-              context.sha
-            core.setOutput('page_url', pageUrl)
-            core.info(`Created Pages deployment ${deploymentId}`)
-
             const terminalFailures = new Set([
               'unknown_status',
               'deployment_failed',
@@ -173,49 +153,106 @@ jobs:
               'deployment_cancelled',
               'deployment_lost',
             ])
-            const deadline = Date.now() + 30 * 60 * 1000
-            let lastStatus = ''
-            let reportingErrors = 0
+            const retryableFailures = new Set(['deployment_failed'])
+            const sleep = milliseconds =>
+              new Promise(resolve => setTimeout(resolve, milliseconds))
+            const maximumAttempts = 3
+            const pollTimeout = 25 * 60 * 1000
+            let pageUrl = ''
 
-            while (Date.now() < deadline) {
-              await new Promise(resolve => setTimeout(resolve, 10000))
-              let status
+            for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+              core.info(`Starting Pages deployment attempt ${attempt}/${maximumAttempts}`)
+              let deployment
               try {
+                const oidcToken = await core.getIDToken()
                 const response = await github.request(
-                  'GET /repos/{owner}/{repo}/pages/deployments/{deploymentId}',
+                  'POST /repos/{owner}/{repo}/pages/deployments',
                   {
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    deploymentId,
+                    artifact_id: artifactId,
+                    pages_build_version: context.sha,
+                    oidc_token: oidcToken,
                   },
                 )
-                status = response.data
+                deployment = response.data
               } catch (error) {
-                reportingErrors += 1
-                if (reportingErrors >= 12) {
+                if (attempt === maximumAttempts) {
                   throw error
                 }
                 core.warning(
-                  `Pages status check ${reportingErrors}/12 failed: ${error.message}`,
+                  `Could not create Pages deployment attempt ${attempt}: ${error.message}`,
                 )
+                await sleep(60000)
                 continue
               }
 
-              reportingErrors = 0
-              if (status.status !== lastStatus) {
-                core.info(`Pages deployment status: ${status.status}`)
-                lastStatus = status.status
-              }
-              if (status.status === 'succeed') {
-                core.info(`Published Atlas at ${pageUrl}`)
-                return
-              }
-              if (terminalFailures.has(status.status)) {
-                throw new Error(`Pages deployment ended with status: ${status.status}`)
-              }
-            }
+              pageUrl = deployment.page_url || pageUrl
+              const deploymentId =
+                deployment.id ||
+                deployment.status_url?.split('/').filter(Boolean).pop() ||
+                context.sha
+              core.setOutput('page_url', pageUrl)
+              core.info(`Created Pages deployment ${deploymentId}`)
 
-            throw new Error(
-              `Pages deployment ${deploymentId} did not finish within 30 minutes; ` +
-                'the deployment was left active for GitHub to complete.',
-            )
+              const deadline = Date.now() + pollTimeout
+              let lastStatus = ''
+              let reportingErrors = 0
+              let terminalStatus = ''
+
+              while (Date.now() < deadline) {
+                await sleep(10000)
+                let status
+                try {
+                  const response = await github.request(
+                    'GET /repos/{owner}/{repo}/pages/deployments/{deploymentId}',
+                    {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      deploymentId,
+                    },
+                  )
+                  status = response.data
+                } catch (error) {
+                  reportingErrors += 1
+                  if (reportingErrors >= 12) {
+                    throw error
+                  }
+                  core.warning(
+                    `Pages status check ${reportingErrors}/12 failed: ${error.message}`,
+                  )
+                  continue
+                }
+
+                reportingErrors = 0
+                if (status.status !== lastStatus) {
+                  core.info(`Pages deployment status: ${status.status}`)
+                  lastStatus = status.status
+                }
+                if (status.status === 'succeed') {
+                  core.info(`Published Atlas at ${pageUrl}`)
+                  return
+                }
+                if (terminalFailures.has(status.status)) {
+                  terminalStatus = status.status
+                  core.info(`Pages terminal payload: ${JSON.stringify(status)}`)
+                  break
+                }
+              }
+
+              if (!terminalStatus) {
+                throw new Error(
+                  `Pages deployment ${deploymentId} did not finish within 25 minutes; ` +
+                    'the deployment was left active for GitHub to complete.',
+                )
+              }
+              if (!retryableFailures.has(terminalStatus) || attempt === maximumAttempts) {
+                throw new Error(`Pages deployment ended with status: ${terminalStatus}`)
+              }
+
+              core.warning(
+                `Pages deployment attempt ${attempt} ended with ${terminalStatus}; ` +
+                  'retrying the same artifact in 60 seconds.',
+              )
+              await sleep(60000)
+            }
