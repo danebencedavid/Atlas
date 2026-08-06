@@ -44,14 +44,16 @@ jobs:
     needs: cadence
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      pages_artifact_id: ${{ steps.pages-artifact.outputs.artifact_id }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -66,7 +68,7 @@ jobs:
 
       - name: Restore provider reference cache
         id: provider-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: data/raw/open_meteo_era5_daily_*.json
           key: atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-bootstrap
@@ -96,7 +98,7 @@ jobs:
 
       - name: Preserve provider cache progress
         if: always() && steps.reference-state.outputs.count != '0'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: data/raw/open_meteo_era5_daily_*.json
           key: atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-${{ hashFiles('data/raw/open_meteo_era5_daily_*.json') }}
@@ -114,10 +116,11 @@ jobs:
           fi
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        id: pages-artifact
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -127,7 +130,92 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 35
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/github-script@v9
+        env:
+          PAGES_ARTIFACT_ID: ${{ needs.build.outputs.pages_artifact_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactId = Number(process.env.PAGES_ARTIFACT_ID)
+            if (!Number.isSafeInteger(artifactId) || artifactId <= 0) {
+              throw new Error(`Invalid Pages artifact ID: ${process.env.PAGES_ARTIFACT_ID}`)
+            }
+
+            const oidcToken = await core.getIDToken()
+            const { data: deployment } = await github.request(
+              'POST /repos/{owner}/{repo}/pages/deployments',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifactId,
+                pages_build_version: context.sha,
+                oidc_token: oidcToken,
+              },
+            )
+
+            const pageUrl = deployment.page_url || ''
+            const deploymentId =
+              deployment.id ||
+              deployment.status_url?.split('/').filter(Boolean).pop() ||
+              context.sha
+            core.setOutput('page_url', pageUrl)
+            core.info(`Created Pages deployment ${deploymentId}`)
+
+            const terminalFailures = new Set([
+              'unknown_status',
+              'deployment_failed',
+              'deployment_perms_error',
+              'deployment_content_failed',
+              'deployment_cancelled',
+              'deployment_lost',
+            ])
+            const deadline = Date.now() + 30 * 60 * 1000
+            let lastStatus = ''
+            let reportingErrors = 0
+
+            while (Date.now() < deadline) {
+              await new Promise(resolve => setTimeout(resolve, 10000))
+              let status
+              try {
+                const response = await github.request(
+                  'GET /repos/{owner}/{repo}/pages/deployments/{deploymentId}',
+                  {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    deploymentId,
+                  },
+                )
+                status = response.data
+              } catch (error) {
+                reportingErrors += 1
+                if (reportingErrors >= 12) {
+                  throw error
+                }
+                core.warning(
+                  `Pages status check ${reportingErrors}/12 failed: ${error.message}`,
+                )
+                continue
+              }
+
+              reportingErrors = 0
+              if (status.status !== lastStatus) {
+                core.info(`Pages deployment status: ${status.status}`)
+                lastStatus = status.status
+              }
+              if (status.status === 'succeed') {
+                core.info(`Published Atlas at ${pageUrl}`)
+                return
+              }
+              if (terminalFailures.has(status.status)) {
+                throw new Error(`Pages deployment ended with status: ${status.status}`)
+              }
+            }
+
+            throw new Error(
+              `Pages deployment ${deploymentId} did not finish within 30 minutes; ` +
+                'the deployment was left active for GitHub to complete.',
+            )
