@@ -35,7 +35,6 @@ def test_report_generation_smoke(tmp_path: Path):
         "dewpoint_spread",
         "solar_diurnal",
         "anomaly_bars",
-        "energy_quadrant",
         "regime_strip",
         "electricity_overview",
         "weather_electricity_links",
@@ -209,9 +208,18 @@ def test_report_generation_smoke(tmp_path: Path):
     analysis_html = (analysis_dir / "index.html").read_text(encoding="utf-8")
     assert "Demonstration edition: synthetic data." in analysis_html
     assert 'href="../archive/index.html"' in analysis_html
+    assert 'href="story.html"' in analysis_html
     assert analysis_html.index("Annotated 72-Hour Meteogram") < analysis_html.index(
         "Deterministic interpretation."
     )
+    story_html = (analysis_dir / "story.html").read_text(encoding="utf-8")
+    assert "Weather Story Graph" in story_html
+    assert 'id="weather-story-data"' in story_html
+    assert "Connections" in story_html
+    assert "Solar-Wind Weather Quadrant" not in (
+        analysis_dir / "land-energy.html"
+    ).read_text(encoding="utf-8")
+    assert (target.parent / "data" / "weather_story.json").exists()
     assert "Wind Regime" in (analysis_dir / "surface-synoptic.html").read_text(encoding="utf-8")
     assert "Meteosat, Radar And Lightning" in (analysis_dir / "storms-satellite.html").read_text(encoding="utf-8")
     assert "Closest seasonal analogs" in (analysis_dir / "climate.html").read_text(encoding="utf-8")

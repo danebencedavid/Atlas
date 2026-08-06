@@ -25,6 +25,7 @@ from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
 from atlas.satellite import SatelliteArchive
 from atlas.serialization import json_ready
+from atlas.story import WeatherStory, build_weather_story
 from atlas.synoptic import SynopticArchive
 
 
@@ -39,6 +40,7 @@ PUBLIC_PAGES = (
 
 ANALYSIS_PAGES = (
     ("index.html", "Overview"),
+    ("story.html", "Weather Story"),
     ("surface-synoptic.html", "Surface & Synoptic"),
     ("storms-satellite.html", "Storms & Satellite"),
     ("upper-air.html", "Upper Air & Dynamics"),
@@ -1162,6 +1164,110 @@ th, td { border-color: var(--line); }
 }
 .archive-group[data-empty="true"] .archive-empty { display: block; }
 .archive-group[data-empty="true"] .table-scroll { display: none; }
+.story-section {
+  padding: 24px 0 34px;
+  border-top: 1px solid var(--line);
+}
+.story-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.story-heading h2 { margin: 0; }
+.story-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px 15px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.story-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.story-dot { width: 8px; height: 8px; border-radius: 50%; }
+.story-dot.synoptic { background: var(--blue); }
+.story-dot.observed { background: var(--gold); }
+.story-dot.impact { background: var(--green); }
+.story-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.25fr) minmax(260px, .85fr);
+  gap: 24px;
+  align-items: stretch;
+  padding-top: 18px;
+}
+.story-field {
+  position: relative;
+  min-width: 0;
+  min-height: 620px;
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+}
+.story-edges,
+.story-nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
+.story-edges path {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+  marker-end: url(#story-arrow);
+}
+.story-edges marker path { fill: var(--muted); stroke: none; }
+.story-node {
+  --node-color: var(--line-strong);
+  position: absolute;
+  width: 170px;
+  min-height: 58px;
+  transform: translate(-50%, -50%);
+  padding: 9px 10px 10px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--node-color);
+  border-radius: 5px;
+  text-align: left;
+  cursor: pointer;
+}
+.story-node[data-domain="synoptic"] { --node-color: var(--blue); }
+.story-node[data-domain="observed"] { --node-color: var(--gold); }
+.story-node[data-domain="impact"] { --node-color: var(--green); }
+.story-node:hover,
+.story-node:focus-visible,
+.story-node[aria-pressed="true"] { border-color: var(--node-color); }
+.story-node:focus-visible { outline: 2px solid var(--blue-soft); outline-offset: 2px; }
+.story-node[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--node-color); }
+.story-node-domain,
+.story-evidence-domain {
+  display: block;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.story-node-label { display: block; padding-top: 2px; font-size: 12px; font-weight: 600; line-height: 1.25; }
+.story-evidence {
+  align-self: stretch;
+  min-width: 0;
+  padding: 17px 0 17px 20px;
+  border-left: 1px solid var(--line-strong);
+}
+.story-evidence h3 { margin: 5px 0 0; font-size: 17px; }
+.story-reading { margin: 11px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
+.story-facts { margin: 18px 0 0; }
+.story-facts div { padding: 9px 0; border-top: 1px solid var(--line); }
+.story-facts dt { color: var(--muted); font-size: 10px; }
+.story-facts dd { margin: 2px 0 0; font-size: 12px; font-weight: 600; }
+.story-source,
+.story-connections { margin-top: 16px; padding-top: 11px; border-top: 1px solid var(--line); }
+.story-source { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 9px; }
+.story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
+.story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
+.story-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
 footer {
   margin: 0;
   color: var(--muted);
@@ -1180,6 +1286,8 @@ footer {
   .nav-wrap { padding: 8px; flex-wrap: nowrap; }
   .primary-nav { width: auto; flex: 0 0 auto; flex-wrap: nowrap; }
   .primary-nav a { min-height: 30px; }
+  .story-layout { grid-template-columns: 1fr; }
+  .story-evidence { padding: 17px 0 0; border-top: 1px solid var(--line-strong); border-left: 0; }
 }
 @media (max-width: 720px) {
   .app-shell { display: block; }
@@ -1250,6 +1358,12 @@ footer {
   .archive-table th:nth-child(3),
   .archive-table td:nth-child(3) { display: none; }
   .source-note { margin-left: 0; }
+  .story-heading { align-items: flex-start; flex-direction: column; }
+  .story-legend { justify-content: flex-start; }
+  .story-layout { grid-template-columns: 1fr; }
+  .story-field { min-height: 780px; }
+  .story-node { width: min(180px, 44%); }
+  .story-evidence { padding: 17px 0 0; border-top: 1px solid var(--line-strong); border-left: 0; }
   .viz-frame { min-width: 720px; }
   .footer-wrap { padding: 18px 20px; }
 }
@@ -1425,6 +1539,138 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
   <h1>{html.escape(title)}</h1>
   <p>{html.escape(description)}</p>
 </header>
+"""
+
+
+def _weather_story_graph(story: WeatherStory) -> str:
+    story_json = json.dumps(json_ready(asdict(story)), allow_nan=False).replace("<", "\\u003c")
+    return f"""
+<section class="story-section" id="weather-story">
+  <header class="story-heading">
+    <h2>{html.escape(story.title)}</h2>
+    <div class="story-legend" aria-label="Weather story node categories">
+      <span><i class="story-dot synoptic" aria-hidden="true"></i>Atmospheric setup</span>
+      <span><i class="story-dot observed" aria-hidden="true"></i>Observed weather</span>
+      <span><i class="story-dot impact" aria-hidden="true"></i>Land and energy impact</span>
+    </div>
+  </header>
+  <div class="story-layout">
+    <div class="story-field" aria-label="Interactive weather story relationships">
+      <svg class="story-edges" aria-hidden="true">
+        <defs><marker id="story-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs>
+      </svg>
+      <div class="story-nodes"></div>
+    </div>
+    <aside class="story-evidence" aria-live="polite"></aside>
+  </div>
+  <p class="story-caption">Every node is generated from the report evidence. Arrows express deterministic dependence or an explicitly tested temporal relationship, not statistical causality.</p>
+</section>
+<script type="application/json" id="weather-story-data">{story_json}</script>
+<script>
+(() => {{
+  const root = document.querySelector('#weather-story');
+  if (!root) return;
+  const data = JSON.parse(document.querySelector('#weather-story-data').textContent);
+  const field = root.querySelector('.story-field');
+  const svg = root.querySelector('.story-edges');
+  const nodeLayer = root.querySelector('.story-nodes');
+  const evidence = root.querySelector('.story-evidence');
+  const buttons = new Map();
+
+  const element = (tag, className, text) => {{
+    const item = document.createElement(tag);
+    if (className) item.className = className;
+    if (text !== undefined) item.textContent = text;
+    return item;
+  }};
+
+  const selectNode = node => {{
+    buttons.forEach((button, id) => button.setAttribute('aria-pressed', String(id === node.id)));
+    evidence.replaceChildren();
+    evidence.append(element('div', 'story-evidence-domain', node.domain_label));
+    evidence.append(element('h3', '', node.label));
+    evidence.append(element('p', 'story-reading', node.reading));
+    const facts = element('dl', 'story-facts');
+    node.facts.forEach(fact => {{
+      const row = document.createElement('div');
+      row.append(element('dt', '', fact.label));
+      row.append(element('dd', '', fact.value));
+      facts.append(row);
+    }});
+    evidence.append(facts);
+    evidence.append(element('div', 'story-source', node.source));
+    const related = data.edges.filter(edge => edge.source === node.id || edge.target === node.id);
+    if (related.length) {{
+      const connections = element('div', 'story-connections');
+      connections.append(element('strong', '', 'Connections'));
+      const list = document.createElement('ul');
+      related.forEach(edge => {{
+        const peerId = edge.source === node.id ? edge.target : edge.source;
+        const peer = data.nodes.find(candidate => candidate.id === peerId);
+        const direction = edge.source === node.id ? 'To' : 'From';
+        list.append(element('li', '', `${{direction}} ${{peer.label}}: ${{edge.relationship}}.`));
+      }});
+      connections.append(list);
+      evidence.append(connections);
+    }}
+  }};
+
+  data.nodes.forEach(node => {{
+    const button = element('button', 'story-node');
+    button.type = 'button';
+    button.dataset.domain = node.domain;
+    button.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-label', `${{node.domain_label}}: ${{node.label}}`);
+    button.append(element('span', 'story-node-domain', node.domain_label));
+    button.append(element('span', 'story-node-label', node.label));
+    button.addEventListener('click', () => selectNode(node));
+    nodeLayer.append(button);
+    buttons.set(node.id, button);
+  }});
+
+  const draw = () => {{
+    const width = field.clientWidth;
+    const height = field.clientHeight;
+    const narrow = width < 620;
+    const positions = new Map();
+    if (narrow) {{
+      const order = ['regime', 'sky', 'thermal', 'events', 'front', 'boundary', 'pv', 'land', 'wind'];
+      order.forEach((id, index) => positions.set(id, {{
+        x: width * (index % 2 ? .73 : .27),
+        y: 72 + Math.floor(index / 2) * 145,
+      }}));
+    }} else {{
+      data.nodes.forEach(node => positions.set(node.id, {{x: node.x * width, y: node.y * height}}));
+    }}
+    data.nodes.forEach(node => {{
+      const position = positions.get(node.id);
+      const button = buttons.get(node.id);
+      button.style.left = `${{position.x}}px`;
+      button.style.top = `${{position.y}}px`;
+    }});
+    svg.setAttribute('viewBox', `0 0 ${{width}} ${{height}}`);
+    svg.querySelectorAll('.story-link').forEach(path => path.remove());
+    data.edges.forEach(edge => {{
+      const start = positions.get(edge.source);
+      const end = positions.get(edge.target);
+      if (!start || !end) return;
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const startPad = Math.min(narrow ? 78 : 86, distance * .34);
+      const endPad = Math.min(narrow ? 84 : 92, distance * .34);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.classList.add('story-link');
+      path.setAttribute('d', `M ${{start.x + dx / distance * startPad}} ${{start.y + dy / distance * startPad}} L ${{end.x - dx / distance * endPad}} ${{end.y - dy / distance * endPad}}`);
+      svg.append(path);
+    }});
+  }};
+
+  new ResizeObserver(draw).observe(field);
+  selectNode(data.nodes[0]);
+  draw();
+}})();
+</script>
 """
 
 
@@ -1971,6 +2217,26 @@ def build_site(
         shutil.copy2(source, target)
         data_links[name] = f"../data/{target.name}"
 
+    weather_story = build_weather_story(
+        regime=regime,
+        current_metrics=current_metrics,
+        anomalies=anomalies,
+        climate=climate_reference,
+        fronts=fronts,
+        phenomena=phenomena,
+        profile=profile,
+        land=land,
+        physical_energy=physical_energy,
+        lightning=lightning,
+        radar=radar,
+        lightning_radius_km=config.hungaromet.lightning_radius_km,
+    )
+    weather_story_payload = json_ready(asdict(weather_story))
+    (data_dir / "weather_story.json").write_text(
+        json.dumps(weather_story_payload, indent=2, allow_nan=False), encoding="utf-8"
+    )
+    data_links["weather_story"] = "../data/weather_story.json"
+
     payload: dict[str, Any] = {
         "period_start": period_start,
         "period_end": period_end,
@@ -2044,6 +2310,7 @@ def build_site(
             "mean_wind_power_density_w_m2": physical_energy.mean_wind_power_density_w_m2,
             "notes": physical_energy.notes,
         },
+        "weather_story": weather_story_payload,
         "regime": asdict(regime),
         "daily_regime": asdict(daily_regime),
         "anomalies": [asdict(item) for item in anomalies],
@@ -2288,6 +2555,13 @@ def build_site(
 </div>
 """
 
+    story_page = _page_intro(
+        "Weather Story",
+        weather_story.briefing,
+        period_label,
+    )
+    story_page += _weather_story_graph(weather_story)
+
     weather = _page_intro(
         "Surface And Synoptic Analysis",
         "Observed conditions at Debrecen Airport, their relationship to the gridded record, and the synoptic environment in which the period evolved.",
@@ -2356,7 +2630,6 @@ def build_site(
     electricity_page += _plot_section("Land Surface And Water Balance", figures["land_surface"], "Soil, VPD, ET0 and water-balance analysis", "Read soil temperature and moisture by depth, atmospheric vapour-pressure deficit, ET0, and daily/cumulative precipitation minus ET0 across the preceding 90 days.", "land-surface", "Open-Meteo best-match gridded land fields; the 1991-2020 reference is fixed ERA5, and water balance excludes runoff and irrigation.")
     electricity_page += f'<p class="analysis-lead"><strong>Weather translated into production.</strong> A fixed south-facing reference array produced an estimated {_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)} kWh/kWp. A generic 100 m turbine produced {_fmt(physical_energy.wind_full_load_hours, 1)} full-load hours at a mean capacity factor of {_fmt(physical_energy.wind_capacity_factor_pct, 1)}%.</p><div class="metric-band" aria-label="Physical and system energy summary"><div class="metric"><span>PV weather yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Hungary average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div><div class="metric"><span>Day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div></div>'
     electricity_page += _plot_section("Physical PV And Wind Yield", figures["physical_energy"], "Physically based renewable weather yield", "PV uses solar position, plane-of-array irradiance and cell-temperature derating. Wind uses 100 m speed, moist-air density and a generic turbine power curve.", "physical-energy")
-    electricity_page += _plot_section("Solar-Wind Weather Quadrant", figures["energy_quadrant"], "Solar and wind potential quadrant", "The indices provide a normalized climatological view; the physical-yield panel above provides the engineering interpretation.", "context")
     electricity_page += _plot_section("Hungary Electricity Context", figures["electricity_overview"], "Hungary electricity system overview", "Compare national load, residual load, generation and price with the local Debrecen weather chronology.", "electricity", "Energy-Charts and ENTSO-E are Hungary-wide context, not Debrecen metering.")
     electricity_page += _plot_section("Weather-Electricity Relationships", figures["weather_electricity_links"], "Weather and electricity relationships", "Hourly associations are diagnostic and do not establish causality or represent a plant-level power forecast.", "relationships")
 
@@ -2411,6 +2684,7 @@ def build_site(
         ("Historical analogs", data_links.get("historical_analogs")),
         ("Synoptic analysis fields", data_links.get("synoptic_fields")),
         ("Physical PV and wind yields", data_links.get("physical_energy")),
+        ("Weather story graph", data_links.get("weather_story")),
         ("Land-surface hourly context", data_links.get("land_surface_hourly")),
         ("Land-surface daily context", data_links.get("land_surface_daily")),
         ("Machine-readable summary", "../data/summary.json"),
@@ -2502,6 +2776,7 @@ def build_site(
 
     analysis_documents = {
         "index.html": ("Analysis Overview", "Rolling 72-hour Debrecen meteorological analysis.", analysis_overview),
+        "story.html": ("Weather Story", "Evidence-linked weather story for the rolling Debrecen analysis.", story_page),
         "surface-synoptic.html": ("Surface & Synoptic", "Observed surface weather and selectable synoptic dynamics.", weather),
         "storms-satellite.html": ("Storms & Satellite", "Meteosat, radar, lightning and objective phenomena.", storms),
         "upper-air.html": ("Upper Air & Dynamics", "Parcel, boundary-layer and atmospheric-profile diagnostics.", upper_air),

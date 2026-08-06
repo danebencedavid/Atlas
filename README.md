@@ -111,6 +111,8 @@ The **Meteorological Analysis** covers 72 hours:
 
 - **Overview** gives the regime, concise situation assessment, physical energy
   yields, historical analog, and an annotated 72-hour meteogram.
+- **Weather Story** turns the report evidence into an interactive, deterministic
+  chain from atmospheric setup through observed weather to land and energy impacts.
 - **Surface & Synoptic** puts station observations first, then offers
   selectable jet, vorticity, moisture/ascent, theta-e, and frontogenesis layers.
 - **Storms & Satellite** synchronizes Meteosat imagery with radar and lightning
@@ -152,6 +154,8 @@ Atlas includes:
 - 90-day soil-temperature, soil-moisture, VPD, ET0, and water-balance analysis
 - pvlib plane-of-array PV modeling and an air-density-corrected turbine model
 - a separate normalized climatological solar-wind weather index
+- an evidence-driven Weather Story graph whose nodes and links are regenerated
+  from each report rather than authored as a fixed narrative
 
 Model profiles are not observed radiosondes. Radar accumulation is not
 gauge-adjusted. Physical energy outputs are reference-system weather yields,

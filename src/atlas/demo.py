@@ -521,7 +521,6 @@ def run_demo_pipeline(
         phenomena=phenomena,
         daily_frame=daily,
         anomalies=climate.standard_anomalies,
-        energy=energy,
         electricity=electricity,
         electricity_summary=electricity_summary,
         profile=profile,

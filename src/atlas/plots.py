@@ -16,7 +16,7 @@ from atlas.anomalies import Anomaly
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
-from atlas.energy import EnergyIndex, PhysicalEnergy
+from atlas.energy import PhysicalEnergy
 from atlas.fronts import FrontAnalysis
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations, station_hourly
 from atlas.land import LandSurfaceAnalysis, SOIL_MOISTURE_COLUMNS, SOIL_TEMPERATURE_COLUMNS
@@ -356,40 +356,6 @@ def plot_anomaly_bars(anomalies: list[Anomaly], output: Path) -> Path:
     fig = go.Figure(go.Bar(x=labels, y=z_scores, marker={"color": colors}, text=[f"{value:+.1f}" for value in z_scores], hovertext=hover, hoverinfo="text"))
     fig.add_hline(y=0, line_color="#71717a")
     fig.update_layout(title="Interactive 3-Day Anomalies Versus Baseline", height=560, yaxis_title="standard deviations from normal")
-    return _save(fig, output)
-
-
-def plot_energy_quadrant(energy: EnergyIndex, output: Path) -> Path:
-    fig = go.Figure()
-    fig.add_shape(type="rect", x0=0, x1=50, y0=50, y1=100, fillcolor="#e0f2fe", line_width=0)
-    fig.add_shape(type="rect", x0=50, x1=100, y0=50, y1=100, fillcolor="#dcfce7", line_width=0)
-    fig.add_shape(type="rect", x0=0, x1=50, y0=0, y1=50, fillcolor="#f3f4f6", line_width=0)
-    fig.add_shape(type="rect", x0=50, x1=100, y0=0, y1=50, fillcolor="#fef3c7", line_width=0)
-    fig.add_hline(y=50, line_color="#9ca3af")
-    fig.add_vline(x=50, line_color="#9ca3af")
-    fig.add_trace(
-        go.Scatter(
-            x=[energy.solar_index],
-            y=[energy.wind_index],
-            mode="markers+text",
-            text=[energy.label],
-            textposition="top center",
-            marker={"size": 18, "color": "#f59e0b", "line": {"color": "#111827", "width": 2}},
-            name="This period",
-            hovertemplate="Solar %{x:.0f}<br>Wind %{y:.0f}<extra>This period</extra>",
-        )
-    )
-    annotations = [
-        (25, 75, "low solar<br>high wind"),
-        (75, 75, "high solar<br>high wind"),
-        (25, 25, "low solar<br>low wind"),
-        (75, 25, "high solar<br>low wind"),
-    ]
-    for x, y, text in annotations:
-        fig.add_annotation(x=x, y=y, text=text, showarrow=False, font={"color": "#374151"})
-    fig.update_layout(title="Interactive Solar-Wind Energy Quadrant", height=620, xaxis_title="Solar potential index", yaxis_title="Wind potential index")
-    fig.update_xaxes(range=[0, 100])
-    fig.update_yaxes(range=[0, 100])
     return _save(fig, output)
 
 
@@ -1722,7 +1688,6 @@ def generate_all_figures(
     phenomena: PhenomenaAnalysis,
     daily_frame: pd.DataFrame,
     anomalies: list[Anomaly],
-    energy: EnergyIndex,
     electricity: pd.DataFrame,
     electricity_summary: ElectricitySummary,
     profile: ModelProfile,
@@ -1794,7 +1759,6 @@ def generate_all_figures(
         "phenomena_timeline": plot_phenomena_timeline(
             phenomena, output_dir / "phenomena_timeline.html", config
         ),
-        "energy_quadrant": plot_energy_quadrant(energy, output_dir / "energy_quadrant.html"),
         "regime_strip": plot_regime_strip(frame, regime, output_dir / "regime_strip.html", config),
         "electricity_overview": plot_electricity_overview(
             electricity,

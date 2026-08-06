@@ -246,7 +246,6 @@ def run_pipeline(
         phenomena=phenomena,
         daily_frame=daily_frame,
         anomalies=anomalies,
-        energy=energy,
         electricity=electricity_data.frame,
         electricity_summary=electricity_summary,
         profile=model_profile,
