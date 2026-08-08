@@ -1,0 +1,2 @@
+time,kind,confidence,score,pressure_change_3h_hpa,temperature_change_3h_c,wind_shift_3h_deg,precipitation_3h_mm,briefing
+2026-08-06T16:00:00+00:00,Probable cold-front passage,0.79,4,-0.8166666666667197,-3.1666666666666714,111.48108332817475,0.0,"Probable cold-front passage: pressure changed -0.8 hPa, temperature -3.2 C, wind shifted 111 degrees, and 3-hour precipitation was 0.0 mm."
