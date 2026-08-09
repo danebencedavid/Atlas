@@ -754,23 +754,26 @@ a { color: inherit; }
   border-left-color: var(--ink);
 }
 .archive-nav-link + .archive-nav-link { margin-top: 3px; }
+/* Flat surface, ink text and a single blue glyph, matching .archive-nav-link above
+   it. A saturated gradient read as an advert against this paper-toned sidebar. */
 .share-day-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   margin: 0 auto;
-  padding: 9px 16px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--blue), #1d4ed8);
-  border: 0;
-  border-radius: 6px;
+  padding: 8px 14px;
+  color: var(--ink);
+  background: rgba(255,255,255,.65);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
 }
-.share-day-button span { font-size: 13px; }
-.share-day-button:hover { filter: brightness(1.06); }
+.share-day-button span { color: var(--blue); font-size: 13px; }
+.share-day-button:hover { background: var(--hover); border-color: var(--muted); }
+.share-day-button[aria-expanded="true"] { background: var(--selected); border-color: var(--muted); }
 /* Sits apart from the navigation groups above it, with the button centred rather
    than stretched across the sidebar. */
 .share-wrap {
@@ -827,22 +830,25 @@ a { color: inherit; }
   text-align: left;
   cursor: pointer;
 }
+/* Ink rather than colour carries the primary action, the same way the report switch
+   marks its current edition. */
 .share-menu-primary {
-  color: #ffffff;
-  background: var(--blue);
-  border-color: var(--blue);
+  color: var(--canvas);
+  background: var(--ink);
+  border-color: var(--ink);
 }
-.share-menu-primary span { color: rgba(255,255,255,.75); font-size: 10px; font-weight: 500; }
+.share-menu-primary span { color: rgba(255,255,255,.62); font-size: 10px; font-weight: 500; }
 .share-menu-item:hover { background: var(--hover); }
-.share-menu-primary:hover { filter: brightness(1.06); }
+.share-menu-primary:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
 .share-menu-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .share-menu-links .share-menu-item { justify-content: center; padding: 8px 4px; font-size: 11px; }
 .share-day-button:disabled {
   cursor: not-allowed;
-  background: var(--line-strong);
+  background: var(--rail);
+  border-color: var(--line);
   color: var(--muted);
-  filter: none;
 }
+.share-day-button:disabled span { color: var(--muted); }
 .sidebar-note {
   margin: auto 4px 2px;
   padding: 10px;
