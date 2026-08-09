@@ -1,6 +1,7 @@
 project:
   name: Atlas
   tagline: Rolling weather anomaly atlas and renewable energy situation report
+  site_url: https://danebencedavid.github.io/Atlas
 
 location:
   name: Debrecen

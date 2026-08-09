@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from PIL import Image, ImageDraw, ImageFont
 
 from atlas.almanac import Almanac, PeriodClimate, RecordEntry
 from atlas.analogs import AnalogAnalysis
@@ -758,8 +759,8 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 12px 4px 0;
-  padding: 9px 10px;
+  margin: 0 auto;
+  padding: 9px 16px;
   color: #fff;
   background: linear-gradient(135deg, var(--blue), #1d4ed8);
   border: 0;
@@ -770,6 +771,72 @@ a { color: inherit; }
 }
 .share-day-button span { font-size: 13px; }
 .share-day-button:hover { filter: brightness(1.06); }
+/* Sits apart from the navigation groups above it, with the button centred rather
+   than stretched across the sidebar. */
+.share-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 4px 0;
+}
+.share-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15,23,42,.18);
+}
+.share-menu-title {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.share-menu-title strong { display: block; color: var(--ink); font-size: 11px; }
+.share-menu-label {
+  margin: 6px 0 2px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.share-menu-primary,
+.share-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.share-menu-primary {
+  color: #ffffff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.share-menu-primary span { color: rgba(255,255,255,.75); font-size: 10px; font-weight: 500; }
+.share-menu-item:hover { background: var(--hover); }
+.share-menu-primary:hover { filter: brightness(1.06); }
+.share-menu-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.share-menu-links .share-menu-item { justify-content: center; padding: 8px 4px; font-size: 11px; }
 .share-day-button:disabled {
   cursor: not-allowed;
   background: var(--line-strong);
@@ -1301,19 +1368,9 @@ th, td { border-color: var(--line); }
   padding: 14px 0 22px;
   border-top: 1px solid var(--line);
 }
-.almanac-mode-switch { display: flex; gap: 2px; }
-.almanac-mode-switch button {
-  min-height: 34px;
-  padding: 6px 14px;
-  color: var(--ink-soft);
-  background: var(--paper);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.almanac-mode-switch button[aria-pressed="true"] { color: #fff; background: var(--blue); border-color: var(--blue); }
+/* An explicit `display` on a class beats the user-agent [hidden] rule, which silently
+   revives anything the scripts try to hide. Keep this ahead of the layout rules. */
+[hidden] { display: none !important; }
 .almanac-select { display: grid; gap: 5px; }
 .almanac-select span {
   color: var(--muted);
@@ -1529,6 +1586,218 @@ def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str
     return relative
 
 
+def _site_origin(config: AtlasConfig) -> str:
+    return config.project.site_url.rstrip("/")
+
+
+SHARE_CARD_ASSET = "share-card.png"
+ANALYSIS_SHARE_CARD_ASSET = "share-card-analysis.png"
+
+
+def _share_card_asset(family: str) -> str:
+    """The daily report and the 72-hour analysis describe different periods, so each
+    gets its own preview image rather than sharing one misleading card."""
+    return ANALYSIS_SHARE_CARD_ASSET if family == "analysis" else SHARE_CARD_ASSET
+
+# Ordered by preference, then by how likely the file is to exist on the build machine:
+# Windows first for local runs, DejaVu for the Ubuntu CI runner, macOS last.
+_FONT_CANDIDATES = {
+    "bold": (
+        "C:/Windows/Fonts/segoeuib.ttf",
+        "C:/Windows/Fonts/arialbd.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+    ),
+    "regular": (
+        "C:/Windows/Fonts/segoeui.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+    ),
+}
+
+
+def _load_font(size: int, weight: str = "regular") -> ImageFont.ImageFont:
+    for candidate in _FONT_CANDIDATES[weight]:
+        path = Path(candidate)
+        if path.is_file():
+            try:
+                return ImageFont.truetype(str(path), size)
+            except OSError:
+                continue
+    try:
+        # Pillow 10.1+ scales its built-in font; older builds only offer a fixed size.
+        return ImageFont.load_default(size=size)
+    except TypeError:
+        return ImageFont.load_default()
+
+
+def _wrap_lines(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    max_width: int,
+    max_lines: int,
+) -> list[str]:
+    words = str(text or "").split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = f"{current} {word}".strip()
+        if draw.textlength(candidate, font=font) > max_width and current:
+            lines.append(current)
+            current = word
+            if len(lines) == max_lines:
+                return lines
+        else:
+            current = candidate
+    if current and len(lines) < max_lines:
+        lines.append(current)
+    return lines
+
+
+def _share_number(value: Any, digits: int, suffix: str) -> str:
+    if value is None:
+        return "\u2014"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "\u2014"
+    if pd.isna(number):
+        return "\u2014"
+    return f"{number:.{digits}f}{suffix}"
+
+
+def write_share_card(
+    config: AtlasConfig,
+    share: dict[str, Any] | None,
+    site_dir: Path,
+    asset_name: str = SHARE_CARD_ASSET,
+) -> Path | None:
+    """Render the 1200x630 link-preview image referenced by the Open Graph tags.
+
+    The in-page share button draws its own portrait card in canvas; this is the
+    landscape one Facebook, X and WhatsApp fetch when somebody posts a link.
+    """
+    if not share:
+        return None
+    width, height = 1200, 630
+    pad = 72
+    image = Image.new("RGB", (width, height), "#0f172a")
+    draw = ImageDraw.Draw(image)
+
+    for y in range(height):
+        blend = y / height
+        draw.line(
+            [(0, y), (width, y)],
+            fill=(
+                int(15 + blend * 14),
+                int(23 + blend * 55),
+                int(42 + blend * 174),
+            ),
+        )
+
+    draw.rectangle([pad, 96, pad + 84, 103], fill="#60a5fa")
+    location = str(share.get("location") or f"{config.location.name}, {config.location.region}")
+    eyebrow = location
+    if share.get("kind_label"):
+        eyebrow = f"{location} · {share['kind_label']}"
+    draw.text(
+        (pad, 128),
+        eyebrow.upper(),
+        font=_load_font(26, "bold"),
+        fill=(255, 255, 255, 220),
+    )
+    draw.text(
+        (pad, 186),
+        _share_number(share.get("temperature_c"), 0, "\u00b0"),
+        font=_load_font(150, "bold"),
+        fill="#ffffff",
+    )
+
+    label_font = _load_font(44, "bold")
+    label_lines = _wrap_lines(draw, share.get("regime_label") or "Weather summary", label_font, width - pad * 2, 1)
+    draw.text((pad, 366), label_lines[0] if label_lines else "", font=label_font, fill="#ffffff")
+
+    body_font = _load_font(26)
+    body_y = 432
+    for line in _wrap_lines(draw, share.get("regime_briefing") or "", body_font, width - pad * 2, 2):
+        draw.text((pad, body_y), line, font=body_font, fill="#dbeafe")
+        body_y += 36
+
+    stats = [
+        f"Precip {_share_number(share.get('precipitation_mm'), 1, ' mm')}",
+        f"Wind {_share_number(share.get('wind_ms'), 1, ' m/s')}",
+        f"Cloud {_share_number(share.get('cloud_pct'), 0, '%')}",
+    ]
+    draw.text(
+        (pad, height - 96),
+        "     \u00b7     ".join(stats),
+        font=_load_font(24, "bold"),
+        fill="#ffffff",
+    )
+    draw.text(
+        (pad, height - 54),
+        f"{config.project.name} \u00b7 {share.get('date') or ''}",
+        font=_load_font(20),
+        fill="#93c5fd",
+    )
+
+    assets_dir = site_dir / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    target = assets_dir / asset_name
+    image.save(target, format="PNG", optimize=True)
+    return target
+
+
+def _social_meta(
+    config: AtlasConfig,
+    active: str,
+    family: str,
+    title: str,
+    description: str,
+) -> str:
+    """Open Graph and Twitter card tags.
+
+    Facebook, X and WhatsApp shares carry the page URL, so without these a shared link
+    renders as a bare string. The preview image is the build-time card in assets/.
+    """
+    origin = _site_origin(config)
+    folder = {"analysis": "analysis/", "archive": "archive/"}.get(family, "")
+    page_url = f"{origin}/{folder}{active}"
+    image_url = f"{origin}/assets/{_share_card_asset(family)}"
+    tags = [
+        f'<link rel="canonical" href="{html.escape(page_url)}">',
+        '<meta property="og:type" content="website">',
+        f'<meta property="og:site_name" content="{html.escape(config.project.name)}">',
+        f'<meta property="og:title" content="{html.escape(title)}">',
+        f'<meta property="og:description" content="{html.escape(description)}">',
+        f'<meta property="og:url" content="{html.escape(page_url)}">',
+        f'<meta property="og:image" content="{html.escape(image_url)}">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{html.escape(title)}">',
+        f'<meta name="twitter:description" content="{html.escape(description)}">',
+        f'<meta name="twitter:image" content="{html.escape(image_url)}">',
+    ]
+    return "".join(f"  {tag}\n" for tag in tags)
+
+
+def _report_url(config: AtlasConfig) -> str:
+    """Canonical address of the daily public report.
+
+    Link shares carry a URL rather than the card image, so every page that embeds the
+    share payload points at the report the card describes.
+    """
+    return f"{_site_origin(config)}/report.html"
+
+
+def _analysis_url(config: AtlasConfig) -> str:
+    """Canonical address of the 72-hour meteorological analysis."""
+    return f"{_site_origin(config)}/analysis/index.html"
+
+
 def _navigation(active: str, family: str, share_id: str | None = None) -> str:
     nested = family == "analysis"
     archive = family == "archive"
@@ -1565,10 +1834,28 @@ def _navigation(active: str, family: str, share_id: str | None = None) -> str:
     records_current = ' aria-current="page"' if family == "records" else ""
     summary_href = f"{prefix}summary.html"
     records_href = f"{prefix}records.html"
+    # The report always describes the last complete day, never "today" — the label says so
+    # rather than promising same-day data the archive cannot deliver.
     share_button = (
+        f'<div class="share-wrap" data-atlas-share-root>'
         f'<button type="button" class="share-day-button" data-atlas-share-button'
-        f' data-atlas-share-target="{html.escape(share_id)}" disabled>'
-        f'<span aria-hidden="true">&#x2934;</span> Share today\'s weather</button>'
+        f' data-atlas-share-target="{html.escape(share_id)}"'
+        f' aria-haspopup="true" aria-expanded="false" disabled>'
+        f'<span aria-hidden="true">&#x2934;</span> Share this report</button>'
+        f'<div class="share-menu" data-atlas-share-menu hidden>'
+        f'<p class="share-menu-title">Report card for <strong data-atlas-share-date></strong></p>'
+        f'<button type="button" class="share-menu-primary" data-atlas-share-action="download">'
+        f'Download image <span>1080&times;1350 PNG</span></button>'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="native" hidden>'
+        f'Share to an app&hellip;</button>'
+        f'<p class="share-menu-label">Post a link</p>'
+        f'<div class="share-menu-links">'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="facebook">Facebook</button>'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="x">X</button>'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="whatsapp">WhatsApp</button>'
+        f'</div>'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="copy">Copy link</button>'
+        f'</div></div>'
         if share_id
         else ""
     )
@@ -1618,10 +1905,12 @@ def _plot_section(
 """
 
 
-SHARE_SCRIPT = """<script>
+SHARE_SCRIPT = r"""<script>
   (function () {
+    const root = document.querySelector('[data-atlas-share-root]');
     const shareButton = document.querySelector('[data-atlas-share-button]');
-    if (!shareButton) return;
+    const menu = document.querySelector('[data-atlas-share-menu]');
+    if (!root || !shareButton || !menu) return;
     const dataId = shareButton.getAttribute('data-atlas-share-target');
     const dataEl = dataId ? document.getElementById(dataId) : null;
     if (!dataEl) return;
@@ -1633,6 +1922,16 @@ SHARE_SCRIPT = """<script>
       return;
     }
     shareButton.disabled = false;
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const pageUrl = share.page_url || (canonical && canonical.href) || window.location.href;
+    const dateEl = menu.querySelector('[data-atlas-share-date]');
+    if (dateEl) dateEl.textContent = share.date || 'the latest edition';
+
+    const numberOrDash = (value, digits, suffix) =>
+      value === null || value === undefined || Number.isNaN(value)
+        ? '—'
+        : `${Number(value).toFixed(digits)}${suffix}`;
 
     const wrapText = (ctx, text, x, y, maxWidth, lineHeight, maxLines) => {
       const words = String(text || '').split(' ');
@@ -1646,95 +1945,184 @@ SHARE_SCRIPT = """<script>
           line = word;
           cursorY += lineHeight;
           lines += 1;
-          if (lines >= maxLines) return;
+          if (lines >= maxLines) return cursorY;
         } else {
           line = test;
         }
       }
       if (line) ctx.fillText(line, x, cursorY);
+      return cursorY;
     };
 
-    const numberOrDash = (value, digits, suffix) =>
-      value === null || value === undefined || Number.isNaN(value)
-        ? '—'
-        : `${Number(value).toFixed(digits)}${suffix}`;
-
+    // 1080x1350 is Instagram's tallest feed frame and crops cleanly on Facebook and
+    // WhatsApp. The old 1200x630 banner turned into a sliver in every feed.
     const buildCard = () => {
+      const W = 1080;
+      const H = 1350;
+      const PAD = 84;
       const canvas = document.createElement('canvas');
-      canvas.width = 1200;
-      canvas.height = 630;
+      canvas.width = W;
+      canvas.height = H;
       const ctx = canvas.getContext('2d');
 
-      const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
-      gradient.addColorStop(0, '#172033');
+      const gradient = ctx.createLinearGradient(0, 0, W * 0.4, H);
+      gradient.addColorStop(0, '#0f172a');
+      gradient.addColorStop(0.55, '#172554');
       gradient.addColorStop(1, '#1d4ed8');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 1200, 630);
+      ctx.fillRect(0, 0, W, H);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.82)';
-      ctx.font = '700 24px Inter, Arial, sans-serif';
-      ctx.fillText('DEBRECEN, HUNGARY  ·  ATLAS', 64, 84);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.arc(W - 60, 120, 300, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#60a5fa';
+      ctx.fillRect(PAD, 134, 96, 8);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.86)';
+      ctx.font = '700 30px Inter, Segoe UI, Arial, sans-serif';
+      const location = String(share.location || 'Debrecen, Hungary');
+      const eyebrow = share.kind_label ? `${location} · ${share.kind_label}` : location;
+      ctx.fillText(eyebrow.toUpperCase(), PAD, 210);
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 118px Inter, Arial, sans-serif';
-      ctx.fillText(numberOrDash(share.temperature_c, 0, '°C'), 64, 230);
+      ctx.font = '800 250px Inter, Segoe UI, Arial, sans-serif';
+      ctx.fillText(numberOrDash(share.temperature_c, 0, '°'), PAD, 480);
 
-      ctx.font = '650 36px Inter, Arial, sans-serif';
-      ctx.fillText(share.regime_label || 'Weather summary', 64, 290);
+      ctx.font = '700 62px Inter, Segoe UI, Arial, sans-serif';
+      wrapText(ctx, share.regime_label || 'Weather summary', PAD, 580, W - PAD * 2, 72, 2);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      ctx.font = '400 22px Inter, Arial, sans-serif';
-      wrapText(ctx, share.regime_briefing || '', 64, 335, 1070, 30, 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.86)';
+      ctx.font = '400 34px Inter, Segoe UI, Arial, sans-serif';
+      wrapText(ctx, share.regime_briefing || '', PAD, 712, W - PAD * 2, 48, 4);
 
-      const stats = [
-        `Precip ${numberOrDash(share.precipitation_mm, 1, ' mm')}`,
-        `Wind ${numberOrDash(share.wind_ms, 1, ' m/s')}`,
-        `Cloud ${numberOrDash(share.cloud_pct, 0, '%')}`,
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(PAD, 908);
+      ctx.lineTo(W - PAD, 908);
+      ctx.stroke();
+
+      const rows = [
+        ['Precipitation', numberOrDash(share.precipitation_mm, 1, ' mm')],
+        ['Wind', numberOrDash(share.wind_ms, 1, ' m/s')],
+        ['Cloud cover', numberOrDash(share.cloud_pct, 0, '%')],
       ];
-      if (share.energy_label) stats.push(String(share.energy_label));
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '600 24px Inter, Arial, sans-serif';
-      ctx.fillText(stats.join('     ·     '), 64, 470);
+      if (share.energy_label) rows.push(['Energy', String(share.energy_label)]);
+      let rowY = 980;
+      for (const [label, value] of rows) {
+        ctx.fillStyle = 'rgba(255,255,255,0.68)';
+        ctx.font = '500 32px Inter, Segoe UI, Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, PAD, rowY);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 36px Inter, Segoe UI, Arial, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(value, W - PAD, rowY);
+        ctx.textAlign = 'left';
+        rowY += 68;
+      }
 
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = '400 18px Inter, Arial, sans-serif';
-      ctx.fillText(`Debrecen Meteorological Atlas  ·  ${share.date || ''}`, 64, 574);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '500 28px Inter, Segoe UI, Arial, sans-serif';
+      ctx.fillText(`Debrecen Meteorological Atlas · ${share.date || ''}`, PAD, H - 118);
+      ctx.fillStyle = 'rgba(255,255,255,0.40)';
+      ctx.font = '400 26px Inter, Segoe UI, Arial, sans-serif';
+      ctx.fillText(String(pageUrl).replace(/^https?:\/\//, ''), PAD, H - 74);
 
       return canvas;
     };
 
-    shareButton.addEventListener('click', () => {
-      const canvas = buildCard();
-      const fileName = `debrecen-weather-${share.date || 'today'}.png`;
-      canvas.toBlob(async blob => {
+    // Period cards carry a date range, so the raw value is not filename-safe.
+    const slug = value => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const fileName = `debrecen-${slug(share.kind_label || 'report')}-${slug(share.date || 'latest')}.png`;
+    const shareText = `${share.regime_label || 'Debrecen weather'} — ${numberOrDash(share.temperature_c, 0, '°C')} in ${share.location || 'Debrecen'} on ${share.date || ''}`;
+
+    const toBlob = () =>
+      new Promise(resolve => buildCard().toBlob(blob => resolve(blob), 'image/png'));
+
+    const setMenu = open => {
+      menu.hidden = !open;
+      shareButton.setAttribute('aria-expanded', String(open));
+    };
+
+    const download = async () => {
+      const blob = await toBlob();
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const openIntent = url => window.open(url, '_blank', 'noopener,noreferrer');
+
+    const actions = {
+      download,
+      // Offered only where the browser can hand over the actual PNG, which is the one
+      // route to Instagram. Desktop never sees it, so the OS mail sheet never opens.
+      native: async () => {
+        const blob = await toBlob();
         if (!blob) return;
-        let file = null;
+        const file = new File([blob], fileName, { type: 'image/png' });
         try {
-          file = new File([blob], fileName, { type: 'image/png' });
+          await navigator.share({ files: [file], text: shareText });
         } catch (err) {
-          file = null;
+          /* cancelled by the reader */
         }
-        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'Debrecen weather',
-              text: `${share.regime_label || 'Debrecen weather'} — ${numberOrDash(share.temperature_c, 0, '°C')}`,
-            });
-            return;
-          } catch (err) {
-            // Fall through to a direct download if sharing was cancelled or unsupported.
-          }
+      },
+      facebook: () =>
+        openIntent(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`),
+      x: () =>
+        openIntent(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`,
+        ),
+      whatsapp: () =>
+        openIntent(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + pageUrl)}`),
+      copy: async event => {
+        const button = event.currentTarget;
+        try {
+          await navigator.clipboard.writeText(pageUrl);
+          const original = button.textContent;
+          button.textContent = 'Link copied';
+          window.setTimeout(() => {
+            button.textContent = original;
+          }, 1600);
+        } catch (err) {
+          window.prompt('Copy this link', pageUrl);
         }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+      },
+    };
+
+    let nativeFilesSupported = false;
+    try {
+      const probe = new File([new Blob(['x'])], 'probe.png', { type: 'image/png' });
+      nativeFilesSupported = Boolean(navigator.canShare && navigator.canShare({ files: [probe] }));
+    } catch (err) {
+      nativeFilesSupported = false;
+    }
+    const nativeButton = menu.querySelector('[data-atlas-share-action="native"]');
+    if (nativeButton && nativeFilesSupported) nativeButton.hidden = false;
+
+    shareButton.addEventListener('click', () => setMenu(menu.hidden));
+    menu.querySelectorAll('[data-atlas-share-action]').forEach(button => {
+      button.addEventListener('click', event => {
+        const name = button.getAttribute('data-atlas-share-action');
+        const action = actions[name];
+        if (action) action(event);
+        if (name !== 'copy') setMenu(false);
+      });
+    });
+    document.addEventListener('click', event => {
+      if (!root.contains(event.target)) setMenu(false);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') setMenu(false);
     });
   })();
 </script>"""
@@ -1765,6 +2153,11 @@ def _page_document(
         "summary": "History",
         "records": "History",
     }[family]
+    # A card always depicts one report period, so the control belongs only on the daily
+    # report and the 72-hour analysis. The landing, summary, record and archive pages
+    # cover no single period and would otherwise share a card describing something else.
+    if family not in ("public", "analysis"):
+        share = None
     share_id = "atlas-share-data" if share else None
     share_data_script = (
         f'<script type="application/json" id="{share_id}">'
@@ -1779,7 +2172,7 @@ def _page_document(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
   <meta name="description" content="{html.escape(description)}">
-  <style>{SHARED_CSS}{DATA_FIRST_CSS}</style>
+{_social_meta(config, active, family, title, description)}  <style>{SHARED_CSS}{DATA_FIRST_CSS}</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1806,7 +2199,7 @@ def _page_document(
     scrim.addEventListener('click', () => setMenu(false));
     navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
   </script>
-  {SHARE_SCRIPT}
+  {SHARE_SCRIPT if share_id else ""}
 </body>
 </html>
 """
@@ -2306,28 +2699,6 @@ def build_report_archive(
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
 
-    share_payload: dict[str, Any] | None = None
-    summary_source = site_dir / "data" / "summary.json"
-    if summary_source.is_file():
-        try:
-            source_payload = json.loads(summary_source.read_text(encoding="utf-8"))
-            daily_metrics = source_payload.get("daily_metrics", {})
-            daily_regime = source_payload.get("daily_regime", {})
-            daily_energy = source_payload.get("daily_energy", {})
-            share_payload = {
-                "date": source_payload.get("daily_date"),
-                "location": f"{config.location.name}, {config.location.region}",
-                "regime_label": daily_regime.get("label"),
-                "regime_briefing": daily_regime.get("briefing"),
-                "temperature_c": daily_metrics.get("temperature_mean_c"),
-                "precipitation_mm": daily_metrics.get("precipitation_total_mm"),
-                "wind_ms": daily_metrics.get("wind_speed_mean_ms"),
-                "cloud_pct": daily_metrics.get("cloud_cover_mean_pct"),
-                "energy_label": daily_energy.get("label"),
-            }
-        except (json.JSONDecodeError, OSError):
-            share_payload = None
-
     collections = {
         "daily": [
             _archive_entry(source, "daily")
@@ -2420,8 +2791,6 @@ def build_report_archive(
             content,
             updated,
             "archive",
-            None,
-            share_payload,
         ),
         encoding="utf-8",
     )
@@ -2510,11 +2879,15 @@ def _almanac_pages(config: AtlasConfig, almanac: Almanac) -> tuple[str, str]:
     coverage = f"{almanac.archive_start_year}-{almanac.archive_end_year}"
     notes_items = "".join(f"<li>{html.escape(note)}</li>" for note in almanac.notes)
 
+    # One control, not a mode switch plus two dropdowns: the option value carries the
+    # kind, so months and seasons live in the same list under their own group headings.
     month_options = "".join(
-        f'<option value="{html.escape(period.key)}">{html.escape(period.name)}</option>' for period in almanac.months
+        f'<option value="month:{html.escape(period.key)}">{html.escape(period.name)}</option>'
+        for period in almanac.months
     )
     season_options = "".join(
-        f'<option value="{html.escape(period.key)}">{html.escape(period.name)}</option>' for period in almanac.seasons
+        f'<option value="season:{html.escape(period.key)}">{html.escape(period.name)}</option>'
+        for period in almanac.seasons
     )
     panels = "".join(_almanac_period_panel(period) for period in [*almanac.months, *almanac.seasons])
 
@@ -2526,52 +2899,28 @@ def _almanac_pages(config: AtlasConfig, almanac: Almanac) -> tuple[str, str]:
         "History",
     )}
 <div class="almanac-controls">
-  <div class="almanac-mode-switch" role="tablist" aria-label="Summary type">
-    <button type="button" data-summary-mode-button="month" aria-pressed="true">By month</button>
-    <button type="button" data-summary-mode-button="season" aria-pressed="false">By season</button>
-  </div>
-  <label class="almanac-select" data-summary-select-wrap="month">
-    <span>Month</span>
-    <select data-summary-select="month" aria-label="Select month">{month_options}</select>
-  </label>
-  <label class="almanac-select" data-summary-select-wrap="season" hidden>
-    <span>Season</span>
-    <select data-summary-select="season" aria-label="Select season">{season_options}</select>
+  <label class="almanac-select">
+    <span>Period</span>
+    <select data-summary-select aria-label="Select a month or season">
+      <optgroup label="Months">{month_options}</optgroup>
+      <optgroup label="Seasons">{season_options}</optgroup>
+    </select>
   </label>
 </div>
 <div class="almanac-panels">{panels}</div>
 <section class="content-section"><h2>Notes</h2><ul>{notes_items}</ul></section>
 <script>
   (function () {{
-    const modeButtons = Array.from(document.querySelectorAll('[data-summary-mode-button]'));
-    const selectWraps = {{
-      month: document.querySelector('[data-summary-select-wrap="month"]'),
-      season: document.querySelector('[data-summary-select-wrap="season"]'),
-    }};
-    const selects = {{
-      month: document.querySelector('[data-summary-select="month"]'),
-      season: document.querySelector('[data-summary-select="season"]'),
-    }};
+    const select = document.querySelector('[data-summary-select]');
     const panels = Array.from(document.querySelectorAll('[data-summary-panel]'));
-    let mode = 'month';
+    if (!select) return;
     const render = () => {{
-      const select = selects[mode];
-      const key = select ? select.value : null;
+      const [kind, key] = String(select.value).split(':');
       panels.forEach(panel => {{
-        panel.hidden = !(panel.dataset.summaryKind === mode && panel.dataset.summaryKey === key);
+        panel.hidden = !(panel.dataset.summaryKind === kind && panel.dataset.summaryKey === key);
       }});
     }};
-    modeButtons.forEach(button => {{
-      button.addEventListener('click', () => {{
-        mode = button.getAttribute('data-summary-mode-button');
-        modeButtons.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
-        if (selectWraps.month) selectWraps.month.hidden = mode !== 'month';
-        if (selectWraps.season) selectWraps.season.hidden = mode !== 'season';
-        render();
-      }});
-    }});
-    if (selects.month) selects.month.addEventListener('change', render);
-    if (selects.season) selects.season.addEventListener('change', render);
+    select.addEventListener('change', render);
     render();
   }})();
 </script>
@@ -2705,9 +3054,12 @@ def build_site(
     )
     data_links["climate_almanac"] = "../data/climate_almanac.json"
 
+    location_label = f"{config.location.name}, {config.location.region}"
     share_payload = {
         "date": daily_date,
-        "location": f"{config.location.name}, {config.location.region}",
+        "page_url": _report_url(config),
+        "location": location_label,
+        "kind_label": "Daily report",
         "regime_label": daily_regime.label,
         "regime_briefing": daily_regime.briefing,
         "temperature_c": daily_metrics.get("temperature_mean_c"),
@@ -2716,6 +3068,24 @@ def build_site(
         "cloud_pct": daily_metrics.get("cloud_cover_mean_pct"),
         "energy_label": daily_energy.label,
     }
+    # The analysis pages cover the rolling 72-hour window, so they carry their own card
+    # rather than reusing the single-day one.
+    analysis_share_payload = {
+        "date": f"{period_start} – {period_end}",
+        "page_url": _analysis_url(config),
+        "location": location_label,
+        "kind_label": "72-hour analysis",
+        "regime_label": regime.label,
+        "regime_briefing": regime.briefing,
+        "temperature_c": current_metrics.get("temperature_mean_c"),
+        "precipitation_mm": current_metrics.get("precipitation_total_mm"),
+        "wind_ms": current_metrics.get("wind_speed_mean_ms"),
+        "cloud_pct": current_metrics.get("cloud_cover_mean_pct"),
+        "energy_label": energy.label,
+    }
+    # After _copy_assets, which clears the assets directory before repopulating it.
+    write_share_card(config, share_payload, site_dir)
+    write_share_card(config, analysis_share_payload, site_dir, ANALYSIS_SHARE_CARD_ASSET)
 
     payload: dict[str, Any] = {
         "period_start": period_start,
@@ -3227,7 +3597,7 @@ def build_site(
             updated,
             "home",
             edition_notice,
-            share_payload,
+            None,
         ),
         encoding="utf-8",
     )
@@ -3279,7 +3649,7 @@ def build_site(
                 updated,
                 "analysis",
                 edition_notice,
-                share_payload,
+                analysis_share_payload,
             ),
             encoding="utf-8",
         )
@@ -3295,7 +3665,7 @@ def build_site(
             updated,
             "summary",
             edition_notice,
-            share_payload,
+            None,
         ),
         encoding="utf-8",
     )
@@ -3309,7 +3679,7 @@ def build_site(
             updated,
             "records",
             edition_notice,
-            share_payload,
+            None,
         ),
         encoding="utf-8",
     )

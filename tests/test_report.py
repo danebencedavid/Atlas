@@ -261,13 +261,58 @@ def test_report_generation_smoke(tmp_path: Path):
     assert 'href="records.html"' in html
     summary_page = (target.parent / "summary.html").read_text(encoding="utf-8")
     assert "Season &amp; Month Summary" in summary_page
-    assert 'data-summary-mode-button="season"' in summary_page
-    assert 'data-summary-panel' in summary_page
+    # Months and seasons share one select, so there is no mode toggle to fall out of sync.
+    assert "data-summary-mode-button" not in summary_page
+    assert summary_page.count("<select data-summary-select") == 1
+    assert '<optgroup label="Months">' in summary_page
+    assert '<optgroup label="Seasons">' in summary_page
+    assert 'value="month:1">January</option>' in summary_page
+    assert 'value="season:Winter">Winter</option>' in summary_page
+    assert "data-summary-panel" in summary_page
     records_page = (target.parent / "records.html").read_text(encoding="utf-8")
     assert "All-Time Record Book" in records_page
     assert 'class="record-grid"' in records_page
-    assert 'data-atlas-share-button' in html
-    assert 'id="atlas-share-data"' in html
+    # The share control belongs only to the report and the analysis, never to the
+    # landing, summary, record or archive pages, which cover no single period.
+    for pageless in (html, summary_page, records_page):
+        assert "data-atlas-share-button" not in pageless
+        assert 'id="atlas-share-data"' not in pageless
+
+    site_root = target.parent
+    analysis_page = (site_root / "analysis" / "index.html").read_text(encoding="utf-8")
+    for shareable in (report_html, analysis_page):
+        assert "data-atlas-share-button" in shareable
+        assert 'id="atlas-share-data"' in shareable
+        # The menu replaces the old single button that opened the OS share sheet.
+        assert 'data-atlas-share-action="download"' in shareable
+        assert 'data-atlas-share-action="facebook"' in shareable
+        assert 'data-atlas-share-action="x"' in shareable
+        assert 'data-atlas-share-action="whatsapp"' in shareable
+        assert "Share this report" in shareable
+        assert "Share today's weather" not in shareable
+        # Link shares carry a URL, so the preview only renders with Open Graph tags.
+        assert '<meta property="og:image"' in shareable
+        assert '<meta name="twitter:card" content="summary_large_image">' in shareable
+
+    assert '<link rel="canonical" href="https://danebencedavid.github.io/Atlas/report.html">' in report_html
+    assert (
+        '<link rel="canonical" href="https://danebencedavid.github.io/Atlas/analysis/index.html">'
+        in analysis_page
+    )
+
+    # The daily report and the 72-hour analysis describe different periods, so each
+    # carries its own card rather than one standing in for the other.
+    daily_card = site_root / "assets" / "share-card.png"
+    analysis_card = site_root / "assets" / "share-card-analysis.png"
+    assert daily_card.is_file()
+    assert analysis_card.is_file()
+    assert daily_card.read_bytes() != analysis_card.read_bytes()
+
+    assert "assets/share-card-analysis.png" in analysis_page
+    assert "assets/share-card-analysis.png" not in report_html
+    assert "assets/share-card.png" in report_html
+    assert '"kind_label": "72-hour analysis"' in analysis_page
+    assert '"kind_label": "Daily report"' in report_html
 
 
 def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):

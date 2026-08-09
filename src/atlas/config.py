@@ -11,6 +11,9 @@ import yaml
 class ProjectConfig:
     name: str = "Atlas"
     tagline: str = "Rolling weather anomaly atlas and renewable energy situation report"
+    # Absolute origin of the published site. Link shares (Facebook, X, WhatsApp) and
+    # Open Graph tags need a canonical URL; relative paths are useless off-site.
+    site_url: str = "https://danebencedavid.github.io/Atlas"
 
 
 @dataclass(frozen=True)
