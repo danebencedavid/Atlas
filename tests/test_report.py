@@ -4,6 +4,7 @@ import json
 import numpy as np
 import pandas as pd
 
+from atlas.almanac import build_almanac
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
 from atlas.climatology import ClimateReference
@@ -127,6 +128,22 @@ def test_report_generation_smoke(tmp_path: Path):
         ["sunny"] * 3,
         ["dry"],
     )
+    almanac_dates = pd.date_range("2020-01-01", "2022-12-31", freq="D")
+    almanac = build_almanac(
+        pd.DataFrame(
+            {
+                "date": almanac_dates.date,
+                "temperature_2m_mean": 10.0,
+                "precipitation_sum": 1.0,
+                "wind_speed_100m_mean": 4.0,
+                "pressure_msl_mean": 1013.0,
+                "cloud_cover_mean": 50.0,
+                "shortwave_radiation_sum": 5.0,
+                "et0_fao_evapotranspiration_sum": 1.0,
+            }
+        ),
+        config,
+    )
 
     target = build_site(
         config=config,
@@ -174,6 +191,7 @@ def test_report_generation_smoke(tmp_path: Path):
         daily_physical_energy=empty_physical,
         regime=regime,
         daily_regime=regime,
+        almanac=almanac,
         figure_paths=figure_paths,
         processed_paths=processed,
         edition_notice="Demonstration edition: synthetic data.",
@@ -237,6 +255,19 @@ def test_report_generation_smoke(tmp_path: Path):
     summary_text = (target.parent / "data" / "summary.json").read_text(encoding="utf-8")
     assert "NaN" not in summary_text
     assert json.loads(summary_text)["physical_energy"]["pv_yield_kwh_per_kwp"] is None
+
+    assert (target.parent / "data" / "climate_almanac.json").exists()
+    assert 'href="summary.html"' in html
+    assert 'href="records.html"' in html
+    summary_page = (target.parent / "summary.html").read_text(encoding="utf-8")
+    assert "Season &amp; Month Summary" in summary_page
+    assert 'data-summary-mode-button="season"' in summary_page
+    assert 'data-summary-panel' in summary_page
+    records_page = (target.parent / "records.html").read_text(encoding="utf-8")
+    assert "All-Time Record Book" in records_page
+    assert 'class="record-grid"' in records_page
+    assert 'data-atlas-share-button' in html
+    assert 'id="atlas-share-data"' in html
 
 
 def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):

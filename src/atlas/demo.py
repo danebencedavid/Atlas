@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw
 
+from atlas.almanac import build_almanac
 from atlas.analogs import AnalogAnalysis, AnalogPeriod
 from atlas.anomalies import anomalies_as_frame, compute_anomalies, percentile_rank, period_metrics
 from atlas.climatology import ClimateReference
@@ -154,6 +155,42 @@ def _climate_reference(metrics: dict[str, float], days: int) -> ClimateReference
             "Synthetic reference distributions preserve the Atlas 1991-2020, recent-decade and full-record comparison structure.",
             DEMO_NOTICE,
         ],
+    )
+
+
+def _daily_climate_archive(years: range) -> pd.DataFrame:
+    """Deterministic synthetic full-resolution daily archive for the almanac demo.
+
+    Shaped like the real ``fetch_climate_archive`` output: one row per calendar day
+    across every year in ``years``, using the same column names as the live pipeline.
+    """
+    dates = pd.date_range(f"{years.start}-01-01", f"{years.stop - 1}-12-31", freq="D")
+    day_of_year = pd.Series(dates).dt.dayofyear.to_numpy(dtype=float)
+    year_arr = pd.Series(dates).dt.year.to_numpy(dtype=float)
+    seasonal = np.sin(2.0 * np.pi * (day_of_year - 100.0) / 365.25)
+    year_cycle = np.sin((year_arr - float(years.start)) * 0.35)
+    temperature = 10.5 + 12.5 * seasonal + 0.6 * year_cycle
+    precipitation = np.clip(
+        1.8 + 1.6 * np.cos(2.0 * np.pi * (day_of_year - 20.0) / 365.25) + 1.4 * np.sin(day_of_year * 0.11),
+        0.0,
+        None,
+    )
+    wind = np.clip(4.2 + 1.6 * np.cos(2.0 * np.pi * (day_of_year - 300.0) / 365.25) + 0.4 * year_cycle, 0.3, None)
+    pressure = 1015.0 + 3.2 * np.cos(2.0 * np.pi * day_of_year / 365.25 + 0.4)
+    cloud = np.clip(48.0 - 16.0 * seasonal + 6.0 * np.sin(day_of_year * 0.05), 5.0, 100.0)
+    shortwave = np.clip(6.5 + 6.0 * seasonal, 0.4, None)
+    et0 = np.clip(1.6 + 1.5 * seasonal, 0.1, None)
+    return pd.DataFrame(
+        {
+            "date": dates.date,
+            "temperature_2m_mean": temperature,
+            "precipitation_sum": precipitation,
+            "wind_speed_100m_mean": wind,
+            "pressure_msl_mean": pressure,
+            "cloud_cover_mean": cloud,
+            "shortwave_radiation_sum": shortwave,
+            "et0_fao_evapotranspiration_sum": et0,
+        }
     )
 
 
@@ -480,6 +517,7 @@ def run_demo_pipeline(
     daily_physical_energy = compute_physical_energy(config, daily)
     regime = classify_period(current, climate.standard_anomalies)
     daily_regime = classify_period(daily, daily_climate.standard_anomalies)
+    almanac = build_almanac(_daily_climate_archive(range(1990, end.year)), config)
 
     station = _station(current)
     fronts = detect_fronts(station.frame)
@@ -643,6 +681,7 @@ def run_demo_pipeline(
         daily_physical_energy=daily_physical_energy,
         regime=regime,
         daily_regime=daily_regime,
+        almanac=almanac,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,

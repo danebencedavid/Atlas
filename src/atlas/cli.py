@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from atlas.almanac import build_almanac
 from atlas.analogs import find_historical_analogs
 from atlas.anomalies import anomalies_as_frame, period_metrics
 from atlas.climatology import (
@@ -138,6 +139,7 @@ def run_pipeline(
         quality_notes.append(f"Seven-day context was unavailable; the current period is shown instead: {exc}")
 
     climate_archive = fetch_climate_archive(config, start, refresh=refresh)
+    almanac = build_almanac(climate_archive, config)
     station = fetch_station_observations(config, start, end, refresh=refresh)
     radar = fetch_radar_archive(config, start, end, refresh=refresh)
     lightning = fetch_lightning_archive(config, start, end, refresh=refresh)
@@ -491,6 +493,7 @@ def run_pipeline(
         daily_physical_energy=daily_physical_energy,
         regime=regime,
         daily_regime=daily_regime,
+        almanac=almanac,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,

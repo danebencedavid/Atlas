@@ -13,6 +13,10 @@ reports/figures/*
 site/*
 theory/
 
+# Local style scratchpads.
+style-lab.html
+style-lab-report.html
+
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep

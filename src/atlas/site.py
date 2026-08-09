@@ -11,6 +11,7 @@ from typing import Any
 
 import pandas as pd
 
+from atlas.almanac import Almanac, PeriodClimate, RecordEntry
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
 from atlas.climatology import ClimateReference
@@ -751,6 +752,30 @@ a { color: inherit; }
   background: var(--selected);
   border-left-color: var(--ink);
 }
+.archive-nav-link + .archive-nav-link { margin-top: 3px; }
+.share-day-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 4px 0;
+  padding: 9px 10px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), #1d4ed8);
+  border: 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.share-day-button span { font-size: 13px; }
+.share-day-button:hover { filter: brightness(1.06); }
+.share-day-button:disabled {
+  cursor: not-allowed;
+  background: var(--line-strong);
+  color: var(--muted);
+  filter: none;
+}
 .sidebar-note {
   margin: auto 4px 2px;
   padding: 10px;
@@ -1268,6 +1293,105 @@ th, td { border-color: var(--line); }
 .story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
 .story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
 .story-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+.almanac-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px;
+  padding: 14px 0 22px;
+  border-top: 1px solid var(--line);
+}
+.almanac-mode-switch { display: flex; gap: 2px; }
+.almanac-mode-switch button {
+  min-height: 34px;
+  padding: 6px 14px;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.almanac-mode-switch button[aria-pressed="true"] { color: #fff; background: var(--blue); border-color: var(--blue); }
+.almanac-select { display: grid; gap: 5px; }
+.almanac-select span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.almanac-select select {
+  min-height: 34px;
+  padding: 6px 9px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font: inherit;
+  min-width: 180px;
+}
+.almanac-panel { padding: 20px 0 30px; border-top: 1px solid var(--line); }
+.almanac-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.almanac-panel-header span { color: var(--muted); font-size: 10px; }
+.almanac-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 4px 0 22px;
+  background: var(--line);
+  border: 1px solid var(--line-strong);
+}
+.almanac-stats div { padding: 12px 14px; background: var(--paper); }
+.almanac-stats span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.almanac-stats strong { display: block; margin-top: 2px; font-size: 18px; font-weight: 600; }
+.almanac-records { margin: 8px 0 0; padding: 0; list-style: none; }
+.almanac-records li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.almanac-records li span { color: var(--muted); }
+.record-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  margin: 4px 0;
+  background: var(--line);
+  border: 1px solid var(--line-strong);
+}
+.record-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 16px 14px;
+  background: var(--paper);
+  border-top: 2px solid var(--blue);
+}
+.record-label {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.record-value { font-size: 22px; font-weight: 650; }
+.record-date { color: var(--muted); font-size: 11px; }
+.muted-cell { color: var(--muted); }
 footer {
   margin: 0;
   color: var(--muted);
@@ -1405,11 +1529,16 @@ def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str
     return relative
 
 
-def _navigation(active: str, family: str) -> str:
+def _navigation(active: str, family: str, share_id: str | None = None) -> str:
     nested = family == "analysis"
     archive = family == "archive"
+    history_family = family in ("summary", "records")
     prefix = "../" if nested or archive else ""
-    pages = () if archive or family == "home" else (ANALYSIS_PAGES if nested else PUBLIC_PAGES)
+    pages = (
+        ()
+        if archive or history_family or family == "home"
+        else (ANALYSIS_PAGES if nested else PUBLIC_PAGES)
+    )
     links = []
     for filename, label in pages:
         current = ' aria-current="page"' if filename == active else ""
@@ -1420,6 +1549,8 @@ def _navigation(active: str, family: str) -> str:
         "public": "Daily public report",
         "analysis": "72-hour analysis",
         "archive": "Saved reports",
+        "summary": "Season & month summary",
+        "records": "All-time record book",
         "home": "Atlas project",
     }[family]
     page_navigation = (
@@ -1430,6 +1561,17 @@ def _navigation(active: str, family: str) -> str:
     )
     archive_current = ' aria-current="page"' if archive else ""
     archive_href = "index.html" if archive else f"{prefix}archive/index.html"
+    summary_current = ' aria-current="page"' if family == "summary" else ""
+    records_current = ' aria-current="page"' if family == "records" else ""
+    summary_href = f"{prefix}summary.html"
+    records_href = f"{prefix}records.html"
+    share_button = (
+        f'<button type="button" class="share-day-button" data-atlas-share-button'
+        f' data-atlas-share-target="{html.escape(share_id)}" disabled>'
+        f'<span aria-hidden="true">&#x2934;</span> Share today\'s weather</button>'
+        if share_id
+        else ""
+    )
     return (
         f'<div class="nav-wrap"><a class="brand" href="{prefix}index.html">Atlas</a>'
         f'<span class="nav-label">Report edition</span>'
@@ -1437,8 +1579,13 @@ def _navigation(active: str, family: str) -> str:
         f'<a href="{prefix}analysis/index.html"{analysis_current}>Meteorological analysis</a></div>'
         f'{page_navigation}'
         f'<div class="archive-nav-wrap"><span class="nav-label">History</span>'
+        f'<a class="archive-nav-link" href="{summary_href}"{summary_current}>'
+        f'Summary <span>Month &amp; season digest</span></a>'
+        f'<a class="archive-nav-link" href="{records_href}"{records_current}>'
+        f'Record Book <span>All-time extremes</span></a>'
         f'<a class="archive-nav-link" data-atlas-archive-link href="{archive_href}"{archive_current}>'
         f'Archive <span>Saved editions</span></a></div>'
+        f'{share_button}'
         f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
         f'Daily public record and rolling expert analysis.</div></div>'
     )
@@ -1471,6 +1618,128 @@ def _plot_section(
 """
 
 
+SHARE_SCRIPT = """<script>
+  (function () {
+    const shareButton = document.querySelector('[data-atlas-share-button]');
+    if (!shareButton) return;
+    const dataId = shareButton.getAttribute('data-atlas-share-target');
+    const dataEl = dataId ? document.getElementById(dataId) : null;
+    if (!dataEl) return;
+
+    let share = null;
+    try {
+      share = JSON.parse(dataEl.textContent);
+    } catch (err) {
+      return;
+    }
+    shareButton.disabled = false;
+
+    const wrapText = (ctx, text, x, y, maxWidth, lineHeight, maxLines) => {
+      const words = String(text || '').split(' ');
+      let line = '';
+      let cursorY = y;
+      let lines = 0;
+      for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, x, cursorY);
+          line = word;
+          cursorY += lineHeight;
+          lines += 1;
+          if (lines >= maxLines) return;
+        } else {
+          line = test;
+        }
+      }
+      if (line) ctx.fillText(line, x, cursorY);
+    };
+
+    const numberOrDash = (value, digits, suffix) =>
+      value === null || value === undefined || Number.isNaN(value)
+        ? '—'
+        : `${Number(value).toFixed(digits)}${suffix}`;
+
+    const buildCard = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 630;
+      const ctx = canvas.getContext('2d');
+
+      const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+      gradient.addColorStop(0, '#172033');
+      gradient.addColorStop(1, '#1d4ed8');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1200, 630);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.82)';
+      ctx.font = '700 24px Inter, Arial, sans-serif';
+      ctx.fillText('DEBRECEN, HUNGARY  ·  ATLAS', 64, 84);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 118px Inter, Arial, sans-serif';
+      ctx.fillText(numberOrDash(share.temperature_c, 0, '°C'), 64, 230);
+
+      ctx.font = '650 36px Inter, Arial, sans-serif';
+      ctx.fillText(share.regime_label || 'Weather summary', 64, 290);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.font = '400 22px Inter, Arial, sans-serif';
+      wrapText(ctx, share.regime_briefing || '', 64, 335, 1070, 30, 2);
+
+      const stats = [
+        `Precip ${numberOrDash(share.precipitation_mm, 1, ' mm')}`,
+        `Wind ${numberOrDash(share.wind_ms, 1, ' m/s')}`,
+        `Cloud ${numberOrDash(share.cloud_pct, 0, '%')}`,
+      ];
+      if (share.energy_label) stats.push(String(share.energy_label));
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '600 24px Inter, Arial, sans-serif';
+      ctx.fillText(stats.join('     ·     '), 64, 470);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = '400 18px Inter, Arial, sans-serif';
+      ctx.fillText(`Debrecen Meteorological Atlas  ·  ${share.date || ''}`, 64, 574);
+
+      return canvas;
+    };
+
+    shareButton.addEventListener('click', () => {
+      const canvas = buildCard();
+      const fileName = `debrecen-weather-${share.date || 'today'}.png`;
+      canvas.toBlob(async blob => {
+        if (!blob) return;
+        let file = null;
+        try {
+          file = new File([blob], fileName, { type: 'image/png' });
+        } catch (err) {
+          file = null;
+        }
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Debrecen weather',
+              text: `${share.regime_label || 'Debrecen weather'} — ${numberOrDash(share.temperature_c, 0, '°C')}`,
+            });
+            return;
+          } catch (err) {
+            // Fall through to a direct download if sharing was cancelled or unsupported.
+          }
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    });
+  })();
+</script>"""
+
+
 def _page_document(
     config: AtlasConfig,
     active: str,
@@ -1480,6 +1749,7 @@ def _page_document(
     updated: str,
     family: str,
     edition_notice: str | None = None,
+    share: dict[str, Any] | None = None,
 ) -> str:
     title = config.project.name if active == "index.html" else f"{page_name} | {config.project.name}"
     notice_line = (
@@ -1492,7 +1762,16 @@ def _page_document(
         "public": "Daily report",
         "analysis": "72-hour analysis",
         "archive": "Archive",
+        "summary": "History",
+        "records": "History",
     }[family]
+    share_id = "atlas-share-data" if share else None
+    share_data_script = (
+        f'<script type="application/json" id="{share_id}">'
+        f'{json.dumps(json_ready(share), allow_nan=False)}</script>\n'
+        if share
+        else ""
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -1504,7 +1783,7 @@ def _page_document(
 </head>
 <body>
   <div class="app-shell">
-    <header class="site-header" id="site-navigation">{_navigation(active, family)}</header>
+    <header class="site-header" id="site-navigation">{_navigation(active, family, share_id)}</header>
     <div class="sidebar-scrim" id="sidebar-scrim"></div>
     <div class="workspace">
       <header class="report-topbar">
@@ -1515,7 +1794,7 @@ def _page_document(
       <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
     </div>
   </div>
-  <script>
+  {share_data_script}<script>
     const navigation = document.querySelector('#site-navigation');
     const scrim = document.querySelector('#sidebar-scrim');
     const menuButton = document.querySelector('#menu-button');
@@ -1527,6 +1806,7 @@ def _page_document(
     scrim.addEventListener('click', () => setMenu(false));
     navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
   </script>
+  {SHARE_SCRIPT}
 </body>
 </html>
 """
@@ -2026,6 +2306,28 @@ def build_report_archive(
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
 
+    share_payload: dict[str, Any] | None = None
+    summary_source = site_dir / "data" / "summary.json"
+    if summary_source.is_file():
+        try:
+            source_payload = json.loads(summary_source.read_text(encoding="utf-8"))
+            daily_metrics = source_payload.get("daily_metrics", {})
+            daily_regime = source_payload.get("daily_regime", {})
+            daily_energy = source_payload.get("daily_energy", {})
+            share_payload = {
+                "date": source_payload.get("daily_date"),
+                "location": f"{config.location.name}, {config.location.region}",
+                "regime_label": daily_regime.get("label"),
+                "regime_briefing": daily_regime.get("briefing"),
+                "temperature_c": daily_metrics.get("temperature_mean_c"),
+                "precipitation_mm": daily_metrics.get("precipitation_total_mm"),
+                "wind_ms": daily_metrics.get("wind_speed_mean_ms"),
+                "cloud_pct": daily_metrics.get("cloud_cover_mean_pct"),
+                "energy_label": daily_energy.get("label"),
+            }
+        except (json.JSONDecodeError, OSError):
+            share_payload = None
+
     collections = {
         "daily": [
             _archive_entry(source, "daily")
@@ -2118,6 +2420,8 @@ def build_report_archive(
             content,
             updated,
             "archive",
+            None,
+            share_payload,
         ),
         encoding="utf-8",
     )
@@ -2159,6 +2463,163 @@ def archive_public_site(
     return archive_dir / "index.html"
 
 
+def _record_line(record: RecordEntry | None) -> str:
+    if record is None:
+        return '<span class="muted-cell">n/a</span>'
+    return f'{record.value:g} {html.escape(record.unit)}<span>{html.escape(record.on_date)}</span>'
+
+
+def _almanac_period_panel(period: PeriodClimate) -> str:
+    stats = f"""
+    <div class="almanac-stats">
+      <div><span>Mean temperature</span><strong>{period.mean_temperature_c:.1f}&deg;C</strong></div>
+      <div><span>Typical precipitation</span><strong>{period.mean_precipitation_mm:.1f} mm</strong></div>
+      <div><span>Mean wind speed</span><strong>{period.mean_wind_speed_ms:.1f} m/s</strong></div>
+      <div><span>Mean cloud cover</span><strong>{period.mean_cloud_cover_pct:.0f}%</strong></div>
+      <div><span>Typical solar energy</span><strong>{period.mean_shortwave_wh_m2:.0f} Wh/m&sup2;</strong></div>
+      <div><span>Typical water balance</span><strong>{period.mean_water_balance_mm:.1f} mm</strong></div>
+    </div>"""
+    records = [
+        record
+        for record in (
+            period.warmest_day,
+            period.coldest_day,
+            period.wettest_day,
+            period.windiest_day,
+            period.sunniest_day,
+            period.driest_day,
+        )
+        if record is not None
+    ]
+    record_items = "".join(
+        f'<li><strong>{html.escape(record.label)}</strong>{_record_line(record)}</li>' for record in records
+    )
+    return f"""
+<section class="almanac-panel" data-summary-panel data-summary-kind="{html.escape(period.kind)}" data-summary-key="{html.escape(period.key)}" hidden>
+  <div class="almanac-panel-header">
+    <h2>{html.escape(period.name)}</h2>
+    <span>{period.years} years of ERA5 daily data</span>
+  </div>
+  {stats}
+  <h3>Records for {html.escape(period.name)}</h3>
+  <ul class="almanac-records">{record_items}</ul>
+</section>"""
+
+
+def _almanac_pages(config: AtlasConfig, almanac: Almanac) -> tuple[str, str]:
+    coverage = f"{almanac.archive_start_year}-{almanac.archive_end_year}"
+    notes_items = "".join(f"<li>{html.escape(note)}</li>" for note in almanac.notes)
+
+    month_options = "".join(
+        f'<option value="{html.escape(period.key)}">{html.escape(period.name)}</option>' for period in almanac.months
+    )
+    season_options = "".join(
+        f'<option value="{html.escape(period.key)}">{html.escape(period.name)}</option>' for period in almanac.seasons
+    )
+    panels = "".join(_almanac_period_panel(period) for period in [*almanac.months, *almanac.seasons])
+
+    summary_content = f"""{_page_intro(
+        "Season & Month Summary",
+        f"Climatological digests built from {almanac.total_days} daily ERA5 values for "
+        f"{config.location.name} across {coverage}. Selecting a month or season reads data already "
+        "generated for this site; nothing is fetched on demand.",
+        "History",
+    )}
+<div class="almanac-controls">
+  <div class="almanac-mode-switch" role="tablist" aria-label="Summary type">
+    <button type="button" data-summary-mode-button="month" aria-pressed="true">By month</button>
+    <button type="button" data-summary-mode-button="season" aria-pressed="false">By season</button>
+  </div>
+  <label class="almanac-select" data-summary-select-wrap="month">
+    <span>Month</span>
+    <select data-summary-select="month" aria-label="Select month">{month_options}</select>
+  </label>
+  <label class="almanac-select" data-summary-select-wrap="season" hidden>
+    <span>Season</span>
+    <select data-summary-select="season" aria-label="Select season">{season_options}</select>
+  </label>
+</div>
+<div class="almanac-panels">{panels}</div>
+<section class="content-section"><h2>Notes</h2><ul>{notes_items}</ul></section>
+<script>
+  (function () {{
+    const modeButtons = Array.from(document.querySelectorAll('[data-summary-mode-button]'));
+    const selectWraps = {{
+      month: document.querySelector('[data-summary-select-wrap="month"]'),
+      season: document.querySelector('[data-summary-select-wrap="season"]'),
+    }};
+    const selects = {{
+      month: document.querySelector('[data-summary-select="month"]'),
+      season: document.querySelector('[data-summary-select="season"]'),
+    }};
+    const panels = Array.from(document.querySelectorAll('[data-summary-panel]'));
+    let mode = 'month';
+    const render = () => {{
+      const select = selects[mode];
+      const key = select ? select.value : null;
+      panels.forEach(panel => {{
+        panel.hidden = !(panel.dataset.summaryKind === mode && panel.dataset.summaryKey === key);
+      }});
+    }};
+    modeButtons.forEach(button => {{
+      button.addEventListener('click', () => {{
+        mode = button.getAttribute('data-summary-mode-button');
+        modeButtons.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+        if (selectWraps.month) selectWraps.month.hidden = mode !== 'month';
+        if (selectWraps.season) selectWraps.season.hidden = mode !== 'season';
+        render();
+      }});
+    }});
+    if (selects.month) selects.month.addEventListener('change', render);
+    if (selects.season) selects.season.addEventListener('change', render);
+    render();
+  }})();
+</script>
+"""
+
+    record_cards = "".join(
+        f"""
+    <div class="record-card">
+      <span class="record-label">{html.escape(record.label)}</span>
+      <strong class="record-value">{record.value:g} {html.escape(record.unit)}</strong>
+      <span class="record-date">{html.escape(record.on_date)}</span>
+    </div>"""
+        for record in almanac.all_time_records
+    )
+    month_rows = "".join(
+        f"""
+        <tr>
+          <td>{html.escape(period.name)}</td>
+          <td>{_record_line(period.warmest_day)}</td>
+          <td>{_record_line(period.coldest_day)}</td>
+          <td>{_record_line(period.wettest_day)}</td>
+          <td>{_record_line(period.windiest_day)}</td>
+        </tr>"""
+        for period in almanac.months
+    )
+    records_content = f"""{_page_intro(
+        "All-Time Record Book",
+        f"Debrecen's daily weather extremes across {almanac.total_days} ERA5 daily values from {coverage}.",
+        "History",
+    )}
+<section class="content-section">
+  <h2>All-Time Records</h2>
+  <div class="record-grid">{record_cards}</div>
+</section>
+<section class="content-section">
+  <h2>Extremes By Month</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Month</th><th>Warmest day</th><th>Coldest day</th><th>Wettest day</th><th>Windiest day</th></tr></thead>
+      <tbody>{month_rows}</tbody>
+    </table>
+  </div>
+</section>
+<section class="content-section"><h2>Notes</h2><ul>{notes_items}</ul></section>
+"""
+    return summary_content, records_content
+
+
 def build_site(
     config: AtlasConfig,
     period_start: str,
@@ -2188,6 +2649,7 @@ def build_site(
     daily_physical_energy: PhysicalEnergy,
     regime: RegimeClassification,
     daily_regime: RegimeClassification,
+    almanac: Almanac,
     figure_paths: dict[str, Path],
     processed_paths: dict[str, Path],
     site_dir: Path | None = None,
@@ -2236,6 +2698,24 @@ def build_site(
         json.dumps(weather_story_payload, indent=2, allow_nan=False), encoding="utf-8"
     )
     data_links["weather_story"] = "../data/weather_story.json"
+
+    almanac_payload = json_ready(asdict(almanac))
+    (data_dir / "climate_almanac.json").write_text(
+        json.dumps(almanac_payload, indent=2, allow_nan=False), encoding="utf-8"
+    )
+    data_links["climate_almanac"] = "../data/climate_almanac.json"
+
+    share_payload = {
+        "date": daily_date,
+        "location": f"{config.location.name}, {config.location.region}",
+        "regime_label": daily_regime.label,
+        "regime_briefing": daily_regime.briefing,
+        "temperature_c": daily_metrics.get("temperature_mean_c"),
+        "precipitation_mm": daily_metrics.get("precipitation_total_mm"),
+        "wind_ms": daily_metrics.get("wind_speed_mean_ms"),
+        "cloud_pct": daily_metrics.get("cloud_cover_mean_pct"),
+        "energy_label": daily_energy.label,
+    }
 
     payload: dict[str, Any] = {
         "period_start": period_start,
@@ -2688,6 +3168,7 @@ def build_site(
         ("Land-surface hourly context", data_links.get("land_surface_hourly")),
         ("Land-surface daily context", data_links.get("land_surface_daily")),
         ("Machine-readable summary", "../data/summary.json"),
+        ("Month, season and record-book climate almanac", data_links.get("climate_almanac")),
     ]
     available_downloads = [(label, str(path)) for label, path in downloads if path]
     download_items = "\n".join(
@@ -2746,6 +3227,7 @@ def build_site(
             updated,
             "home",
             edition_notice,
+            share_payload,
         ),
         encoding="utf-8",
     )
@@ -2770,6 +3252,7 @@ def build_site(
                 updated,
                 "public",
                 edition_notice,
+                share_payload,
             ),
             encoding="utf-8",
         )
@@ -2796,8 +3279,39 @@ def build_site(
                 updated,
                 "analysis",
                 edition_notice,
+                share_payload,
             ),
             encoding="utf-8",
         )
+
+    summary_content, records_content = _almanac_pages(config, almanac)
+    (site_dir / "summary.html").write_text(
+        _page_document(
+            config,
+            "summary.html",
+            "Season & Month Summary",
+            "Select a calendar month or meteorological season for a Debrecen climate digest built from the full ERA5 daily archive.",
+            summary_content,
+            updated,
+            "summary",
+            edition_notice,
+            share_payload,
+        ),
+        encoding="utf-8",
+    )
+    (site_dir / "records.html").write_text(
+        _page_document(
+            config,
+            "records.html",
+            "All-Time Record Book",
+            "Debrecen's warmest, coldest, wettest, windiest and other daily extremes across the full ERA5 archive.",
+            records_content,
+            updated,
+            "records",
+            edition_notice,
+            share_payload,
+        ),
+        encoding="utf-8",
+    )
 
     return site_dir / "index.html"
