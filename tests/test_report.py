@@ -287,7 +287,8 @@ def test_report_generation_smoke(tmp_path: Path):
         assert 'data-atlas-share-action="download"' in shareable
         assert 'data-atlas-share-action="facebook"' in shareable
         assert 'data-atlas-share-action="x"' in shareable
-        assert 'data-atlas-share-action="whatsapp"' in shareable
+        assert 'data-atlas-share-action="instagram"' in shareable
+        assert 'data-atlas-share-action="copy"' in shareable
         assert "Share this report" in shareable
         assert "Share today's weather" not in shareable
         # Link shares carry a URL, so the preview only renders with Open Graph tags.

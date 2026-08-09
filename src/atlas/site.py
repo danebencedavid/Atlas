@@ -841,6 +841,17 @@ a { color: inherit; }
 .share-menu-item:hover { background: var(--hover); }
 .share-menu-primary:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
 .share-menu-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.share-menu-url {
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 8px;
+  color: var(--ink);
+  background: var(--rail);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  font: inherit;
+  font-size: 11px;
+}
 .share-menu-links .share-menu-item { justify-content: center; padding: 8px 4px; font-size: 11px; }
 .share-day-button:disabled {
   cursor: not-allowed;
@@ -1854,11 +1865,11 @@ def _navigation(active: str, family: str, share_id: str | None = None) -> str:
         f'Download image <span>1080&times;1350 PNG</span></button>'
         f'<button type="button" class="share-menu-item" data-atlas-share-action="native" hidden>'
         f'Share to an app&hellip;</button>'
-        f'<p class="share-menu-label">Post a link</p>'
+        f'<p class="share-menu-label">Share to</p>'
         f'<div class="share-menu-links">'
         f'<button type="button" class="share-menu-item" data-atlas-share-action="facebook">Facebook</button>'
         f'<button type="button" class="share-menu-item" data-atlas-share-action="x">X</button>'
-        f'<button type="button" class="share-menu-item" data-atlas-share-action="whatsapp">WhatsApp</button>'
+        f'<button type="button" class="share-menu-item" data-atlas-share-action="instagram">Instagram</button>'
         f'</div>'
         f'<button type="button" class="share-menu-item" data-atlas-share-action="copy">Copy link</button>'
         f'</div></div>'
@@ -2068,6 +2079,35 @@ SHARE_SCRIPT = r"""<script>
 
     const openIntent = url => window.open(url, '_blank', 'noopener,noreferrer');
 
+    // navigator.clipboard is undefined outside a secure context, so the archived
+    // copies opened from disk need the selection fallback to copy at all.
+    const copyText = async text => {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (err) {
+          /* fall through to the selection fallback */
+        }
+      }
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.top = '-1000px';
+      document.body.appendChild(field);
+      field.select();
+      field.setSelectionRange(0, text.length);
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (err) {
+        copied = false;
+      }
+      field.remove();
+      return copied;
+    };
+
     const actions = {
       download,
       // Offered only where the browser can hand over the actual PNG, which is the one
@@ -2088,20 +2128,45 @@ SHARE_SCRIPT = r"""<script>
         openIntent(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`,
         ),
-      whatsapp: () =>
-        openIntent(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + pageUrl)}`),
+      // Instagram accepts no prefilled web post, so the only honest route is to put
+      // the image on the device first. On a phone the share sheet lists Instagram
+      // directly; elsewhere the card downloads and Instagram opens for the upload.
+      instagram: async () => {
+        if (nativeFilesSupported) {
+          await actions.native();
+          return;
+        }
+        // Opened before the await, while the click still counts as user activation;
+        // afterwards a popup blocker would swallow it.
+        openIntent('https://www.instagram.com/');
+        await download();
+      },
       copy: async event => {
         const button = event.currentTarget;
-        try {
-          await navigator.clipboard.writeText(pageUrl);
-          const original = button.textContent;
+        const original = button.dataset.label || button.textContent;
+        button.dataset.label = original;
+        if (await copyText(pageUrl)) {
           button.textContent = 'Link copied';
           window.setTimeout(() => {
             button.textContent = original;
-          }, 1600);
-        } catch (err) {
-          window.prompt('Copy this link', pageUrl);
+          }, 1800);
+          return;
         }
+        // Both clipboard routes can be refused. Leave the link on screen and selected
+        // so it stays copyable by hand instead of failing silently.
+        button.textContent = 'Copy this link';
+        let fallback = menu.querySelector('[data-atlas-share-url]');
+        if (!fallback) {
+          fallback = document.createElement('input');
+          fallback.type = 'text';
+          fallback.readOnly = true;
+          fallback.className = 'share-menu-url';
+          fallback.setAttribute('data-atlas-share-url', '');
+          fallback.value = pageUrl;
+          menu.append(fallback);
+        }
+        fallback.focus();
+        fallback.select();
       },
     };
 
@@ -2312,14 +2377,31 @@ def _weather_story_graph(story: WeatherStory) -> str:
     const height = field.clientHeight;
     const narrow = width < 620;
     const positions = new Map();
+    // Cards are centred on their coordinate, so a raw fraction of the field pushes
+    // half a card past the edge and `overflow: hidden` shears it off. Both layouts
+    // place cards inside the box they actually fit in, measured from a real card
+    // rather than assumed, which also reclaims the unused band below the graph.
+    const sample = buttons.values().next().value;
+    const halfWidth = (sample ? sample.offsetWidth : 170) / 2;
+    const halfHeight = (sample ? sample.offsetHeight : 60) / 2;
+    const inset = 10;
+    const left = halfWidth + inset;
+    const right = Math.max(left, width - halfWidth - inset);
+    const top = halfHeight + inset;
+    const bottom = Math.max(top, height - halfHeight - inset);
     if (narrow) {{
       const order = ['regime', 'sky', 'thermal', 'events', 'front', 'boundary', 'pv', 'land', 'wind'];
+      const rows = Math.ceil(order.length / 2);
+      const step = rows > 1 ? (bottom - top) / (rows - 1) : 0;
       order.forEach((id, index) => positions.set(id, {{
-        x: width * (index % 2 ? .73 : .27),
-        y: 72 + Math.floor(index / 2) * 145,
+        x: index % 2 ? right : left,
+        y: top + Math.floor(index / 2) * step,
       }}));
     }} else {{
-      data.nodes.forEach(node => positions.set(node.id, {{x: node.x * width, y: node.y * height}}));
+      data.nodes.forEach(node => positions.set(node.id, {{
+        x: left + node.x * (right - left),
+        y: top + node.y * (bottom - top),
+      }}));
     }}
     data.nodes.forEach(node => {{
       const position = positions.get(node.id);
