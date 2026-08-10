@@ -51,6 +51,23 @@ def _save(fig: go.Figure, path: Path) -> Path:
     }
     if fig.layout.hovermode is None:
         layout_updates["hovermode"] = "x unified"
+
+    # Dropdowns and play controls sit above the plotting area, where a 64px top
+    # margin puts them on top of the title. Give those figures room for both and
+    # stack them: title against the top of the container, controls beneath it.
+    menus = tuple(fig.layout.updatemenus or ())
+    if menus:
+        layout_updates["margin"] = {"l": 58, "r": 26, "t": 116, "b": 48}
+        # Positioned key by key: passing a whole title dict would drop the text that
+        # each figure sets for itself.
+        layout_updates["title_yref"] = "container"
+        layout_updates["title_y"] = 0.97
+        layout_updates["title_yanchor"] = "top"
+        fig.update_layout(
+            updatemenus=[
+                {**menu.to_plotly_json(), "y": 1.04, "yanchor": "bottom"} for menu in menus
+            ]
+        )
     fig.update_layout(**layout_updates)
     fig.write_html(path, include_plotlyjs="cdn", full_html=True, config=PLOT_CONFIG)
     return path
