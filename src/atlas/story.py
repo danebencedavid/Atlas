@@ -219,7 +219,7 @@ def build_weather_story(
                 StoryFact("Period", f"{len(regime.daily_labels)} local days"),
             ],
             "Atlas transparent regime rules",
-            0.11,
+            0.06,
             0.50,
         ),
         StoryNode(
@@ -234,8 +234,8 @@ def build_weather_story(
                 StoryFact("Precipitation", _fmt(precipitation_total, "mm")),
             ],
             "Open-Meteo surface fields and ERA5 climatology",
-            0.36,
-            0.21,
+            0.45,
+            0.10,
         ),
         StoryNode(
             "thermal",
@@ -249,8 +249,8 @@ def build_weather_story(
                 StoryFact("Full-record rank", _rank(climate, "temperature_mean_c")),
             ],
             "Open-Meteo surface analysis and 1991-2020 ERA5 normal",
+            0.45,
             0.37,
-            0.47,
         ),
         StoryNode(
             "events",
@@ -264,8 +264,8 @@ def build_weather_story(
                 StoryFact("Radar maximum", _fmt(radar_max, "dBZ")),
             ],
             event_source,
-            0.36,
-            0.76,
+            0.88,
+            0.68,
         ),
         StoryNode(
             "front",
@@ -275,8 +275,8 @@ def build_weather_story(
             front_reading,
             front_facts,
             "Atlas compound pressure, temperature, wind and precipitation detector",
-            0.60,
-            0.80,
+            0.45,
+            0.91,
         ),
         StoryNode(
             "pv",
@@ -290,8 +290,8 @@ def build_weather_story(
                 StoryFact("Radiation anomaly", _fmt(radiation.anomaly if radiation else None, "Wh/m2", 0, True)),
             ],
             "Atlas physically based fixed-array PV model",
-            0.85,
-            0.18,
+            0.88,
+            0.08,
         ),
         StoryNode(
             "land",
@@ -305,8 +305,8 @@ def build_weather_story(
                 StoryFact("Maximum VPD", _fmt(land.metrics.get("vpd_max_kpa"), "kPa")),
             ],
             "Open-Meteo land fields and FAO-56 reference evapotranspiration",
-            0.67,
-            0.46,
+            0.88,
+            0.34,
         ),
         StoryNode(
             "boundary",
@@ -320,8 +320,8 @@ def build_weather_story(
                 StoryFact("Inversion episodes", str(len(inversion_events))),
             ],
             "Open-Meteo historical-model pressure levels",
-            0.61,
-            0.63,
+            0.45,
+            0.64,
         ),
         StoryNode(
             "wind",
@@ -335,8 +335,8 @@ def build_weather_story(
                 StoryFact("Mean power density", _fmt(physical_energy.mean_wind_power_density_w_m2, "W/m2", 0)),
             ],
             "Atlas physically based reference-turbine model",
-            0.86,
-            0.65,
+            0.88,
+            0.94,
         ),
     ]
 

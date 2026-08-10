@@ -1301,12 +1301,14 @@ th, td { border-color: var(--line); }
 .story-dot.synoptic { background: var(--blue); }
 .story-dot.observed { background: var(--gold); }
 .story-dot.impact { background: var(--green); }
+/* Evidence sits underneath rather than stealing a third of the width from the
+   cards, so the graph spans the same 1320px shell every other page uses. */
 .story-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2.25fr) minmax(260px, .85fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
   align-items: stretch;
-  padding-top: 18px;
+  padding-top: 10px;
 }
 .story-field {
   position: relative;
@@ -1359,12 +1361,18 @@ th, td { border-color: var(--line); }
   text-transform: uppercase;
 }
 .story-node-label { display: block; padding-top: 2px; font-size: 12px; font-weight: 600; line-height: 1.25; }
+/* Full width below the graph, so the reading, the numbers and the connections sit
+   side by side instead of stacking into one long narrow column. */
 .story-evidence {
-  align-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 0 30px;
+  align-items: start;
   min-width: 0;
-  padding: 17px 0 17px 20px;
-  border-left: 1px solid var(--line-strong);
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--line-strong);
 }
+.story-evidence > * { min-width: 0; }
 .story-evidence h3 { margin: 5px 0 0; font-size: 17px; }
 .story-reading { margin: 11px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
 .story-facts { margin: 18px 0 0; }
@@ -1376,7 +1384,12 @@ th, td { border-color: var(--line); }
 .story-source { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 9px; }
 .story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
 .story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
+.story-evidence-column > :first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .story-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+@media (max-width: 900px) {
+  .story-evidence { grid-template-columns: minmax(0, 1fr); gap: 18px 0; }
+  .story-evidence-column + .story-evidence-column { padding-top: 14px; border-top: 1px solid var(--line); }
+}
 .almanac-controls {
   display: flex;
   flex-wrap: wrap;
@@ -2331,9 +2344,14 @@ def _weather_story_graph(story: WeatherStory) -> str:
   const selectNode = node => {{
     buttons.forEach((button, id) => button.setAttribute('aria-pressed', String(id === node.id)));
     evidence.replaceChildren();
-    evidence.append(element('div', 'story-evidence-domain', node.domain_label));
-    evidence.append(element('h3', '', node.label));
-    evidence.append(element('p', 'story-reading', node.reading));
+    // Three columns, so the panel reads across the full width under the graph.
+    const reading = element('div', 'story-evidence-column');
+    reading.append(element('div', 'story-evidence-domain', node.domain_label));
+    reading.append(element('h3', '', node.label));
+    reading.append(element('p', 'story-reading', node.reading));
+    evidence.append(reading);
+
+    const measures = element('div', 'story-evidence-column');
     const facts = element('dl', 'story-facts');
     node.facts.forEach(fact => {{
       const row = document.createElement('div');
@@ -2341,9 +2359,12 @@ def _weather_story_graph(story: WeatherStory) -> str:
       row.append(element('dd', '', fact.value));
       facts.append(row);
     }});
-    evidence.append(facts);
-    evidence.append(element('div', 'story-source', node.source));
+    measures.append(facts);
+    measures.append(element('div', 'story-source', node.source));
+    evidence.append(measures);
+
     const related = data.edges.filter(edge => edge.source === node.id || edge.target === node.id);
+    const links = element('div', 'story-evidence-column');
     if (related.length) {{
       const connections = element('div', 'story-connections');
       connections.append(element('strong', '', 'Connections'));
@@ -2355,8 +2376,9 @@ def _weather_story_graph(story: WeatherStory) -> str:
         list.append(element('li', '', `${{direction}} ${{peer.label}}: ${{edge.relationship}}.`));
       }});
       connections.append(list);
-      evidence.append(connections);
+      links.append(connections);
     }}
+    evidence.append(links);
   }};
 
   data.nodes.forEach(node => {{
@@ -2371,6 +2393,13 @@ def _weather_story_graph(story: WeatherStory) -> str:
     nodeLayer.append(button);
     buttons.set(node.id, button);
   }});
+
+  const xs = data.nodes.map(node => node.x);
+  const ys = data.nodes.map(node => node.y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const spanX = (Math.max(...xs) - minX) || 1;
+  const spanY = (Math.max(...ys) - minY) || 1;
 
   const draw = () => {{
     const width = field.clientWidth;
@@ -2398,11 +2427,56 @@ def _weather_story_graph(story: WeatherStory) -> str:
         y: top + Math.floor(index / 2) * step,
       }}));
     }} else {{
+      // The authored fractions span roughly .11-.86 across and .18-.80 down, so using
+      // them directly leaves idle strips on both sides and a dead band underneath.
+      // Stretching them across their own extent makes the graph fill the panel.
       data.nodes.forEach(node => positions.set(node.id, {{
-        x: left + node.x * (right - left),
-        y: top + node.y * (bottom - top),
+        x: left + (node.x - minX) / spanX * (right - left),
+        y: top + (node.y - minY) / spanY * (bottom - top),
       }}));
     }}
+    // Stretching the coordinates can bring neighbours within a card's width of each
+    // other, so push any overlapping pair apart along whichever axis needs least
+    // movement, then pull everything back inside the field.
+    const ids = data.nodes.map(node => node.id);
+    const cardOf = id => buttons.get(id);
+    for (let pass = 0; pass < 40; pass++) {{
+      let moved = false;
+      for (let i = 0; i < ids.length; i++) {{
+        for (let j = i + 1; j < ids.length; j++) {{
+          const a = positions.get(ids[i]);
+          const b = positions.get(ids[j]);
+          const cardA = cardOf(ids[i]);
+          const cardB = cardOf(ids[j]);
+          if (!a || !b || !cardA || !cardB) continue;
+          const needX = (cardA.offsetWidth + cardB.offsetWidth) / 2 + 16;
+          const needY = (cardA.offsetHeight + cardB.offsetHeight) / 2 + 14;
+          const gapX = b.x - a.x;
+          const gapY = b.y - a.y;
+          const overlapX = needX - Math.abs(gapX);
+          const overlapY = needY - Math.abs(gapY);
+          if (overlapX <= 0 || overlapY <= 0) continue;
+          moved = true;
+          if (overlapX / needX <= overlapY / needY) {{
+            const shift = (overlapX / 2) * (gapX < 0 ? -1 : 1);
+            a.x -= shift;
+            b.x += shift;
+          }} else {{
+            const shift = (overlapY / 2) * (gapY < 0 ? -1 : 1);
+            a.y -= shift;
+            b.y += shift;
+          }}
+        }}
+      }}
+      ids.forEach(id => {{
+        const position = positions.get(id);
+        if (!position) return;
+        position.x = Math.min(Math.max(position.x, left), right);
+        position.y = Math.min(Math.max(position.y, top), bottom);
+      }});
+      if (!moved) break;
+    }}
+
     data.nodes.forEach(node => {{
       const position = positions.get(node.id);
       const button = buttons.get(node.id);
@@ -2411,18 +2485,67 @@ def _weather_story_graph(story: WeatherStory) -> str:
     }});
     svg.setAttribute('viewBox', `0 0 ${{width}} ${{height}}`);
     svg.querySelectorAll('.story-link').forEach(path => path.remove());
+    // Every arrow leaves and lands on the midpoint of a card's side. Cards are
+    // rectangles, so the side is chosen by comparing the run against the card's own
+    // aspect: a link that travels more across than down uses a vertical side,
+    // otherwise the top or bottom edge.
+    const pickSide = (id, towardX, towardY) => {{
+      const card = cardOf(id);
+      const halfW = (card ? card.offsetWidth : 170) / 2;
+      const halfH = (card ? card.offsetHeight : 58) / 2;
+      if (Math.abs(towardX) * halfH >= Math.abs(towardY) * halfW) {{
+        return towardX < 0 ? 'left' : 'right';
+      }}
+      return towardY < 0 ? 'top' : 'bottom';
+    }};
+    const sidePoint = (id, centre, side) => {{
+      const card = cardOf(id);
+      const halfW = (card ? card.offsetWidth : 170) / 2;
+      const halfH = (card ? card.offsetHeight : 58) / 2;
+      if (side === 'left') return {{x: centre.x - halfW, y: centre.y}};
+      if (side === 'right') return {{x: centre.x + halfW, y: centre.y}};
+      if (side === 'top') return {{x: centre.x, y: centre.y - halfH}};
+      return {{x: centre.x, y: centre.y + halfH}};
+    }};
+    // A card's outgoing arrows all leave through one side, chosen from where its
+    // targets sit on average, so the links read as a single fan rather than
+    // sprouting from three different edges of the same card.
+    const bearing = new Map();
     data.edges.forEach(edge => {{
       const start = positions.get(edge.source);
       const end = positions.get(edge.target);
       if (!start || !end) return;
       const dx = end.x - start.x;
       const dy = end.y - start.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const startPad = Math.min(narrow ? 78 : 86, distance * .34);
-      const endPad = Math.min(narrow ? 84 : 92, distance * .34);
+      const run = Math.hypot(dx, dy) || 1;
+      const acc = bearing.get(edge.source) || {{x: 0, y: 0}};
+      acc.x += dx / run;
+      acc.y += dy / run;
+      bearing.set(edge.source, acc);
+    }});
+    const exitSide = new Map();
+    bearing.forEach((acc, id) => exitSide.set(id, pickSide(id, acc.x, acc.y)));
+
+    data.edges.forEach(edge => {{
+      const start = positions.get(edge.source);
+      const end = positions.get(edge.target);
+      if (!start || !end) return;
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      if (!dx && !dy) return;
+      const from = sidePoint(edge.source, start, exitSide.get(edge.source) || pickSide(edge.source, dx, dy));
+      const to = sidePoint(edge.target, end, pickSide(edge.target, -dx, -dy));
+      const runX = to.x - from.x;
+      const runY = to.y - from.y;
+      const run = Math.hypot(runX, runY);
+      if (run < 14) return;
+      // Stop short of the border so the arrowhead points at the side midpoint
+      // instead of overlapping the card. The gap also clears the 4px selection ring,
+      // which otherwise covers the head of every arrow into the selected card.
+      const gap = Math.min(15, run / 3);
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.classList.add('story-link');
-      path.setAttribute('d', `M ${{start.x + dx / distance * startPad}} ${{start.y + dy / distance * startPad}} L ${{end.x - dx / distance * endPad}} ${{end.y - dy / distance * endPad}}`);
+      path.setAttribute('d', `M ${{from.x}} ${{from.y}} L ${{to.x - runX / run * gap}} ${{to.y - runY / run * gap}}`);
       svg.append(path);
     }});
   }};

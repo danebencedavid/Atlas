@@ -29,3 +29,6 @@ style-lab-report.html
 !reports/daily/**
 !reports/weeks/
 !reports/weeks/**
+
+# Local Claude Code permissions, specific to one machine.
+.claude/settings.local.json
