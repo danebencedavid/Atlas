@@ -25,6 +25,7 @@ from atlas.land import analyze_land_surface
 from atlas.phenomena import detect_weather_phenomena
 from atlas.plots import generate_all_figures
 from atlas.profile import ModelProfile
+from atlas.radar_cells import analyse_radar_cells
 from atlas.regimes import classify_period
 from atlas.satellite import SatelliteArchive, SatelliteFrame
 from atlas.serialization import json_ready
@@ -569,6 +570,7 @@ def run_demo_pipeline(
     verification = verify_against_station(current, station)
     fronts = detect_fronts(station.frame)
     radar, lightning = _radar_and_lightning(current, event_time, config)
+    radar_cells = analyse_radar_cells(radar, config)
     processed_dir = config.outputs.data_dir / "processed" / "demo"
     figures_dir = config.outputs.reports_dir / "figures" / "demo"
     for target in [processed_dir, figures_dir]:
@@ -734,6 +736,7 @@ def run_demo_pipeline(
         verification=verification,
         kinematics=kinematics,
         air_mass_origin=air_mass_origin,
+        radar_cells=radar_cells,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,

@@ -25,6 +25,7 @@ from atlas.kinematics import StormKinematics
 from atlas.land import LandSurfaceAnalysis
 from atlas.phenomena import PhenomenaAnalysis, WeatherPhenomenon
 from atlas.profile import ModelProfile
+from atlas.radar_cells import RadarCellAnalysis
 from atlas.regimes import RegimeClassification
 from atlas.satellite import SatelliteArchive
 from atlas.serialization import json_ready
@@ -1407,6 +1408,7 @@ th, td { border-color: var(--line); }
 }
 .kinematics-table h3 span { color: var(--muted); font-weight: 500; }
 .kinematics-table td { font-variant-numeric: tabular-nums; }
+.radar-subhead { margin: 18px 0 6px; font-size: 12px; }
 .verification-bias { font-variant-numeric: tabular-nums; font-weight: 650; }
 .verification-bias[data-sign="high"] { color: var(--red); }
 .verification-bias[data-sign="low"] { color: var(--blue); }
@@ -2329,6 +2331,73 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
   <h1>{html.escape(title)}</h1>
   <p>{html.escape(description)}</p>
 </header>
+"""
+
+
+def _radar_cells_section(analysis: RadarCellAnalysis | None) -> str:
+    """Convective cells tracked through the radar composite."""
+    if analysis is None or not analysis.available:
+        return ""
+    track_rows = "".join(
+        f"""
+        <tr>
+          <td>{track.identifier}</td>
+          <td>{track.peak_dbz:.0f} dBZ</td>
+          <td>{track.peak_area_km2:,.0f} km&sup2;</td>
+          <td>{track.mean_speed_ms:.1f} m/s</td>
+          <td>towards {track.bearing_deg:.0f}&deg;</td>
+          <td>{track.closest_approach_km:,.0f} km</td>
+          <td>{track.duration_hours:.1f} h</td>
+        </tr>"""
+        for track in analysis.tracks[:8]
+    )
+    coverage_rows = "".join(
+        f"""
+        <tr>
+          <td>{html.escape(item.label)}</td>
+          <td>{f'{item.lower_dbz:.0f}+' if item.upper_dbz == float('inf') else f'{item.lower_dbz:.0f}&ndash;{item.upper_dbz:.0f}'} dBZ</td>
+          <td>{item.peak_area_km2:,.0f} km&sup2;</td>
+          <td>{item.mean_area_km2:,.0f} km&sup2;</td>
+        </tr>"""
+        for item in analysis.coverage
+    )
+    strongest = analysis.strongest
+    nearest = analysis.nearest
+    lead = "No cell met the tracking threshold during the period."
+    if strongest is not None and nearest is not None:
+        lead = (
+            f"{len(analysis.tracks)} tracked cell(s) across {analysis.frames_analysed} frames. "
+            f"The most intense peaked at {strongest.peak_dbz:.0f} dBZ moving "
+            f"{strongest.mean_speed_ms:.1f} m/s towards {strongest.bearing_deg:.0f}&deg;, "
+            f"and the nearest passed {nearest.closest_approach_km:,.0f} km from the city."
+        )
+    note_items = "".join(f"<li>{html.escape(note)}</li>" for note in analysis.notes)
+    tracks_block = (
+        f"""
+  <h3 class="radar-subhead">Tracked cells</h3>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Cell</th><th>Peak</th><th>Peak area</th><th>Mean speed</th><th>Direction</th><th>Closest approach</th><th>Tracked for</th></tr></thead>
+      <tbody>{track_rows}</tbody>
+    </table>
+  </div>"""
+        if track_rows
+        else ""
+    )
+    return f"""
+<section class="content-section">
+  <h2>Radar Cell Tracking</h2>
+  <p>{lead}</p>
+  {tracks_block}
+  <h3 class="radar-subhead">Echo coverage by intensity</h3>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Class</th><th>Range</th><th>Peak area</th><th>Mean area</th></tr></thead>
+      <tbody>{coverage_rows}</tbody>
+    </table>
+  </div>
+  <ul class="verification-notes">{note_items}</ul>
+</section>
 """
 
 
@@ -3419,6 +3488,7 @@ def build_site(
     verification: StationVerification | None = None,
     kinematics: StormKinematics | None = None,
     air_mass_origin: AirMassOrigin | None = None,
+    radar_cells: RadarCellAnalysis | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
@@ -3858,6 +3928,7 @@ def build_site(
     storms += _plot_section("Objective Phenomena Strip", figures["phenomena_timeline"], "Objective weather phenomena chronology", "Each segment is a threshold-based candidate. Hover to inspect evidence, confidence and provenance.", "phenomena")
     storms += f'<section class="content-section"><h2>Evidence ledger</h2><ul class="event-list">{phenomenon_items(phenomena.events, "No objective phenomenon detected")}</ul></section>'
     storms += _plot_section("Radar Replay And Accumulation", figures["radar_archive"], "Animated radar replay and accumulation proxy", "Play the sampled reflectivity sequence on the left. The right panel integrates a standard Z-R conversion and is an approximate spatial precipitation proxy, not a gauge-adjusted accumulation product.", "radar")
+    storms += _radar_cells_section(radar_cells)
     storms += _plot_section("Lightning Diary", figures["lightning_diary"], "LINET lightning map and hourly diary", "Point color shows peak-current polarity and magnitude, point size scales with absolute current, and the hourly histogram reveals convective timing.", "context")
 
     profile_note = "Model-derived near Debrecen; parcel quantities use MetPy and are not observed radiosonde values."

@@ -35,6 +35,7 @@ from atlas.land import analyze_land_surface
 from atlas.phenomena import detect_weather_phenomena
 from atlas.plots import generate_all_figures
 from atlas.profile import fetch_model_profile
+from atlas.radar_cells import analyse_radar_cells
 from atlas.quality import DataQualityReport, validate_hourly_period
 from atlas.regimes import classify_period
 from atlas.satellite import fetch_satellite_archive
@@ -146,6 +147,7 @@ def run_pipeline(
     station = fetch_station_observations(config, start, end, refresh=refresh)
     verification = verify_against_station(current, station)
     radar = fetch_radar_archive(config, start, end, refresh=refresh)
+    radar_cells = analyse_radar_cells(radar, config)
     lightning = fetch_lightning_archive(config, start, end, refresh=refresh)
     satellite = fetch_satellite_archive(config, start, end, refresh=refresh)
     frontal_source = station_hourly(station) if not station.frame.empty else current
@@ -504,6 +506,7 @@ def run_pipeline(
         verification=verification,
         kinematics=kinematics,
         air_mass_origin=air_mass_origin,
+        radar_cells=radar_cells,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,
