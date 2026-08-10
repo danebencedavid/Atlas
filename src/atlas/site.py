@@ -30,6 +30,7 @@ from atlas.satellite import SatelliteArchive
 from atlas.serialization import json_ready
 from atlas.story import WeatherStory, build_weather_story
 from atlas.synoptic import SynopticArchive
+from atlas.trajectory import AirMassOrigin
 from atlas.verification import StationVerification
 
 
@@ -2331,6 +2332,59 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
 """
 
 
+def _air_mass_origin_section(origin: AirMassOrigin | None) -> str:
+    """Where the arriving air came from, traced backwards through the wind field."""
+    if origin is None or not origin.available:
+        return ""
+    # Show the path coarsely: the whole hourly list is in the JSON download.
+    stride = max(1, len(origin.points) // 8)
+    milestones = [point for index, point in enumerate(origin.points) if index % stride == 0]
+    if milestones[-1] is not origin.points[-1]:
+        milestones.append(origin.points[-1])
+    def coordinates(latitude: float, longitude: float) -> str:
+        # West of Greenwich is well within the domain, so the hemisphere has to be
+        # named rather than carried as a minus sign.
+        return (
+            f"{abs(latitude):.2f}&deg;{'N' if latitude >= 0 else 'S'}, "
+            f"{abs(longitude):.2f}&deg;{'E' if longitude >= 0 else 'W'}"
+        )
+
+    rows = "".join(
+        f"""
+        <tr>
+          <td>{point.hours_before_arrival:.0f} h</td>
+          <td>{coordinates(point.latitude, point.longitude)}</td>
+          <td>{point.distance_from_city_km:,.0f} km</td>
+          <td>{'n/a' if not point.temperature_c == point.temperature_c else f'{point.temperature_c:.1f} &deg;C'}</td>
+        </tr>"""
+        for point in milestones
+    )
+    note_items = "".join(f"<li>{html.escape(note)}</li>" for note in origin.notes)
+    traced_note = (
+        f"Traced {origin.hours_traced:.0f} of the {origin.hours_requested} hours requested."
+        if origin.hours_traced < origin.hours_requested
+        else f"Traced the full {origin.hours_requested} hours."
+    )
+    return f"""
+<section class="content-section">
+  <h2>Air-Mass Origin</h2>
+  <p>{html.escape(origin.summary)} {html.escape(traced_note)}</p>
+  <div class="diagnostic-ledger kinematics-motion">
+    <div><span>Origin bearing</span><strong>{html.escape(origin.origin_sector.title())}</strong><em>{origin.origin_distance_km:,.0f} km away</em></div>
+    <div><span>Path length</span><strong>{origin.path_length_km:,.0f} km</strong><em>{origin.hours_traced:.0f} hours traced</em></div>
+    <div><span>Mean transport speed</span><strong>{origin.mean_speed_ms:.1f} m/s</strong><em>at {origin.level_hpa} hPa</em></div>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Hours before arrival</th><th>Position</th><th>Distance from city</th><th>Temperature</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+  <ul class="verification-notes">{note_items}</ul>
+</section>
+"""
+
+
 def _storm_kinematics_section(kinematics: StormKinematics | None) -> str:
     """The numbers a forecaster reads off the hodograph.
 
@@ -3364,6 +3418,7 @@ def build_site(
     edition_notice: str | None = None,
     verification: StationVerification | None = None,
     kinematics: StormKinematics | None = None,
+    air_mass_origin: AirMassOrigin | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
@@ -3795,6 +3850,7 @@ def build_site(
     )
     weather += _plot_section("Wind Regime", figures["wind_rose"], "Interactive wind rose", "Spokes point toward the direction the wind came from. Length is frequency and color separates speed classes.", "context")
     weather += _plot_section("Pressure And Frontal Tendency", figures["pressure_tendency"], "Interactive pressure tendency", "Six-hour pressure changes expose troughs, frontal passages and the establishment or breakdown of anticyclonic conditions.", "context")
+    weather += _air_mass_origin_section(air_mass_origin)
 
     storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
     storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET registered {lightning_count:,} events within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {len(phenomena.events)} objective phenomenon candidate(s).</p>'

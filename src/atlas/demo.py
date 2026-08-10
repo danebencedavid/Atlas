@@ -30,6 +30,7 @@ from atlas.satellite import SatelliteArchive, SatelliteFrame
 from atlas.serialization import json_ready
 from atlas.site import build_report_archive, build_site
 from atlas.synoptic import SynopticArchive
+from atlas.trajectory import TrajectoryField, compute_air_mass_origin
 from atlas.verification import verify_against_station
 
 
@@ -395,6 +396,49 @@ def _model_profile(weather: pd.DataFrame, event_time: pd.Timestamp) -> ModelProf
     )
 
 
+def _trajectory_field(event_time: pd.Timestamp, config: AtlasConfig) -> TrajectoryField:
+    """Deterministic wide-domain wind field for the demo back-trajectory.
+
+    A south-westerly flow that strengthens towards the north-west, so the traced
+    origin lands in a plausible place rather than on a straight line.
+    """
+    settings = config.trajectory
+    times = list(
+        pd.date_range(
+            event_time - pd.Timedelta(hours=settings.hours + 12), event_time, freq="h", tz="UTC"
+        )
+    )
+    latitudes = np.arange(
+        settings.latitude_min, settings.latitude_max + settings.grid_step_degrees / 2.0, settings.grid_step_degrees
+    )
+    longitudes = np.arange(
+        settings.longitude_min, settings.longitude_max + settings.grid_step_degrees / 2.0, settings.grid_step_degrees
+    )
+    lon, lat = np.meshgrid(longitudes, latitudes)
+    # Speed rises with latitude, direction turns slowly with longitude.
+    base_u = 6.0 + 0.35 * (lat - settings.latitude_min)
+    base_v = 2.5 + 0.05 * (lon - settings.longitude_min)
+    shape = (len(times), len(latitudes), len(longitudes))
+    wind_u = np.empty(shape)
+    wind_v = np.empty(shape)
+    temperature = np.empty(shape)
+    for index in range(len(times)):
+        phase = np.sin(index / 18.0)
+        wind_u[index] = base_u * (1.0 + 0.12 * phase)
+        wind_v[index] = base_v * (1.0 - 0.10 * phase)
+        temperature[index] = 14.0 - 0.55 * (lat - settings.latitude_min) + 0.4 * phase
+    return TrajectoryField(
+        times=times,
+        latitudes=latitudes,
+        longitudes=longitudes,
+        wind_u_ms=wind_u,
+        wind_v_ms=wind_v,
+        temperature_c=temperature,
+        level_hpa=settings.level_hpa,
+        notes=["Synthetic wide-domain wind field for the demonstration back-trajectory."],
+    )
+
+
 def _synoptic(event_time: pd.Timestamp, config: AtlasConfig) -> SynopticArchive:
     times = list(pd.date_range(event_time - pd.Timedelta(hours=24), event_time + pd.Timedelta(hours=24), freq="6h"))
     latitudes = np.arange(config.synoptic.latitude_min, config.synoptic.latitude_max + 0.1, 0.5)
@@ -534,6 +578,7 @@ def run_demo_pipeline(
     satellite = _satellite(processed_dir, event_time)
     profile = _model_profile(current, event_time)
     kinematics = compute_storm_kinematics(profile)
+    air_mass_origin = compute_air_mass_origin(_trajectory_field(event_time, config), config)
     synoptic = _synoptic(event_time, config)
     phenomena = detect_weather_phenomena(
         current,
@@ -688,6 +733,7 @@ def run_demo_pipeline(
         almanac=almanac,
         verification=verification,
         kinematics=kinematics,
+        air_mass_origin=air_mass_origin,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,

@@ -44,6 +44,7 @@ from atlas.site import build_report_archive
 from atlas.site import archive_site
 from atlas.site import archive_public_site
 from atlas.synoptic import fetch_synoptic_archive
+from atlas.trajectory import compute_air_mass_origin, fetch_trajectory_field
 from atlas.verification import verify_against_station
 
 
@@ -154,6 +155,8 @@ def run_pipeline(
     electricity_summary = summarize_electricity(electricity_data.frame)
     model_profile = fetch_model_profile(config, end, start_date=start, refresh=refresh)
     kinematics = compute_storm_kinematics(model_profile)
+    trajectory_field = fetch_trajectory_field(config, start, end, refresh=refresh)
+    air_mass_origin = compute_air_mass_origin(trajectory_field, config)
     analogs = find_historical_analogs(config, current, start, refresh=refresh)
     synoptic = fetch_synoptic_archive(config, start, end, refresh=refresh)
 
@@ -500,6 +503,7 @@ def run_pipeline(
         almanac=almanac,
         verification=verification,
         kinematics=kinematics,
+        air_mass_origin=air_mass_origin,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,

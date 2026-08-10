@@ -83,6 +83,17 @@ synoptic:
   frame_interval_hours: 6
   required: false
 
+trajectory:
+  enabled: true
+  level_hpa: 850
+  hours: 72
+  latitude_min: 34.0
+  latitude_max: 62.0
+  longitude_min: -10.0
+  longitude_max: 40.0
+  grid_step_degrees: 3.0
+  required: false
+
 physical_energy:
   pv_tilt_degrees: 35
   pv_azimuth_degrees: 180

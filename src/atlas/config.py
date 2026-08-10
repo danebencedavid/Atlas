@@ -125,6 +125,26 @@ class SynopticConfig:
 
 
 @dataclass(frozen=True)
+class TrajectoryConfig:
+    """Back-trajectory settings.
+
+    The synoptic grid is far too small to trace an air mass: at 850 hPa a parcel
+    crosses its 700 km width in roughly twelve hours. This uses its own wider and
+    coarser domain, carrying only the fields the integration needs.
+    """
+
+    enabled: bool = True
+    level_hpa: int = 850
+    hours: int = 72
+    latitude_min: float = 34.0
+    latitude_max: float = 62.0
+    longitude_min: float = -10.0
+    longitude_max: float = 40.0
+    grid_step_degrees: float = 3.0
+    required: bool = False
+
+
+@dataclass(frozen=True)
 class PhysicalEnergyConfig:
     pv_tilt_degrees: float = 35.0
     pv_azimuth_degrees: float = 180.0
@@ -163,6 +183,7 @@ class AtlasConfig:
     satellite: SatelliteConfig = field(default_factory=SatelliteConfig)
     analogs: AnalogConfig = field(default_factory=AnalogConfig)
     synoptic: SynopticConfig = field(default_factory=SynopticConfig)
+    trajectory: TrajectoryConfig = field(default_factory=TrajectoryConfig)
     physical_energy: PhysicalEnergyConfig = field(default_factory=PhysicalEnergyConfig)
     outputs: OutputConfig = field(default_factory=OutputConfig)
 
@@ -198,6 +219,7 @@ def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
         satellite=SatelliteConfig(**_section(raw, "satellite")),
         analogs=AnalogConfig(**_section(raw, "analogs")),
         synoptic=SynopticConfig(**_section(raw, "synoptic")),
+        trajectory=TrajectoryConfig(**_section(raw, "trajectory")),
         physical_energy=PhysicalEnergyConfig(**_section(raw, "physical_energy")),
         outputs=OutputConfig(
             data_dir=Path(outputs.get("data_dir", "data")),
