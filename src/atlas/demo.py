@@ -20,6 +20,7 @@ from atlas.electricity import summarize_electricity
 from atlas.energy import compute_energy_index, compute_physical_energy
 from atlas.fronts import detect_fronts
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
+from atlas.kinematics import compute_storm_kinematics
 from atlas.land import analyze_land_surface
 from atlas.phenomena import detect_weather_phenomena
 from atlas.plots import generate_all_figures
@@ -532,6 +533,7 @@ def run_demo_pipeline(
         target.mkdir(parents=True, exist_ok=True)
     satellite = _satellite(processed_dir, event_time)
     profile = _model_profile(current, event_time)
+    kinematics = compute_storm_kinematics(profile)
     synoptic = _synoptic(event_time, config)
     phenomena = detect_weather_phenomena(
         current,
@@ -685,6 +687,7 @@ def run_demo_pipeline(
         daily_regime=daily_regime,
         almanac=almanac,
         verification=verification,
+        kinematics=kinematics,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,

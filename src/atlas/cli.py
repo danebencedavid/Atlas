@@ -29,6 +29,7 @@ from atlas.hungaromet import (
     fetch_station_observations,
     station_hourly,
 )
+from atlas.kinematics import compute_storm_kinematics
 from atlas.ingest import fetch_open_meteo_period
 from atlas.land import analyze_land_surface
 from atlas.phenomena import detect_weather_phenomena
@@ -152,6 +153,7 @@ def run_pipeline(
     electricity_data = fetch_energy_charts(config, start, end, refresh=refresh)
     electricity_summary = summarize_electricity(electricity_data.frame)
     model_profile = fetch_model_profile(config, end, start_date=start, refresh=refresh)
+    kinematics = compute_storm_kinematics(model_profile)
     analogs = find_historical_analogs(config, current, start, refresh=refresh)
     synoptic = fetch_synoptic_archive(config, start, end, refresh=refresh)
 
@@ -497,6 +499,7 @@ def run_pipeline(
         daily_regime=daily_regime,
         almanac=almanac,
         verification=verification,
+        kinematics=kinematics,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,

@@ -21,6 +21,7 @@ from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex, PhysicalEnergy
 from atlas.fronts import FrontAnalysis
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
+from atlas.kinematics import StormKinematics
 from atlas.land import LandSurfaceAnalysis
 from atlas.phenomena import PhenomenaAnalysis, WeatherPhenomenon
 from atlas.profile import ModelProfile
@@ -1386,6 +1387,25 @@ th, td { border-color: var(--line); }
 .story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
 .story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
 .story-evidence-column > :first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.kinematics-motion { margin: 14px 0 4px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kinematics-motion em {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+}
+.kinematics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px 26px;
+}
+.kinematics-table h3 {
+  margin: 16px 0 6px;
+  font-size: 12px;
+}
+.kinematics-table h3 span { color: var(--muted); font-weight: 500; }
+.kinematics-table td { font-variant-numeric: tabular-nums; }
 .verification-bias { font-variant-numeric: tabular-nums; font-weight: 650; }
 .verification-bias[data-sign="high"] { color: var(--red); }
 .verification-bias[data-sign="low"] { color: var(--blue); }
@@ -2308,6 +2328,71 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
   <h1>{html.escape(title)}</h1>
   <p>{html.escape(description)}</p>
 </header>
+"""
+
+
+def _storm_kinematics_section(kinematics: StormKinematics | None) -> str:
+    """The numbers a forecaster reads off the hodograph.
+
+    Sits directly under that plot, since it quantifies the curve rather than adding
+    an independent diagnostic.
+    """
+    if kinematics is None or not kinematics.available:
+        return ""
+    motion_cells = "".join(
+        f"<div><span>{html.escape(motion.label)}</span>"
+        f"<strong>{motion.speed_ms:.1f} m/s</strong>"
+        f"<em>towards {motion.direction_deg:.0f}&deg;</em></div>"
+        for motion in kinematics.motions
+    )
+    shear_rows = "".join(
+        f"<tr><td>{html.escape(layer.label)}</td>"
+        f"<td>{layer.magnitude_ms:.1f} m/s</td>"
+        f"<td>{layer.u_ms:+.1f} m/s</td>"
+        f"<td>{layer.v_ms:+.1f} m/s</td></tr>"
+        for layer in kinematics.shear
+    )
+    helicity_rows = "".join(
+        f"<tr><td>{html.escape(layer.label)}</td>"
+        f"<td>{layer.total_m2_s2:+.0f}</td>"
+        f"<td>{layer.positive_m2_s2:+.0f}</td>"
+        f"<td>{layer.negative_m2_s2:+.0f}</td></tr>"
+        for layer in kinematics.helicity
+    )
+    note_items = "".join(f"<li>{html.escape(note)}</li>" for note in kinematics.notes)
+    tables = ""
+    if shear_rows:
+        tables += f"""
+  <div class="kinematics-table">
+    <h3>Bulk shear</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Layer</th><th>Magnitude</th><th>Eastward</th><th>Northward</th></tr></thead>
+        <tbody>{shear_rows}</tbody>
+      </table>
+    </div>
+  </div>"""
+    if helicity_rows:
+        tables += f"""
+  <div class="kinematics-table">
+    <h3>Storm-relative helicity <span>m&sup2;/s&sup2;</span></h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Layer</th><th>Total</th><th>Positive</th><th>Negative</th></tr></thead>
+        <tbody>{helicity_rows}</tbody>
+      </table>
+    </div>
+  </div>"""
+    motion_block = f'<div class="diagnostic-ledger kinematics-motion">{motion_cells}</div>' if motion_cells else ""
+    return f"""
+<section class="content-section">
+  <h2>Storm-Relative Parameters</h2>
+  <p>Derived from the same profile as the hodograph above. Storm motion follows Bunkers,
+  and directions state where the storm would travel towards rather than where wind comes from.</p>
+  {motion_block}
+  <div class="kinematics-grid">{tables}</div>
+  <ul class="verification-notes">{note_items}</ul>
+</section>
 """
 
 
@@ -3278,6 +3363,7 @@ def build_site(
     quality_notes: list[str] | None = None,
     edition_notice: str | None = None,
     verification: StationVerification | None = None,
+    kinematics: StormKinematics | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
@@ -3734,6 +3820,7 @@ def build_site(
     upper_air += f'<p class="analysis-lead"><strong>Selected profile.</strong> CAPE {_fmt(cape, 0)} J/kg, precipitable water {_fmt(profile.diagnostics.get("precipitable_water_mm", float("nan")), 0)} mm and wet-bulb-zero height {_fmt(profile.diagnostics.get("wet_bulb_zero_m_asl", float("nan")), 0)} m ASL.</p><div class="diagnostic-ledger">{ledger}</div>'
     upper_air += _plot_section("Model Skew-T", figures["model_profile"], "Interactive Skew-T-style model atmospheric profile", "Temperature, dew point and wind are plotted on pressure surfaces. The ledger adds parcel-derived CAPE, CIN, LCL, LFC, equilibrium level and precipitable water where calculable.", "profile", profile_note)
     upper_air += _plot_section("Hodograph", figures["hodograph"], "Interactive hodograph and bulk wind shear", "The curve traces horizontal wind components with height. Length shows speed shear, curvature shows directional turning, and the inset reports layer bulk shear.", "hodograph", profile_note)
+    upper_air += _storm_kinematics_section(kinematics)
     upper_air += _plot_section("Parcel And Boundary-Layer Evolution", figures["column_diagnostics"], "Parcel and boundary-layer time series", "CAPE and CIN show buoyancy, PBL height shows mixing depth, total-column water tracks moisture availability, and freezing-level evolution constrains precipitation phase and hail melting.", "physical-energy", profile_note)
     upper_air += _plot_section("Time-Pressure Curtain", figures["time_pressure"], "Interactive time-pressure atmospheric curtain", "Time runs left to right and pressure decreases upward. Switch among humidity, temperature anomaly and wind speed to diagnose layer evolution and frontal depth.", "time-pressure", "A Debrecen time-pressure diagnostic adapted from a Hovmoller layout.")
 
