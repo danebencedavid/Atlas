@@ -29,6 +29,7 @@ from atlas.satellite import SatelliteArchive
 from atlas.serialization import json_ready
 from atlas.story import WeatherStory, build_weather_story
 from atlas.synoptic import SynopticArchive
+from atlas.verification import StationVerification
 
 
 PUBLIC_PAGES = (
@@ -1385,6 +1386,17 @@ th, td { border-color: var(--line); }
 .story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
 .story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
 .story-evidence-column > :first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.verification-bias { font-variant-numeric: tabular-nums; font-weight: 650; }
+.verification-bias[data-sign="high"] { color: var(--red); }
+.verification-bias[data-sign="low"] { color: var(--blue); }
+.verification-bias[data-sign="level"] { color: var(--muted); }
+.verification-notes {
+  margin: 11px 0 0;
+  padding-left: 17px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
 .story-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
 @media (max-width: 900px) {
   .story-evidence { grid-template-columns: minmax(0, 1fr); gap: 18px 0; }
@@ -2296,6 +2308,56 @@ def _page_intro(title: str, description: str, eyebrow: str) -> str:
   <h1>{html.escape(title)}</h1>
   <p>{html.escape(description)}</p>
 </header>
+"""
+
+
+def _verification_section(verification: StationVerification | None) -> str:
+    """Reanalysis-versus-instrument scores for the period.
+
+    Every other page treats the reanalysis as truth; this one states how far it sat
+    from the station, so the reader can weight the rest accordingly.
+    """
+    if verification is None or not verification.variables:
+        return ""
+    rows = "".join(
+        f"""
+        <tr>
+          <td>{html.escape(variable.label)}</td>
+          <td class="verification-bias" data-sign="{'high' if variable.bias > 0 else 'low' if variable.bias < 0 else 'level'}">
+            {variable.bias:+.2f} {html.escape(variable.unit)}
+          </td>
+          <td>{variable.mean_absolute_error:.2f} {html.escape(variable.unit)}</td>
+          <td>{variable.root_mean_square_error:.2f} {html.escape(variable.unit)}</td>
+          <td>{'n/a' if variable.correlation is None else f'{variable.correlation:.3f}'}</td>
+          <td>{variable.pairs}{'' if variable.reliable else ' *'}</td>
+        </tr>"""
+        for variable in verification.variables
+    )
+    headline = verification.headline
+    summary = ""
+    if headline is not None:
+        direction = "above" if headline.bias > 0 else "below" if headline.bias < 0 else "level with"
+        summary = (
+            f"Over {verification.hours_compared} paired hours the reanalysis ran "
+            f"{abs(headline.bias):.2f} {headline.unit} {direction} the instrument on "
+            f"{headline.label.lower()}, with a typical absolute miss of "
+            f"{headline.mean_absolute_error:.2f} {headline.unit}."
+        )
+    note_items = "".join(f"<li>{html.escape(note)}</li>" for note in verification.notes)
+    return f"""
+<section class="content-section">
+  <h2>Reanalysis Verification</h2>
+  <p>Hourly ERA5 values against {html.escape(verification.station_name)} over the same hours.
+  Bias is reanalysis minus station, so a positive figure means the reanalysis read high.
+  {html.escape(summary)}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variable</th><th>Bias</th><th>Mean absolute error</th><th>RMSE</th><th>Correlation</th><th>Paired hours</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+  <ul class="verification-notes">{note_items}</ul>
+</section>
 """
 
 
@@ -3215,6 +3277,7 @@ def build_site(
     site_dir: Path | None = None,
     quality_notes: list[str] | None = None,
     edition_notice: str | None = None,
+    verification: StationVerification | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
@@ -3792,6 +3855,7 @@ def build_site(
     <ul>{expert_note_items}</ul>
   </section>
 </div>
+{_verification_section(verification)}
 <section class="content-section downloads-section">
   <div class="downloads-heading"><div><h2>Data Downloads</h2><p>Generated evidence files for independent inspection and reuse.</p></div><span class="download-count">{len(available_downloads)} files</span></div>
   <ul class="download-list">{download_items}</ul>

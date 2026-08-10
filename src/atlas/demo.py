@@ -29,6 +29,7 @@ from atlas.satellite import SatelliteArchive, SatelliteFrame
 from atlas.serialization import json_ready
 from atlas.site import build_report_archive, build_site
 from atlas.synoptic import SynopticArchive
+from atlas.verification import verify_against_station
 
 
 DEMO_NOTICE = (
@@ -520,6 +521,7 @@ def run_demo_pipeline(
     almanac = build_almanac(_daily_climate_archive(range(1990, end.year)), config)
 
     station = _station(current)
+    verification = verify_against_station(current, station)
     fronts = detect_fronts(station.frame)
     radar, lightning = _radar_and_lightning(current, event_time, config)
     processed_dir = config.outputs.data_dir / "processed" / "demo"
@@ -682,6 +684,7 @@ def run_demo_pipeline(
         regime=regime,
         daily_regime=daily_regime,
         almanac=almanac,
+        verification=verification,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,

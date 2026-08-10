@@ -43,6 +43,7 @@ from atlas.site import build_report_archive
 from atlas.site import archive_site
 from atlas.site import archive_public_site
 from atlas.synoptic import fetch_synoptic_archive
+from atlas.verification import verify_against_station
 
 
 def parse_date(value: str | None) -> date | None:
@@ -141,6 +142,7 @@ def run_pipeline(
     climate_archive = fetch_climate_archive(config, start, refresh=refresh)
     almanac = build_almanac(climate_archive, config)
     station = fetch_station_observations(config, start, end, refresh=refresh)
+    verification = verify_against_station(current, station)
     radar = fetch_radar_archive(config, start, end, refresh=refresh)
     lightning = fetch_lightning_archive(config, start, end, refresh=refresh)
     satellite = fetch_satellite_archive(config, start, end, refresh=refresh)
@@ -494,6 +496,7 @@ def run_pipeline(
         regime=regime,
         daily_regime=daily_regime,
         almanac=almanac,
+        verification=verification,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,
