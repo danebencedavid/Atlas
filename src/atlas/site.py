@@ -1679,6 +1679,13 @@ _FONT_CANDIDATES = {
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
     ),
+    # The site sets eyebrows and small labels in a monospace face.
+    "mono": (
+        "C:/Windows/Fonts/consola.ttf",
+        "C:/Windows/Fonts/cour.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+        "/System/Library/Fonts/Supplemental/Courier New.ttf",
+    ),
 }
 
 
@@ -1747,65 +1754,63 @@ def write_share_card(
     if not share:
         return None
     width, height = 1200, 630
-    pad = 72
-    image = Image.new("RGB", (width, height), "#0f172a")
+    pad = 84
+    # Same treatment as the in-page card: paper, ink, hairline rules and one muted
+    # blue accent, so a shared link previews as the site rather than against it.
+    ink = "#232323"
+    ink_soft = "#50504d"
+    muted = "#7b7a77"
+    line = "#e7e7e3"
+    blue = "#3f72a4"
+
+    image = Image.new("RGB", (width, height), "#ffffff")
     draw = ImageDraw.Draw(image)
+    draw.rectangle([18, 18, width - 19, height - 19], outline=line, width=2)
+    draw.rectangle([pad, 92, pad + 84, 97], fill=blue)
 
-    for y in range(height):
-        blend = y / height
-        draw.line(
-            [(0, y), (width, y)],
-            fill=(
-                int(15 + blend * 14),
-                int(23 + blend * 55),
-                int(42 + blend * 174),
-            ),
-        )
-
-    draw.rectangle([pad, 96, pad + 84, 103], fill="#60a5fa")
     location = str(share.get("location") or f"{config.location.name}, {config.location.region}")
     eyebrow = location
     if share.get("kind_label"):
         eyebrow = f"{location} · {share['kind_label']}"
+    draw.text((pad, 128), eyebrow.upper(), font=_load_font(22, "mono"), fill=muted)
+
     draw.text(
-        (pad, 128),
-        eyebrow.upper(),
-        font=_load_font(26, "bold"),
-        fill=(255, 255, 255, 220),
-    )
-    draw.text(
-        (pad, 186),
+        (pad, 178),
         _share_number(share.get("temperature_c"), 0, "\u00b0"),
-        font=_load_font(150, "bold"),
-        fill="#ffffff",
+        font=_load_font(140, "bold"),
+        fill=ink,
     )
 
-    label_font = _load_font(44, "bold")
+    label_font = _load_font(42, "bold")
     label_lines = _wrap_lines(draw, share.get("regime_label") or "Weather summary", label_font, width - pad * 2, 1)
-    draw.text((pad, 366), label_lines[0] if label_lines else "", font=label_font, fill="#ffffff")
+    draw.text((pad, 356), label_lines[0] if label_lines else "", font=label_font, fill=ink)
 
-    body_font = _load_font(26)
-    body_y = 432
-    for line in _wrap_lines(draw, share.get("regime_briefing") or "", body_font, width - pad * 2, 2):
-        draw.text((pad, body_y), line, font=body_font, fill="#dbeafe")
-        body_y += 36
+    body_font = _load_font(25)
+    body_y = 424
+    for body_line in _wrap_lines(draw, share.get("regime_briefing") or "", body_font, width - pad * 2, 2):
+        draw.text((pad, body_y), body_line, font=body_font, fill=ink_soft)
+        body_y += 34
+
+    draw.line([(pad, height - 138), (width - pad, height - 138)], fill=line, width=2)
 
     stats = [
-        f"Precip {_share_number(share.get('precipitation_mm'), 1, ' mm')}",
-        f"Wind {_share_number(share.get('wind_ms'), 1, ' m/s')}",
-        f"Cloud {_share_number(share.get('cloud_pct'), 0, '%')}",
+        ("PRECIP", _share_number(share.get("precipitation_mm"), 1, " mm")),
+        ("WIND", _share_number(share.get("wind_ms"), 1, " m/s")),
+        ("CLOUD", _share_number(share.get("cloud_pct"), 0, "%")),
     ]
+    label_font = _load_font(20, "mono")
+    value_font = _load_font(28, "bold")
+    column = pad
+    for stat_label, stat_value in stats:
+        draw.text((column, height - 112), stat_label, font=label_font, fill=muted)
+        draw.text((column, height - 84), stat_value, font=value_font, fill=ink)
+        column += 240
+
     draw.text(
-        (pad, height - 96),
-        "     \u00b7     ".join(stats),
-        font=_load_font(24, "bold"),
-        fill="#ffffff",
-    )
-    draw.text(
-        (pad, height - 54),
-        f"{config.project.name} \u00b7 {share.get('date') or ''}",
-        font=_load_font(20),
-        fill="#93c5fd",
+        (pad, height - 44),
+        f"{config.project.name} · {share.get('date') or ''}".upper(),
+        font=_load_font(19, "mono"),
+        fill=muted,
     )
 
     assets_dir = site_dir / "assets"
@@ -1988,8 +1993,10 @@ SHARE_SCRIPT = r"""<script>
     }
     shareButton.disabled = false;
 
+    // The canonical link is per page, so sharing from Storms links to Storms rather
+    // than to whichever page the card's period happens to headline.
     const canonical = document.querySelector('link[rel="canonical"]');
-    const pageUrl = share.page_url || (canonical && canonical.href) || window.location.href;
+    const pageUrl = (canonical && canonical.href) || share.page_url || window.location.href;
     const dateEl = menu.querySelector('[data-atlas-share-date]');
     if (dateEl) dateEl.textContent = share.date || 'the latest edition';
 
@@ -2019,55 +2026,52 @@ SHARE_SCRIPT = r"""<script>
       return cursorY;
     };
 
-    // 1080x1350 is Instagram's tallest feed frame and crops cleanly on Facebook and
-    // WhatsApp. The old 1200x630 banner turned into a sliver in every feed.
+    // 1080x1350 is Instagram's tallest feed frame and crops cleanly on Facebook.
+    // Styled as the site is: paper, ink, hairline rules and one muted blue accent,
+    // rather than the saturated gradient it used to carry.
+    const INK = '#232323';
+    const INK_SOFT = '#50504d';
+    const MUTED = '#7b7a77';
+    const LINE = '#e7e7e3';
+    const BLUE = '#3f72a4';
+    const MONO = 'ui-monospace, SFMono-Regular, Consolas, monospace';
+    const SANS = 'Inter, Segoe UI, Arial, sans-serif';
+
     const buildCard = () => {
       const W = 1080;
       const H = 1350;
-      const PAD = 84;
+      const PAD = 96;
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext('2d');
 
-      const gradient = ctx.createLinearGradient(0, 0, W * 0.4, H);
-      gradient.addColorStop(0, '#0f172a');
-      gradient.addColorStop(0.55, '#172554');
-      gradient.addColorStop(1, '#1d4ed8');
-      ctx.fillStyle = gradient;
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = LINE;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(30, 30, W - 60, H - 60);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.beginPath();
-      ctx.arc(W - 60, 120, 300, 0, Math.PI * 2);
-      ctx.fill();
+      // The blue rule echoes the accent on the site's navigation cards.
+      ctx.fillStyle = BLUE;
+      ctx.fillRect(PAD, 150, 96, 6);
 
-      ctx.fillStyle = '#60a5fa';
-      ctx.fillRect(PAD, 134, 96, 8);
-
-      ctx.fillStyle = 'rgba(255,255,255,0.86)';
-      ctx.font = '700 30px Inter, Segoe UI, Arial, sans-serif';
       const location = String(share.location || 'Debrecen, Hungary');
       const eyebrow = share.kind_label ? `${location} · ${share.kind_label}` : location;
-      ctx.fillText(eyebrow.toUpperCase(), PAD, 210);
+      ctx.fillStyle = MUTED;
+      ctx.font = `600 26px ${MONO}`;
+      ctx.fillText(eyebrow.toUpperCase(), PAD, 224);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '800 250px Inter, Segoe UI, Arial, sans-serif';
-      ctx.fillText(numberOrDash(share.temperature_c, 0, '°'), PAD, 480);
+      ctx.fillStyle = INK;
+      ctx.font = `800 240px ${SANS}`;
+      ctx.fillText(numberOrDash(share.temperature_c, 0, '°'), PAD, 476);
 
-      ctx.font = '700 62px Inter, Segoe UI, Arial, sans-serif';
-      wrapText(ctx, share.regime_label || 'Weather summary', PAD, 580, W - PAD * 2, 72, 2);
+      ctx.font = `700 58px ${SANS}`;
+      wrapText(ctx, share.regime_label || 'Weather summary', PAD, 574, W - PAD * 2, 70, 2);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.86)';
-      ctx.font = '400 34px Inter, Segoe UI, Arial, sans-serif';
-      wrapText(ctx, share.regime_briefing || '', PAD, 712, W - PAD * 2, 48, 4);
-
-      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(PAD, 908);
-      ctx.lineTo(W - PAD, 908);
-      ctx.stroke();
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = `400 32px ${SANS}`;
+      wrapText(ctx, share.regime_briefing || '', PAD, 690, W - PAD * 2, 46, 4);
 
       const rows = [
         ['Precipitation', numberOrDash(share.precipitation_mm, 1, ' mm')],
@@ -2075,26 +2079,38 @@ SHARE_SCRIPT = r"""<script>
         ['Cloud cover', numberOrDash(share.cloud_pct, 0, '%')],
       ];
       if (share.energy_label) rows.push(['Energy', String(share.energy_label)]);
-      let rowY = 980;
+
+      let rowY = 902;
       for (const [label, value] of rows) {
-        ctx.fillStyle = 'rgba(255,255,255,0.68)';
-        ctx.font = '500 32px Inter, Segoe UI, Arial, sans-serif';
+        ctx.strokeStyle = LINE;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(PAD, rowY - 34);
+        ctx.lineTo(W - PAD, rowY - 34);
+        ctx.stroke();
+
+        ctx.fillStyle = MUTED;
+        ctx.font = `500 24px ${MONO}`;
         ctx.textAlign = 'left';
-        ctx.fillText(label, PAD, rowY);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '700 36px Inter, Segoe UI, Arial, sans-serif';
+        ctx.fillText(label.toUpperCase(), PAD, rowY);
+        ctx.fillStyle = INK;
+        ctx.font = `700 34px ${SANS}`;
         ctx.textAlign = 'right';
         ctx.fillText(value, W - PAD, rowY);
         ctx.textAlign = 'left';
-        rowY += 68;
+        rowY += 78;
       }
 
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.font = '500 28px Inter, Segoe UI, Arial, sans-serif';
-      ctx.fillText(`Debrecen Meteorological Atlas · ${share.date || ''}`, PAD, H - 118);
-      ctx.fillStyle = 'rgba(255,255,255,0.40)';
-      ctx.font = '400 26px Inter, Segoe UI, Arial, sans-serif';
-      ctx.fillText(String(pageUrl).replace(/^https?:\/\//, ''), PAD, H - 74);
+      ctx.strokeStyle = LINE;
+      ctx.beginPath();
+      ctx.moveTo(PAD, H - 168);
+      ctx.lineTo(W - PAD, H - 168);
+      ctx.stroke();
+
+      ctx.fillStyle = MUTED;
+      ctx.font = `500 24px ${MONO}`;
+      ctx.fillText(`ATLAS · ${String(share.date || '').toUpperCase()}`, PAD, H - 122);
+      ctx.fillText(String(pageUrl).replace(/^https?:\/\//, ''), PAD, H - 82);
 
       return canvas;
     };
@@ -3539,6 +3555,13 @@ def build_site(
     )
     data_links["climate_almanac"] = "../data/climate_almanac.json"
 
+    if air_mass_origin is not None and air_mass_origin.available:
+        (data_dir / "air_mass_origin.json").write_text(
+            json.dumps(json_ready(asdict(air_mass_origin)), indent=2, allow_nan=False),
+            encoding="utf-8",
+        )
+        data_links["air_mass_origin"] = "../data/air_mass_origin.json"
+
     location_label = f"{config.location.name}, {config.location.region}"
     share_payload = {
         "date": daily_date,
@@ -3920,6 +3943,19 @@ def build_site(
     )
     weather += _plot_section("Wind Regime", figures["wind_rose"], "Interactive wind rose", "Spokes point toward the direction the wind came from. Length is frequency and color separates speed classes.", "context")
     weather += _plot_section("Pressure And Frontal Tendency", figures["pressure_tendency"], "Interactive pressure tendency", "Six-hour pressure changes expose troughs, frontal passages and the establishment or breakdown of anticyclonic conditions.", "context")
+    air_mass_source_note = (
+        f"Open-Meteo {config.trajectory.level_hpa} hPa winds on a "
+        f"{config.trajectory.grid_step_degrees:g}-degree grid; a kinematic single-level trajectory, "
+        "not a vertically resolved parcel history."
+    )
+    weather += _plot_section(
+        "Air-Mass Back-Trajectory",
+        figures["air_mass_trajectory"],
+        "Back-trajectory map of the arriving air mass",
+        "The path traces where the air over Debrecen had been. Colour runs from arrival back through time, and hovering gives the position, distance and temperature at each hour.",
+        "context",
+        air_mass_source_note,
+    )
     weather += _air_mass_origin_section(air_mass_origin)
 
     storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
@@ -4023,6 +4059,8 @@ def build_site(
         ("Synoptic analysis fields", data_links.get("synoptic_fields")),
         ("Physical PV and wind yields", data_links.get("physical_energy")),
         ("Weather story graph", data_links.get("weather_story")),
+        ("Air-mass back-trajectory", data_links.get("air_mass_origin")),
+        ("Climate almanac", data_links.get("climate_almanac")),
         ("Land-surface hourly context", data_links.get("land_surface_hourly")),
         ("Land-surface daily context", data_links.get("land_surface_daily")),
         ("Machine-readable summary", "../data/summary.json"),
@@ -4062,7 +4100,7 @@ def build_site(
   </section>
   <section class="content-section">
     <h2>Sources And Quality</h2>
-    <p>HungaroMet supplies Debrecen Airport observations, composite radar, LINET lightning and Meteosat imagery. Open-Meteo supplies the continuous gridded surface record, pressure-level model fields, synoptic grid, land fields and ERA5 climate archive. Standard normals use 1991-2020; the recent comparison retains the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
+    <p>HungaroMet supplies Debrecen Airport observations, composite radar, LINET lightning and Meteosat imagery. Open-Meteo supplies the continuous gridded surface record, pressure-level model fields, synoptic grid, the wide-domain {config.trajectory.level_hpa} hPa wind field the back-trajectory integrates through, land fields and ERA5 climate archive. Standard normals use 1991-2020; the recent comparison retains the prior {config.baseline.years} years and is stored in {html.escape(baseline_period)}.</p>
     <ul>{quality_items}</ul>
     <ul>{electricity_note_items}</ul>
     <ul>{profile_note_items}</ul>

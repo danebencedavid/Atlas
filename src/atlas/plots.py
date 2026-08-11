@@ -25,6 +25,7 @@ from atlas.profile import ModelProfile
 from atlas.regimes import RegimeClassification
 from atlas.satellite import SatelliteArchive
 from atlas.synoptic import SynopticArchive
+from atlas.trajectory import AirMassOrigin
 
 
 PLOT_CONFIG = {
@@ -1696,6 +1697,120 @@ def plot_physical_energy(energy: PhysicalEnergy, output: Path, config: AtlasConf
     return _save(fig, output)
 
 
+
+def plot_air_mass_trajectory(
+    origin: AirMassOrigin | None, output: Path, config: AtlasConfig
+) -> Path:
+    """Map the back-trajectory over coastlines and borders.
+
+    A table gives the numbers but not the shape of the journey; a 2,500 km path
+    across several countries only reads as a path when it is drawn. Scattergeo
+    carries its own geometry, so the figure stays self-contained.
+    """
+    if origin is None or not origin.available:
+        return _empty_figure(
+            "Air-Mass Back-Trajectory",
+            "No back-trajectory was available for this period.",
+            output,
+        )
+    latitudes = [point.latitude for point in origin.points]
+    longitudes = [point.longitude for point in origin.points]
+    hours = [point.hours_before_arrival for point in origin.points]
+    temperatures = [point.temperature_c for point in origin.points]
+    labels = [
+        f"{point.hours_before_arrival:.0f} h before arrival<br>"
+        f"{abs(point.latitude):.2f}&#176;{'N' if point.latitude >= 0 else 'S'}, "
+        f"{abs(point.longitude):.2f}&#176;{'E' if point.longitude >= 0 else 'W'}<br>"
+        f"{point.distance_from_city_km:,.0f} km from the city"
+        for point in origin.points
+    ]
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scattergeo(
+            lon=longitudes,
+            lat=latitudes,
+            mode="lines",
+            line={"width": 2, "color": "#94a3b8"},
+            hoverinfo="skip",
+            name="Path",
+            showlegend=False,
+        )
+    )
+    fig.add_trace(
+        go.Scattergeo(
+            lon=longitudes,
+            lat=latitudes,
+            mode="markers",
+            marker={
+                "size": 7,
+                "color": hours,
+                "colorscale": "Viridis",
+                "reversescale": True,
+                "colorbar": {"title": "Hours before<br>arrival"},
+                "line": {"width": 0.5, "color": "#ffffff"},
+            },
+            text=labels,
+            customdata=temperatures,
+            hovertemplate="%{text}<br>Temperature %{customdata:.1f} &#176;C<extra></extra>",
+            name="Hourly position",
+            showlegend=False,
+        )
+    )
+    fig.add_trace(
+        go.Scattergeo(
+            lon=[config.location.longitude],
+            lat=[config.location.latitude],
+            mode="markers+text",
+            marker={"size": 12, "color": "#b42318", "symbol": "star"},
+            text=[config.location.name],
+            textposition="top center",
+            textfont={"size": 11},
+            hovertemplate=f"{config.location.name}<extra></extra>",
+            name=config.location.name,
+            showlegend=False,
+        )
+    )
+
+    # Frame the map on the path, then widen the latitude band until the extent has
+    # roughly the aspect of the frame. The projection preserves its own aspect, so a
+    # path that is far wider than it is tall would otherwise sit in a thin strip with
+    # empty bands above and below it.
+    lat_pad = max(1.5, (max(latitudes) - min(latitudes)) * 0.25)
+    lon_pad = max(2.0, (max(longitudes) - min(longitudes)) * 0.15)
+    lon_span = (max(longitudes) - min(longitudes)) + 2 * lon_pad
+    lat_span = (max(latitudes) - min(latitudes)) + 2 * lat_pad
+    frame_aspect = 2.1
+    if lon_span / max(lat_span, 0.1) > frame_aspect:
+        lat_centre = (max(latitudes) + min(latitudes)) / 2.0
+        wanted = lon_span / frame_aspect
+        lat_range = [lat_centre - wanted / 2.0, lat_centre + wanted / 2.0]
+    else:
+        lat_range = [min(latitudes) - lat_pad, max(latitudes) + lat_pad]
+    fig.update_geos(
+        resolution=50,
+        showcoastlines=True,
+        coastlinecolor="#94a3b8",
+        showland=True,
+        landcolor="#f6f6f4",
+        showocean=True,
+        oceancolor="#eaf1f7",
+        showcountries=True,
+        countrycolor="#cbd5e1",
+        lataxis_range=lat_range,
+        lonaxis_range=[min(longitudes) - lon_pad, max(longitudes) + lon_pad],
+        # Let the projection use the whole frame rather than plotly's inset default.
+        domain={"x": [0.0, 1.0], "y": [0.0, 1.0]},
+    )
+    fig.update_layout(
+        title=(
+            f"Air-Mass Back-Trajectory - {origin.level_hpa} hPa, "
+            f"{origin.hours_traced:.0f} hours before arrival"
+        ),
+        height=560,
+    )
+    return _save(fig, output)
+
 def generate_all_figures(
     frame: pd.DataFrame,
     context_frame: pd.DataFrame,
@@ -1720,6 +1835,7 @@ def generate_all_figures(
     current_start: date,
     output_dir: Path,
     config: AtlasConfig,
+    air_mass_origin: AirMassOrigin | None = None,
 ) -> dict[str, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     return {
@@ -1792,6 +1908,9 @@ def generate_all_figures(
             profile, output_dir / "column_diagnostics.html", config
         ),
         "hodograph": plot_hodograph(profile, output_dir / "hodograph.html"),
+        "air_mass_trajectory": plot_air_mass_trajectory(
+            air_mass_origin, output_dir / "air_mass_trajectory.html", config
+        ),
         "time_pressure": plot_time_pressure_curtain(
             profile,
             frame,

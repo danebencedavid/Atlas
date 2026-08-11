@@ -625,6 +625,7 @@ def run_demo_pipeline(
         current_start=start,
         output_dir=figures_dir,
         config=config,
+        air_mass_origin=air_mass_origin,
     )
 
     processed_paths: dict[str, Path] = {

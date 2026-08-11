@@ -54,6 +54,7 @@ def test_report_generation_smoke(tmp_path: Path):
         "daily_climate_reference",
         "land_surface",
         "phenomena_timeline",
+        "air_mass_trajectory",
     ]:
         path = tmp_path / f"{name}.html"
         path.write_text("placeholder", encoding="utf-8")
