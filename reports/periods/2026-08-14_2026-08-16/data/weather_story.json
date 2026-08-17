@@ -1,0 +1,274 @@
+{
+  "title": "Weather Story Graph",
+  "briefing": "A deterministic chain from the large-scale regime through observed weather to land-surface and renewable-energy consequences.",
+  "nodes": [
+    {
+      "id": "regime",
+      "domain": "synoptic",
+      "domain_label": "Atmospheric setup",
+      "label": "Sunny high-pressure period",
+      "reading": "Sunny high-pressure period: temperature was +3.4 deg C versus normal, precipitation -6.5 mm, wind +0.8 m/s, and period solar radiation +4348 Wh/m2.",
+      "facts": [
+        {
+          "label": "Rule signals",
+          "value": "above-normal radiation, reduced cloudiness, limited rainfall"
+        },
+        {
+          "label": "Pressure",
+          "value": "1017.7 hPa"
+        },
+        {
+          "label": "Period",
+          "value": "3 local days"
+        }
+      ],
+      "source": "Atlas transparent regime rules",
+      "x": 0.06,
+      "y": 0.5
+    },
+    {
+      "id": "sky",
+      "domain": "observed",
+      "domain_label": "Surface weather",
+      "label": "Exceptionally clear and dry",
+      "reading": "Cloud, precipitation and radiation together describe how the air mass expressed itself at the surface.",
+      "facts": [
+        {
+          "label": "Mean cloud",
+          "value": "6.3 %"
+        },
+        {
+          "label": "Cloud rank",
+          "value": "3rd percentile"
+        },
+        {
+          "label": "Precipitation",
+          "value": "0.0 mm"
+        }
+      ],
+      "source": "Open-Meteo surface fields and ERA5 climatology",
+      "x": 0.45,
+      "y": 0.1
+    },
+    {
+      "id": "thermal",
+      "domain": "observed",
+      "domain_label": "Thermal character",
+      "label": "Marked warmth",
+      "reading": "The period mean is compared with the standard-normal calendar window and the full record.",
+      "facts": [
+        {
+          "label": "Mean temperature",
+          "value": "25.5 C"
+        },
+        {
+          "label": "Standard anomaly",
+          "value": "+3.4 C"
+        },
+        {
+          "label": "Full-record rank",
+          "value": "78th percentile"
+        }
+      ],
+      "source": "Open-Meteo surface analysis and 1991-2020 ERA5 normal",
+      "x": 0.45,
+      "y": 0.37
+    },
+    {
+      "id": "events",
+      "domain": "observed",
+      "domain_label": "Observed phenomena",
+      "label": "Observed weather phenomena",
+      "reading": "The objective ledger identified surface or column phenomena during the period.",
+      "facts": [
+        {
+          "label": "Ledger entries",
+          "value": "5"
+        },
+        {
+          "label": "Lightning",
+          "value": "0 within 150 km"
+        },
+        {
+          "label": "Radar maximum",
+          "value": "21.0 dBZ"
+        }
+      ],
+      "source": "Atlas objective phenomena ledger",
+      "x": 0.88,
+      "y": 0.68
+    },
+    {
+      "id": "front",
+      "domain": "synoptic",
+      "domain_label": "Passage diagnosis",
+      "label": "No frontal-passage signature",
+      "reading": "The compound surface-change detector found no defensible frontal passage.",
+      "facts": [
+        {
+          "label": "Candidates",
+          "value": "0"
+        },
+        {
+          "label": "Requirement",
+          "value": "At least three compound signals"
+        },
+        {
+          "label": "Status",
+          "value": "No local passage marker"
+        }
+      ],
+      "source": "Atlas compound pressure, temperature, wind and precipitation detector",
+      "x": 0.45,
+      "y": 0.91
+    },
+    {
+      "id": "pv",
+      "domain": "impact",
+      "domain_label": "Energy impact",
+      "label": "Strong PV weather yield",
+      "reading": "Plane-of-array irradiance and cell-temperature derating translate the weather into reference PV output.",
+      "facts": [
+        {
+          "label": "Reference yield",
+          "value": "18.89 kWh/kWp"
+        },
+        {
+          "label": "Capacity factor",
+          "value": "26.2 %"
+        },
+        {
+          "label": "Radiation anomaly",
+          "value": "+4348 Wh/m2"
+        }
+      ],
+      "source": "Atlas physically based fixed-array PV model",
+      "x": 0.88,
+      "y": 0.08
+    },
+    {
+      "id": "land",
+      "domain": "impact",
+      "domain_label": "Land-surface impact",
+      "label": "Persistent land-surface deficit",
+      "reading": "Exceptionally dry land-surface water balance",
+      "facts": [
+        {
+          "label": "7-day balance",
+          "value": "-46.3 mm"
+        },
+        {
+          "label": "30-day balance",
+          "value": "-180.9 mm"
+        },
+        {
+          "label": "Maximum VPD",
+          "value": "5.7 kPa"
+        }
+      ],
+      "source": "Open-Meteo land fields and FAO-56 reference evapotranspiration",
+      "x": 0.88,
+      "y": 0.34
+    },
+    {
+      "id": "boundary",
+      "domain": "observed",
+      "domain_label": "Boundary layer",
+      "label": "Nocturnal low-level inversion",
+      "reading": "Model pressure levels identified stable nocturnal layers during the period.",
+      "facts": [
+        {
+          "label": "PBL height",
+          "value": "2560 m"
+        },
+        {
+          "label": "SB CAPE",
+          "value": "0 J/kg"
+        },
+        {
+          "label": "Inversion episodes",
+          "value": "3"
+        }
+      ],
+      "source": "Open-Meteo historical-model pressure levels",
+      "x": 0.45,
+      "y": 0.64
+    },
+    {
+      "id": "wind",
+      "domain": "impact",
+      "domain_label": "Energy impact",
+      "label": "Limited wind weather yield",
+      "reading": "Density-corrected 100 m wind is translated through the generic reference-turbine power curve.",
+      "facts": [
+        {
+          "label": "Capacity factor",
+          "value": "6.6 %"
+        },
+        {
+          "label": "Full-load hours",
+          "value": "4.76 h"
+        },
+        {
+          "label": "Mean power density",
+          "value": "85 W/m2"
+        }
+      ],
+      "source": "Atlas physically based reference-turbine model",
+      "x": 0.88,
+      "y": 0.94
+    }
+  ],
+  "edges": [
+    {
+      "source": "regime",
+      "target": "sky",
+      "relationship": "organized the cloud and precipitation pattern"
+    },
+    {
+      "source": "regime",
+      "target": "thermal",
+      "relationship": "set the period-scale thermal character"
+    },
+    {
+      "source": "regime",
+      "target": "boundary",
+      "relationship": "conditioned lower-atmosphere mixing"
+    },
+    {
+      "source": "sky",
+      "target": "pv",
+      "relationship": "controlled the available irradiance"
+    },
+    {
+      "source": "sky",
+      "target": "land",
+      "relationship": "altered rainfall and surface drying"
+    },
+    {
+      "source": "thermal",
+      "target": "land",
+      "relationship": "modified atmospheric moisture demand"
+    },
+    {
+      "source": "regime",
+      "target": "front",
+      "relationship": "provided the passage-scale background"
+    },
+    {
+      "source": "front",
+      "target": "events",
+      "relationship": "was compared with the event chronology"
+    },
+    {
+      "source": "regime",
+      "target": "wind",
+      "relationship": "organized the wind-energy environment"
+    },
+    {
+      "source": "regime",
+      "target": "events",
+      "relationship": "was checked against the objective event ledger"
+    }
+  ]
+}

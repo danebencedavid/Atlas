@@ -1,0 +1,6 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-08-14 02:00:00+00:00,2026-08-14 03:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.1 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-14 12:00:00+00:00,2026-08-14 16:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 30.7 C.,0.92,HungaroMet station 64711
+2026-08-15 01:00:00+00:00,2026-08-15 04:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.4 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-15 10:00:00+00:00,2026-08-15 17:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 32.1 C.,0.92,HungaroMet station 64711
+2026-08-16 01:00:00+00:00,2026-08-16 04:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.2 C during local night.,0.66,Open-Meteo historical-model pressure levels
