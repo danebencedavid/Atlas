@@ -54,6 +54,11 @@ class LightningArchive:
     frame: pd.DataFrame
     hourly: pd.DataFrame
     notes: list[str]
+    # An empty frame means "no strikes in range" only when the fetch succeeded.
+    # Without this flag a failed archive and a genuinely quiet period are
+    # indistinguishable, and a quiet period is the more comforting reading.
+    available: bool = True
+    missing_days: int = 0
 
 
 def _request_bytes(url: str, retries: int = 4, backoff: float = 1.7) -> bytes:
@@ -416,7 +421,12 @@ def fetch_lightning_archive(
     refresh: bool = False,
 ) -> LightningArchive:
     if not config.hungaromet.enabled:
-        return LightningArchive(pd.DataFrame(), pd.DataFrame(), ["HungaroMet lightning ingestion is disabled."])
+        return LightningArchive(
+            pd.DataFrame(),
+            pd.DataFrame(),
+            ["HungaroMet lightning ingestion is disabled."],
+            available=False,
+        )
     frames = []
     failures = []
     day = start
@@ -430,7 +440,13 @@ def fetch_lightning_archive(
             failures.append(f"{day.isoformat()}: {exc}")
         day += timedelta(days=1)
     if not frames:
-        return LightningArchive(pd.DataFrame(), pd.DataFrame(), [f"Lightning data unavailable: {' | '.join(failures)}"])
+        return LightningArchive(
+            pd.DataFrame(),
+            pd.DataFrame(),
+            [f"Lightning data unavailable: {' | '.join(failures)}"],
+            available=False,
+            missing_days=len(failures),
+        )
     frame = pd.concat(frames, ignore_index=True).dropna(subset=["time"])
     utc_start, utc_end = local_period_to_utc_bounds(start, end, config.location.timezone)
     frame = frame[(frame["time"] >= utc_start) & (frame["time"] < utc_end)].copy()
@@ -458,4 +474,4 @@ def fetch_lightning_archive(
     ]
     if failures:
         notes.append(f"{len(failures)} daily lightning files were unavailable.")
-    return LightningArchive(frame, hourly, notes)
+    return LightningArchive(frame, hourly, notes, available=True, missing_days=len(failures))

@@ -78,6 +78,248 @@ def validate_hourly_period(
     )
 
 
+@dataclass(frozen=True)
+class InputCoverage:
+    """Completeness of one observational input over the reporting window.
+
+    ``available`` is distinct from a zero count. A source that failed and a source
+    that genuinely observed nothing must never be presented the same way.
+    """
+
+    name: str
+    available: bool
+    observed: int
+    expected: int
+    threshold: float
+    ok: bool
+    per_day: pd.DataFrame
+    structural_note: str | None
+    notes: list[str]
+
+    @property
+    def coverage(self) -> float:
+        return self.observed / self.expected if self.expected else 0.0
+
+
+class ObservationFreshnessError(RuntimeError):
+    """Raised when retrieved observations stop short of the window end."""
+
+
+def _per_day_coverage(
+    times: pd.Series,
+    start: date,
+    end: date,
+    timezone_name: str,
+    per_day_expected: int,
+) -> pd.DataFrame:
+    """Coverage for each local day, so a thin trailing day cannot hide in an average."""
+    days = pd.date_range(start, end, freq="D")
+    counts = {day.date(): 0 for day in days}
+    if len(times):
+        local = pd.to_datetime(times, utc=True).dt.tz_convert(timezone_name).dt.date
+        for day, count in local.value_counts().items():
+            if day in counts:
+                counts[day] = int(count)
+    frame = pd.DataFrame(
+        {
+            "local_day": list(counts),
+            "observed": list(counts.values()),
+            "expected": per_day_expected,
+        }
+    )
+    frame["coverage"] = frame["observed"] / frame["expected"]
+    return frame
+
+
+def validate_station_period(
+    station,
+    start: date,
+    end: date,
+    timezone_name: str,
+    minimum_coverage: float = 0.95,
+    interval_minutes: int = 10,
+) -> InputCoverage:
+    """Gate the station record, per day as well as in total."""
+    utc_start, utc_end = local_period_to_utc_bounds(start, end, timezone_name)
+    expected = int((utc_end - utc_start).total_seconds() / (interval_minutes * 60))
+    per_day_expected = int(24 * 60 / interval_minutes)
+    frame = getattr(station, "frame", pd.DataFrame())
+    available = not frame.empty
+    times = frame["time"] if available and "time" in frame else pd.Series(dtype="datetime64[ns, UTC]")
+    observed = int(len(times))
+    per_day = _per_day_coverage(times, start, end, timezone_name, per_day_expected)
+
+    notes: list[str] = []
+    coverage = observed / expected if expected else 0.0
+    if not available:
+        notes.append("Station observations were unavailable for this period.")
+    elif coverage < minimum_coverage:
+        thin = per_day[per_day["coverage"] < minimum_coverage]
+        notes.append(
+            f"Station coverage {observed}/{expected} ({coverage:.0%}) is below the "
+            f"{minimum_coverage:.0%} threshold."
+        )
+        for row in thin.itertuples():
+            notes.append(
+                f"  {row.local_day}: {row.observed}/{row.expected} ({row.coverage:.0%})."
+            )
+    return InputCoverage(
+        name="station",
+        available=available,
+        observed=observed,
+        expected=expected,
+        threshold=minimum_coverage,
+        ok=available and coverage >= minimum_coverage,
+        per_day=per_day,
+        structural_note=None,
+        notes=notes,
+    )
+
+
+def validate_radar_period(
+    radar,
+    start: date,
+    end: date,
+    timezone_name: str,
+    minimum_coverage: float = 0.90,
+    interval_minutes: int = 30,
+    retention_hours: float = 71.0,
+    now: pd.Timestamp | None = None,
+) -> InputCoverage:
+    """Gate the radar archive against what the provider still retains.
+
+    The composite archive keeps roughly ``retention_hours`` of frames against a
+    72-hour window, so the oldest part of the window is structurally unavailable.
+    Gating on the full window would fail every build for a known provider limit,
+    so the threshold applies to what is actually reachable and the shortfall is
+    disclosed instead.
+    """
+    utc_start, utc_end = local_period_to_utc_bounds(start, end, timezone_name)
+    now = now or pd.Timestamp.now(tz="UTC")
+    reachable_start = max(utc_start, now - pd.Timedelta(hours=retention_hours))
+    window_frames = int((utc_end - utc_start).total_seconds() / (interval_minutes * 60))
+    expected = max(
+        0, int((utc_end - reachable_start).total_seconds() / (interval_minutes * 60))
+    )
+    times = pd.Series(getattr(radar, "times", []) or [], dtype="object")
+    times = pd.to_datetime(times, utc=True) if len(times) else pd.Series(dtype="datetime64[ns, UTC]")
+    observed = int(len(times))
+    available = observed > 0
+    per_day = _per_day_coverage(times, start, end, timezone_name, int(24 * 60 / interval_minutes))
+
+    structural_note = None
+    if expected < window_frames:
+        missing = window_frames - expected
+        structural_note = (
+            f"The radar archive retains about {retention_hours:.0f} hours, so the oldest "
+            f"{missing} frame(s) of this {window_frames}-frame window are structurally "
+            "unavailable rather than missing."
+        )
+    coverage = observed / expected if expected else 0.0
+    notes: list[str] = []
+    if structural_note:
+        notes.append(structural_note)
+    if not available:
+        notes.append("Radar frames were unavailable for this period.")
+    elif coverage < minimum_coverage:
+        notes.append(
+            f"Radar coverage {observed}/{expected} ({coverage:.0%}) of the reachable window "
+            f"is below the {minimum_coverage:.0%} threshold."
+        )
+    return InputCoverage(
+        name="radar",
+        available=available,
+        observed=observed,
+        expected=expected,
+        threshold=minimum_coverage,
+        ok=available and coverage >= minimum_coverage,
+        per_day=per_day,
+        structural_note=structural_note,
+        notes=notes,
+    )
+
+
+def validate_lightning_period(lightning, start: date, end: date, timezone_name: str) -> InputCoverage:
+    """Separate a failed lightning archive from a genuinely quiet period.
+
+    There is no coverage ratio to compute: zero strikes is a valid observation.
+    The only question that matters is whether the archive answered at all.
+    """
+    available = bool(getattr(lightning, "available", True))
+    frame = getattr(lightning, "frame", pd.DataFrame())
+    observed = int(len(frame))
+    missing_days = int(getattr(lightning, "missing_days", 0))
+    notes: list[str] = []
+    if not available:
+        notes.append(
+            "Lightning archive was unavailable; this is not a report of zero strikes."
+        )
+    elif observed == 0:
+        notes.append("Lightning archive was read successfully and recorded no strikes in range.")
+    if available and missing_days:
+        notes.append(f"{missing_days} daily lightning file(s) were unavailable within the period.")
+    return InputCoverage(
+        name="lightning",
+        available=available,
+        observed=observed,
+        expected=0,
+        threshold=0.0,
+        ok=available,
+        per_day=pd.DataFrame(columns=["local_day", "observed", "expected", "coverage"]),
+        structural_note=None,
+        notes=notes,
+    )
+
+
+def observation_shortfall_hours(
+    latest: pd.Timestamp | None,
+    start: date,
+    end: date,
+    timezone_name: str,
+) -> float:
+    """Hours by which the newest observation falls short of the window end."""
+    _, utc_end = local_period_to_utc_bounds(start, end, timezone_name)
+    if latest is None or pd.isna(latest):
+        return float((utc_end - pd.Timestamp(utc_end).tz_convert("UTC")).total_seconds()) or float("inf")
+    latest = pd.Timestamp(latest)
+    if latest.tzinfo is None:
+        raise AssertionError("Observation timestamps must be timezone-aware UTC.")
+    shortfall = (pd.Timestamp(utc_end) - latest).total_seconds() / 3600.0
+    return max(0.0, float(shortfall))
+
+
+def assert_observations_fresh(
+    latest: pd.Timestamp | None,
+    start: date,
+    end: date,
+    timezone_name: str,
+    label: str = "station",
+    tolerance_hours: float = 2.0,
+) -> float:
+    """Fail loudly when the retrieved record stops short of the window end.
+
+    This, not the build schedule, is what guarantees the window is observed. The
+    cron time is only an optimisation that makes the check likely to pass: the
+    provider controls when its file regenerates and can change it without notice,
+    so the assertion has to be on the data actually retrieved.
+    """
+    if latest is None or (isinstance(latest, float) and pd.isna(latest)):
+        raise ObservationFreshnessError(
+            f"No {label} observations were retrieved for {start}..{end}; the window end "
+            "cannot be confirmed as observed."
+        )
+    shortfall = observation_shortfall_hours(latest, start, end, timezone_name)
+    if shortfall > tolerance_hours:
+        _, utc_end = local_period_to_utc_bounds(start, end, timezone_name)
+        raise ObservationFreshnessError(
+            f"The {label} record ends {shortfall:.1f} h before the reporting window closes "
+            f"(newest {pd.Timestamp(latest):%Y-%m-%d %H:%M} UTC, window end "
+            f"{utc_end:%Y-%m-%d %H:%M} UTC, tolerance {tolerance_hours:.1f} h). "
+            "The provider file has probably not regenerated yet; rerun after it does."
+        )
+    return shortfall
+
+
 def validate_hourly_week(
     frame: pd.DataFrame,
     start: date,

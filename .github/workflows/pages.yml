@@ -6,8 +6,19 @@ on:
   schedule:
     # The public report updates daily. Heavy 72-hour archives retain a true
     # three-day rhythm across month boundaries.
-    # 05:15 UTC is 07:15 CEST / 06:15 CET.
-    - cron: "15 5 * * *"
+    #
+    # 11:00 UTC, not earlier. The HungaroMet 10-minute export regenerates once a
+    # day at about 09:50 UTC, and the file it publishes then covers through 23:50
+    # UTC the previous day. Building at 05:15 read the *previous* day's file and so
+    # always missed the final 22 hours of its own window: five consecutive editions
+    # published with the headline day at 8% station coverage.
+    #
+    # The schedule is an optimisation, not the guarantee. The provider controls its
+    # regeneration time and can move it without notice, so correctness rests on the
+    # freshness assertion in the pipeline, which compares the newest observation
+    # actually retrieved against the window end and refuses to publish if it falls
+    # short. This cron only makes that assertion likely to pass on the first try.
+    - cron: "0 11 * * *"
   workflow_dispatch:
 
 permissions:

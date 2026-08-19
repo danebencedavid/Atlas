@@ -36,7 +36,14 @@ from atlas.phenomena import detect_weather_phenomena
 from atlas.plots import generate_all_figures
 from atlas.profile import fetch_model_profile
 from atlas.radar_cells import analyse_radar_cells
-from atlas.quality import DataQualityReport, validate_hourly_period
+from atlas.quality import (
+    DataQualityReport,
+    assert_observations_fresh,
+    validate_hourly_period,
+    validate_lightning_period,
+    validate_radar_period,
+    validate_station_period,
+)
 from atlas.regimes import classify_period
 from atlas.satellite import fetch_satellite_archive
 from atlas.serialization import json_ready
@@ -150,6 +157,45 @@ def run_pipeline(
     radar_cells = analyse_radar_cells(radar, config)
     lightning = fetch_lightning_archive(config, start, end, refresh=refresh)
     satellite = fetch_satellite_archive(config, start, end, refresh=refresh)
+
+    # Observational completeness, gated per input. The gridded frame used to be the
+    # only thing checked, so a station record missing its entire final day passed
+    # silently and was published five times.
+    observational_coverage = [
+        validate_station_period(
+            station, start, end, config.location.timezone, config.operations.minimum_station_coverage
+        ),
+        validate_radar_period(
+            radar,
+            start,
+            end,
+            config.location.timezone,
+            config.operations.minimum_radar_coverage,
+            retention_hours=config.operations.radar_retention_hours,
+        ),
+        validate_lightning_period(lightning, start, end, config.location.timezone),
+    ]
+    for coverage in observational_coverage:
+        quality_notes.extend(coverage.notes)
+        if not coverage.ok:
+            quality_notes.append(
+                f"The {coverage.name} input did not meet its completeness threshold and is "
+                "reported as incomplete rather than presented as whole."
+            )
+
+    # The load-bearing freshness guarantee. The build schedule only makes this
+    # likely to pass: the provider controls when its file regenerates and may change
+    # that without notice, so the assertion is on the data actually retrieved.
+    if not station.frame.empty:
+        assert_observations_fresh(
+            station.frame["time"].max(),
+            start,
+            end,
+            config.location.timezone,
+            label="station",
+            tolerance_hours=config.operations.maximum_observation_shortfall_hours,
+        )
+
     frontal_source = station_hourly(station) if not station.frame.empty else current
     fronts = detect_fronts(frontal_source)
 

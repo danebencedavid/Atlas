@@ -208,6 +208,17 @@ class OutputConfig:
 class OperationsConfig:
     max_period_lag_days: int = 7
     minimum_hourly_coverage: float = 0.95
+    # Observational inputs carry their own thresholds. Without these the gridded
+    # frame was the only gated input, which let editions publish with the headline
+    # day almost entirely unobserved.
+    minimum_station_coverage: float = 0.95
+    minimum_radar_coverage: float = 0.90
+    # The composite archive retains roughly this much against a 72-hour window, so
+    # the radar threshold applies to what is reachable rather than to the window.
+    radar_retention_hours: float = 71.0
+    # How far the newest observation may fall short of the window end before the
+    # build refuses to publish.
+    maximum_observation_shortfall_hours: float = 2.0
 
 
 @dataclass(frozen=True)
