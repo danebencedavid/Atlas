@@ -129,10 +129,23 @@ def _submit(config: AtlasConfig, token: str, start: date, end: date) -> str:
         timeout=settings.request_timeout_seconds,
     )
     if response.status_code in (401, 403):
+        # The ADS distinguishes a bad token (401) from a valid token whose account
+        # has not accepted the dataset licence (403), and its own detail names the
+        # page to visit. Passing that through beats guessing at the cause.
+        try:
+            problem = response.json()
+            detail = problem.get("detail") or problem.get("title") or response.text
+        except ValueError:
+            detail = response.text
+        cause = (
+            "the token was rejected"
+            if response.status_code == 401
+            else "the token is valid but the account lacks permission"
+        )
         raise CamsCredentialError(
-            f"The ADS rejected the token in ${settings.token_env_var} "
-            f"(HTTP {response.status_code}). Check that the token is current and that "
-            "the dataset licence has been accepted on your ADS profile."
+            f"The ADS refused the request (HTTP {response.status_code}): {cause}.\n"
+            f"  {str(detail).strip()}\n"
+            f"The token comes from ${settings.token_env_var}."
         )
     response.raise_for_status()
     job = response.json()
