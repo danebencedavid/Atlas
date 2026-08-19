@@ -554,6 +554,7 @@ def run_pipeline(
         kinematics=kinematics,
         air_mass_origin=air_mass_origin,
         radar_cells=radar_cells,
+        observational_coverage=observational_coverage,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,

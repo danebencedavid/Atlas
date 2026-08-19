@@ -25,6 +25,7 @@ from atlas.kinematics import StormKinematics
 from atlas.land import LandSurfaceAnalysis
 from atlas.phenomena import PhenomenaAnalysis, WeatherPhenomenon
 from atlas.profile import ModelProfile
+from atlas.quality import InputCoverage
 from atlas.radar_cells import RadarCellAnalysis
 from atlas.regimes import RegimeClassification
 from atlas.satellite import SatelliteArchive
@@ -1408,6 +1409,21 @@ th, td { border-color: var(--line); }
 }
 .kinematics-table h3 span { color: var(--muted); font-weight: 500; }
 .kinematics-table td { font-variant-numeric: tabular-nums; }
+.coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+.coverage-block h3 { margin: 14px 0 4px; font-size: 12px; }
+.coverage-days { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+.coverage-day {
+  flex: 1 1 90px;
+  padding: 8px 10px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: 0 5px 5px 0;
+}
+.coverage-day[data-thin="true"] { border-left-color: var(--red); background: var(--paper); }
+.coverage-day span { display: block; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 9px; }
+.coverage-day strong { display: block; margin-top: 2px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.coverage-day em { display: block; color: var(--muted); font-size: 10px; font-style: normal; }
 .radar-subhead { margin: 18px 0 6px; font-size: 12px; }
 .verification-bias { font-variant-numeric: tabular-nums; font-weight: 650; }
 .verification-bias[data-sign="high"] { color: var(--red); }
@@ -1614,6 +1630,18 @@ footer {
   .footer-wrap { padding: 18px 20px; }
 }
 """
+
+
+def _lightning_phrase(lightning: LightningArchive, count: int) -> str:
+    """Render a strike count, or say the archive was unavailable.
+
+    A failed archive and a genuinely quiet period both leave an empty frame, and
+    the quiet reading is the comforting one, so it must never be printed by
+    default.
+    """
+    if bool(getattr(lightning, "available", True)):
+        return f"{count:,} lightning event(s)"
+    return "an unavailable lightning archive (no strike count, not zero strikes)"
 
 
 def _fmt(value: float, digits: int = 1) -> str:
@@ -2531,6 +2559,53 @@ def _storm_kinematics_section(kinematics: StormKinematics | None) -> str:
   {motion_block}
   <div class="kinematics-grid">{tables}</div>
   <ul class="verification-notes">{note_items}</ul>
+</section>
+"""
+
+
+def _observational_coverage_section(coverages: list[InputCoverage] | None) -> str:
+    """Per-day coverage for the observational inputs.
+
+    Station and radar fail at opposite ends of the window: the station export
+    regenerates once a day and can lag the trailing edge, while the radar archive
+    retains only about seventy-one hours and loses the leading edge. An aggregate
+    percentage hides both, so each day is shown on its own.
+    """
+    if not coverages:
+        return ""
+    blocks: list[str] = []
+    for coverage in coverages:
+        if coverage.per_day.empty:
+            state = "Available" if coverage.available else "Unavailable"
+            blocks.append(
+                f'<div class="coverage-block"><h3>{html.escape(coverage.name.title())}</h3>'
+                f"<p>{state}. {html.escape(' '.join(coverage.notes))}</p></div>"
+            )
+            continue
+        cells = "".join(
+            f'<div class="coverage-day" data-thin="{str(row.coverage < coverage.threshold).lower()}">'
+            f"<span>{row.local_day}</span>"
+            f"<strong>{row.coverage:.0%}</strong>"
+            f"<em>{int(row.observed)}/{int(row.expected)}</em></div>"
+            for row in coverage.per_day.itertuples()
+        )
+        headline = (
+            f"{coverage.observed}/{coverage.expected} ({coverage.coverage:.0%}) against a "
+            f"{coverage.threshold:.0%} threshold"
+        )
+        note_items = "".join(f"<li>{html.escape(note)}</li>" for note in coverage.notes)
+        blocks.append(
+            f'<div class="coverage-block"><h3>{html.escape(coverage.name.title())}</h3>'
+            f"<p>{html.escape(headline)}</p>"
+            f'<div class="coverage-days">{cells}</div>'
+            f'<ul class="verification-notes">{note_items}</ul></div>'
+        )
+    return f"""
+<section class="content-section">
+  <h2>Observational Coverage</h2>
+  <p>How much of the reporting window each observational input actually covers, by local day.
+  A day below its threshold is marked.</p>
+  <div class="coverage-grid">{"".join(blocks)}</div>
 </section>
 """
 
@@ -3505,6 +3580,7 @@ def build_site(
     kinematics: StormKinematics | None = None,
     air_mass_origin: AirMassOrigin | None = None,
     radar_cells: RadarCellAnalysis | None = None,
+    observational_coverage: list[InputCoverage] | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
@@ -3687,7 +3763,18 @@ def build_site(
     observed_gust = float(pd.to_numeric(station.frame.get("wind_gust_ms"), errors="coerce").max()) if not station.frame.empty else float("nan")
     radar_max = float(radar.timeline["domain_max_dbz"].max()) if not radar.timeline.empty else float("nan")
     lightning_count = len(lightning.frame)
+    # A failed archive and a genuinely quiet period both leave an empty frame. The
+    # quiet reading is the comforting one, so it must never be printed by default.
+    lightning_available = bool(getattr(lightning, "available", True))
+    lightning_phrase = _lightning_phrase(lightning, lightning_count)
     closest_flash = float(lightning.frame["distance_km"].min()) if not lightning.frame.empty else float("nan")
+    lightning_sentence = (
+        f"{lightning_count:,} lightning events were inside the study radius; the closest was "
+        f"{_fmt(closest_flash)} km from Debrecen."
+        if lightning_available
+        else "The LINET archive was unavailable for this period, so no strike count is "
+        "reported. This is not a record of zero lightning."
+    )
     best_analog = analogs.matches[0] if analogs.matches else None
     cape = profile.diagnostics.get("surface_based_cape_j_kg", float("nan"))
     pbl = profile.diagnostics.get("boundary_layer_height_m", float("nan"))
@@ -3703,6 +3790,7 @@ def build_site(
 
     daily_station = on_target_day(station.frame)
     daily_lightning = on_target_day(lightning.frame)
+    daily_lightning_phrase = _lightning_phrase(lightning, len(daily_lightning))
     daily_radar = on_target_day(radar.timeline)
     daily_observed_temp = (
         float(pd.to_numeric(daily_station["temperature_c"], errors="coerce").mean())
@@ -3830,7 +3918,7 @@ def build_site(
         "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation.",
         "meteogram",
     )
-    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {len(daily_lightning):,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>'
+    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {daily_lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>'
 
     public_weather = _page_intro(
         "Yesterday's Weather",
@@ -3904,10 +3992,10 @@ def build_site(
         "meteogram",
     )
     analysis_overview += f"""
-<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {len(fronts.events)} objective frontal passage candidate(s), {lightning_count:,} lightning event(s) within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
+<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {len(fronts.events)} objective frontal passage candidate(s), {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
 <div class="insight-grid">
   <article class="insight"><span class="provenance">Observed</span><h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
-  <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_count:,} lightning events were inside the study radius; the closest was {_fmt(closest_flash)} km from Debrecen.</p></article>
+  <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_sentence}</p></article>
   <article class="insight"><span class="provenance">Model-derived</span><h3>Atmospheric column</h3><p>Selected-profile surface-based CAPE was {_fmt(cape, 0)} J/kg and boundary-layer height was {_fmt(pbl, 0)} m.</p></article>
   <article class="insight"><span class="provenance">ERA5 analog</span><h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
 </div>
@@ -3959,7 +4047,7 @@ def build_site(
     weather += _air_mass_origin_section(air_mass_origin)
 
     storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
-    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET registered {lightning_count:,} events within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {len(phenomena.events)} objective phenomenon candidate(s).</p>'
+    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET reported {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {len(phenomena.events)} objective phenomenon candidate(s).</p>'
     storms += _plot_section("Meteosat, Radar And Lightning Diary", figures["satellite_diary"], "Synchronized Meteosat satellite diary", "Choose Airmass, Natural Colour, Night Microphysics, Fog RGB or InfraCloud; play the frames while the cursor follows the nearest radar and lightning observations.", "satellite", "HungaroMet MSG imagery sampled every three hours for a practical self-contained archive.")
     storms += _plot_section("Objective Phenomena Strip", figures["phenomena_timeline"], "Objective weather phenomena chronology", "Each segment is a threshold-based candidate. Hover to inspect evidence, confidence and provenance.", "phenomena")
     storms += f'<section class="content-section"><h2>Evidence ledger</h2><ul class="event-list">{phenomenon_items(phenomena.events, "No objective phenomenon detected")}</ul></section>'
@@ -4107,6 +4195,7 @@ def build_site(
     <ul>{expert_note_items}</ul>
   </section>
 </div>
+{_observational_coverage_section(observational_coverage)}
 {_verification_section(verification)}
 <section class="content-section downloads-section">
   <div class="downloads-heading"><div><h2>Data Downloads</h2><p>Generated evidence files for independent inspection and reuse.</p></div><span class="download-count">{len(available_downloads)} files</span></div>

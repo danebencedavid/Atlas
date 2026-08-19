@@ -141,3 +141,21 @@ def test_missing_observations_fail_the_freshness_check():
 def test_naive_timestamps_are_rejected():
     with pytest.raises(AssertionError, match="timezone-aware"):
         observation_shortfall_hours(pd.Timestamp("2026-08-16 12:00"), START, END, TZ)
+
+
+def test_published_text_distinguishes_unavailable_lightning_from_zero():
+    """The README promises optional-source failures stay explicitly unavailable.
+
+    An edition that prints "0 lightning event(s)" for a failed archive states an
+    observation that was never made, and the false reading is the reassuring one.
+    """
+    from atlas.site import _lightning_phrase
+
+    quiet = LightningArchive(pd.DataFrame(), pd.DataFrame(), [], available=True)
+    failed = LightningArchive(pd.DataFrame(), pd.DataFrame(), [], available=False)
+
+    assert _lightning_phrase(quiet, 0) == "0 lightning event(s)"
+    phrase = _lightning_phrase(failed, 0)
+    assert "unavailable" in phrase
+    assert "not zero strikes" in phrase
+    assert "0 lightning event(s)" not in phrase

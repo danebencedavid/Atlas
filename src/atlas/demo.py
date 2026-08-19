@@ -26,6 +26,7 @@ from atlas.phenomena import detect_weather_phenomena
 from atlas.plots import generate_all_figures
 from atlas.profile import ModelProfile
 from atlas.radar_cells import analyse_radar_cells
+from atlas.quality import validate_lightning_period, validate_radar_period, validate_station_period
 from atlas.regimes import classify_period
 from atlas.satellite import SatelliteArchive, SatelliteFrame
 from atlas.serialization import json_ready
@@ -571,6 +572,24 @@ def run_demo_pipeline(
     fronts = detect_fronts(station.frame)
     radar, lightning = _radar_and_lightning(current, event_time, config)
     radar_cells = analyse_radar_cells(radar, config)
+    # The synthetic inputs are coarser than the real feeds, so the gate is told
+    # their actual cadence. Passing the live intervals would report a demo artefact
+    # as a coverage failure.
+    demo_station_minutes = int(
+        pd.Series(station.frame["time"]).diff().dt.total_seconds().median() // 60
+    ) or 60
+    demo_radar_minutes = int(
+        pd.Series(radar.times).diff().dt.total_seconds().median() // 60
+    ) or 30
+    observational_coverage = [
+        validate_station_period(
+            station, start, end, config.location.timezone, interval_minutes=demo_station_minutes
+        ),
+        validate_radar_period(
+            radar, start, end, config.location.timezone, interval_minutes=demo_radar_minutes
+        ),
+        validate_lightning_period(lightning, start, end, config.location.timezone),
+    ]
     processed_dir = config.outputs.data_dir / "processed" / "demo"
     figures_dir = config.outputs.reports_dir / "figures" / "demo"
     for target in [processed_dir, figures_dir]:
@@ -738,6 +757,7 @@ def run_demo_pipeline(
         kinematics=kinematics,
         air_mass_origin=air_mass_origin,
         radar_cells=radar_cells,
+        observational_coverage=observational_coverage,
         figure_paths=figure_paths,
         processed_paths=processed_paths,
         site_dir=config.outputs.site_dir,
