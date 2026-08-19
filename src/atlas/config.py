@@ -145,6 +145,48 @@ class TrajectoryConfig:
 
 
 @dataclass(frozen=True)
+class ForecastArchiveConfig:
+    """Forecast verification archive settings.
+
+    Training data comes from the Previous Runs API, where a value suffixed
+    ``_previous_dayN`` was predicted N*24 hours before its valid time. The
+    Historical Forecast API is deliberately excluded: it stitches together the
+    earliest hours of successive runs, so a model trained on it would learn from
+    information unavailable at live inference time.
+
+    ``start_date`` is the probed beginning of the archive, not a preference. Runs
+    before roughly 2024-01-20 return null for every variable.
+    """
+
+    enabled: bool = True
+    start_date: str = "2024-01-22"
+    lead_days: list[int] = field(default_factory=lambda: [1, 2, 3])
+    models: list[str] = field(
+        default_factory=lambda: ["best_match", "ecmwf_ifs025", "icon_seamless"]
+    )
+    variables: list[str] = field(
+        default_factory=lambda: [
+            "temperature_2m",
+            "shortwave_radiation",
+            "direct_radiation",
+            "diffuse_radiation",
+            "wind_speed_10m",
+            "wind_gusts_10m",
+            "cloud_cover",
+            "relative_humidity_2m",
+        ]
+    )
+    # Two-week windows with at most ten variables keep each request near one
+    # weighted API call.
+    chunk_days: int = 14
+    max_variables_per_request: int = 10
+    request_delay_seconds: float = 1.2
+    # Committed rather than left under the ignored data/ tree, because the live
+    # collector is append-only and must survive between CI runs.
+    archive_dir: Path = Path("data/forecast_archive")
+
+
+@dataclass(frozen=True)
 class PhysicalEnergyConfig:
     pv_tilt_degrees: float = 35.0
     pv_azimuth_degrees: float = 180.0
@@ -184,6 +226,7 @@ class AtlasConfig:
     analogs: AnalogConfig = field(default_factory=AnalogConfig)
     synoptic: SynopticConfig = field(default_factory=SynopticConfig)
     trajectory: TrajectoryConfig = field(default_factory=TrajectoryConfig)
+    forecast_archive: ForecastArchiveConfig = field(default_factory=ForecastArchiveConfig)
     physical_energy: PhysicalEnergyConfig = field(default_factory=PhysicalEnergyConfig)
     outputs: OutputConfig = field(default_factory=OutputConfig)
 
@@ -195,6 +238,13 @@ def _section(raw: dict[str, Any], key: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"Config section '{key}' must be a mapping.")
     return value
+
+
+def _forecast_archive_config(raw: dict[str, Any]) -> ForecastArchiveConfig:
+    settings = dict(raw)
+    if "archive_dir" in settings:
+        settings["archive_dir"] = Path(settings["archive_dir"])
+    return ForecastArchiveConfig(**settings)
 
 
 def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
@@ -220,6 +270,7 @@ def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
         analogs=AnalogConfig(**_section(raw, "analogs")),
         synoptic=SynopticConfig(**_section(raw, "synoptic")),
         trajectory=TrajectoryConfig(**_section(raw, "trajectory")),
+        forecast_archive=_forecast_archive_config(_section(raw, "forecast_archive")),
         physical_energy=PhysicalEnergyConfig(**_section(raw, "physical_energy")),
         outputs=OutputConfig(
             data_dir=Path(outputs.get("data_dir", "data")),
