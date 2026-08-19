@@ -187,6 +187,31 @@ class ForecastArchiveConfig:
 
 
 @dataclass(frozen=True)
+class CamsConfig:
+    """CAMS Radiation Service settings for irradiance ground truth.
+
+    ERA5 is model output, so correcting a forecast toward it measures agreement
+    between two models rather than skill against reality. CAMS is satellite-derived
+    and is the closest thing to an observation available for this point.
+
+    Access needs a personal ADS token. It is read from the environment and never
+    committed, so no token and no .cdsapirc belong anywhere in this tree.
+    """
+
+    enabled: bool = True
+    token_env_var: str = "ADS_API_TOKEN"
+    dataset: str = "cams-solar-radiation-timeseries"
+    sky_type: str = "observed_cloud"
+    time_step: str = "1hour"
+    altitude: str = "-999"
+    request_timeout_seconds: int = 120
+    poll_seconds: float = 5.0
+    poll_attempts: int = 120
+    # CAMS is monthly-chunked to keep any single job small enough to finish.
+    chunk_days: int = 31
+
+
+@dataclass(frozen=True)
 class PhysicalEnergyConfig:
     pv_tilt_degrees: float = 35.0
     pv_azimuth_degrees: float = 180.0
@@ -238,6 +263,7 @@ class AtlasConfig:
     synoptic: SynopticConfig = field(default_factory=SynopticConfig)
     trajectory: TrajectoryConfig = field(default_factory=TrajectoryConfig)
     forecast_archive: ForecastArchiveConfig = field(default_factory=ForecastArchiveConfig)
+    cams: CamsConfig = field(default_factory=CamsConfig)
     physical_energy: PhysicalEnergyConfig = field(default_factory=PhysicalEnergyConfig)
     outputs: OutputConfig = field(default_factory=OutputConfig)
 
@@ -282,6 +308,7 @@ def load_config(path: str | Path = "configs/atlas.yml") -> AtlasConfig:
         synoptic=SynopticConfig(**_section(raw, "synoptic")),
         trajectory=TrajectoryConfig(**_section(raw, "trajectory")),
         forecast_archive=_forecast_archive_config(_section(raw, "forecast_archive")),
+        cams=CamsConfig(**_section(raw, "cams")),
         physical_energy=PhysicalEnergyConfig(**_section(raw, "physical_energy")),
         outputs=OutputConfig(
             data_dir=Path(outputs.get("data_dir", "data")),

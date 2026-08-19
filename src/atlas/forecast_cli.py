@@ -30,14 +30,15 @@ from atlas.forecast_archive import (
     write_archive,
 )
 from atlas.forecast_verification import (
-    IRRADIANCE_CAVEAT,
     IRRADIANCE_VARIABLES,
     STATION_EQUIVALENTS,
     build_truth_table,
     clear_sky_index,
+    irradiance_caveat,
     pair_forecasts_with_truth,
     score,
 )
+from atlas.cams import SNOW_CAVEAT, CamsCredentialError, fetch_cams_radiation
 from atlas.hungaromet import fetch_station_history, fetch_station_observations
 from atlas.ingest import fetch_open_meteo_period
 
@@ -72,7 +73,19 @@ def _load_truth(config: AtlasConfig, start: date, end: date, refresh: bool) -> t
     except Exception as exc:  # pragma: no cover - network dependent
         notes.append(f"ERA5 fallback unavailable: {exc}")
 
-    truth, truth_notes = build_truth_table(combined, era5)
+    cams = pd.DataFrame()
+    try:
+        radiation = fetch_cams_radiation(config, start, end, refresh=refresh)
+        cams = radiation.frame
+        notes.extend(radiation.notes)
+    except CamsCredentialError as exc:
+        # Actionable, and the run continues on ERA5 with the weaker label rather
+        # than failing outright.
+        notes.append(f"CAMS irradiance truth unavailable: {exc}")
+    except Exception as exc:  # pragma: no cover - network dependent
+        notes.append(f"CAMS irradiance truth unavailable: {exc}")
+
+    truth, truth_notes = build_truth_table(combined, era5, cams)
     notes.extend(truth_notes)
     return truth, notes
 
@@ -130,6 +143,15 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
         return
 
     pairs = result.pairs
+    # The label has to match the truth actually used, not the truth intended.
+    irradiance_pairs = pairs[pairs["variable"].isin(IRRADIANCE_VARIABLES)]
+    caveat = irradiance_caveat(irradiance_pairs["truth_source"].unique())
+    irradiance_context = (
+        SNOW_CAVEAT
+        if "cams" in set(irradiance_pairs["truth_source"].unique())
+        else "ERA5 is model output. A correction trained toward it measures agreement "
+        "between two models, not skill against reality."
+    )
     # Station-only unless a variable has no station equivalent at all, so headline
     # scores are not quietly propped up by reanalysis.
     station_pairs = pairs[pairs["truth_source"] == "station"]
@@ -144,9 +166,8 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
     )
     lines.append("")
     lines.append(
-        f"> **Irradiance ({', '.join(sorted(IRRADIANCE_VARIABLES))}) is {IRRADIANCE_CAVEAT}.** "
-        "ERA5 is model output. A correction trained toward it measures agreement between two "
-        "models, not skill against reality."
+        f"> **Irradiance ({', '.join(sorted(IRRADIANCE_VARIABLES))}) is {caveat}.** "
+        + irradiance_context
     )
     lines.append("")
     lines.append("## Attribution")
@@ -245,8 +266,8 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
         labelled = clear_sky_index(irradiance, config)
         labelled = labelled[labelled["sky_regime"].notna()]
         lines.append(
-            f"All rows in this table are {IRRADIANCE_CAVEAT}. The HungaroMet 10-minute "
-            "export carries no radiation channel, so no measured irradiance is available here."
+            f"All rows in this table are {caveat}. The HungaroMet 10-minute export carries "
+            "no radiation channel, so no in-situ irradiance is available for this point."
         )
         lines.append("")
         lines.append(_table(score(labelled, ["variable", "lead_time_hours", "sky_regime"])))

@@ -44,13 +44,28 @@ ERA5_EQUIVALENTS: dict[str, str] = {
     "cloud_cover": "cloud_cover",
 }
 
-IRRADIANCE_CAVEAT = (
+# Superseded by the CAMS wording once satellite truth is present. Kept because a
+# run without CAMS must still say plainly what it was verified against.
+ERA5_IRRADIANCE_CAVEAT = (
     "verified against ERA5 reanalysis, not observations; not validated against "
     "measured irradiance"
 )
+CAMS_IRRADIANCE_CAVEAT = (
+    "verified against CAMS satellite-derived irradiance, not ground measurement"
+)
+
+
+def irradiance_caveat(truth_sources) -> str:
+    """The wording that matches what irradiance was actually compared against."""
+    return (
+        CAMS_IRRADIANCE_CAVEAT
+        if "cams" in set(truth_sources)
+        else ERA5_IRRADIANCE_CAVEAT
+    )
 
 # Irradiance is never verified against the station: HungaroMet's 10-minute export
-# carries no radiation channel, so ERA5 is the only available truth for it.
+# carries no radiation channel. CAMS satellite retrieval is the primary truth for
+# it, with ERA5 only as a last resort.
 IRRADIANCE_VARIABLES = {"shortwave_radiation", "direct_radiation", "diffuse_radiation"}
 
 SEASONS = {12: "DJF", 1: "DJF", 2: "DJF", 3: "MAM", 4: "MAM", 5: "MAM",
@@ -86,8 +101,9 @@ def _assert_utc(frame: pd.DataFrame, column: str, label: str) -> None:
 def build_truth_table(
     station: StationObservations,
     era5: pd.DataFrame | None = None,
+    cams: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
-    """Long-format hourly truth, station first and ERA5 only to fill gaps."""
+    """Long-format hourly truth: station, then CAMS for irradiance, then ERA5."""
     notes: list[str] = []
     frames: list[pd.DataFrame] = []
 
@@ -115,7 +131,29 @@ def build_truth_table(
             f"{hourly['time'].min()} to {hourly['time'].max()}."
         )
     else:
-        notes.append("No station observations were available; ERA5 is the only truth source.")
+        notes.append("No station observations were available; only gridded truth remains.")
+
+    if cams is not None and not cams.empty:
+        cams = cams.copy()
+        cams["time"] = pd.to_datetime(cams["time"], utc=True)
+        _assert_utc(cams, "time", "cams")
+        for variable in IRRADIANCE_VARIABLES:
+            if variable not in cams:
+                continue
+            frames.append(
+                pd.DataFrame(
+                    {
+                        "valid_time_utc": cams["time"],
+                        "variable": variable,
+                        "observed": pd.to_numeric(cams[variable], errors="coerce"),
+                        "truth_source": "cams",
+                    }
+                ).dropna(subset=["observed"])
+            )
+        notes.append(
+            f"CAMS satellite irradiance: {len(cams):,} hours "
+            f"{cams['time'].min()} to {cams['time'].max()}."
+        )
 
     if era5 is not None and not era5.empty:
         era5 = era5.copy()
@@ -141,8 +179,10 @@ def build_truth_table(
         return pd.DataFrame(columns=["valid_time_utc", "variable", "observed", "truth_source"]), notes
 
     truth = pd.concat(frames, ignore_index=True)
-    # Station wins wherever both exist; ERA5 only fills the gaps it leaves.
-    truth["priority"] = np.where(truth["truth_source"] == "station", 0, 1)
+    # Station first, then CAMS, then ERA5. In practice the station has no radiation
+    # channel, so CAMS takes irradiance and the station takes everything else.
+    priority = {"station": 0, "cams": 1, "era5": 2}
+    truth["priority"] = truth["truth_source"].map(priority).fillna(3)
     truth = (
         truth.sort_values(["valid_time_utc", "variable", "priority"])
         .drop_duplicates(subset=["valid_time_utc", "variable"], keep="first")
