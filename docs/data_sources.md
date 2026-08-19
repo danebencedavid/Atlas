@@ -44,6 +44,38 @@ model analyses, not observed soundings or manually analysed maps.
 
 [Official documentation](https://open-meteo.com/en/docs/historical-forecast-api)
 
+## Open-Meteo Previous Runs API
+
+Used only by the forecast verification archive (`atlas-forecast`), which is
+separate from the daily report and the site build. Values suffixed
+`_previous_dayN` were predicted N*24 hours before their valid time, so the
+archive contains only what was knowable in advance.
+
+The Historical Forecast API above is deliberately **not** used for this. It
+stitches together the earliest hours of successive model runs, so every value
+carries information from a run issued close to the valid time. Training a bias
+correction on it would let the model learn from data unavailable at inference and
+score far better than it could in practice. That is look-ahead bias, and it does
+not announce itself.
+
+Archive coverage begins 2024-01-22. Earlier dates return null for every variable.
+
+[Official documentation](https://open-meteo.com/en/docs/previous-runs-api)
+
+## Attribution and licence
+
+Open-Meteo data is licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) and requires credit, a
+link to the licence, and an indication of whether changes were made.
+
+Atlas modifies the data: forecasts are paired with station observations and,
+in the verification and post-processing work, statistically bias-corrected.
+Any surface built on those outputs must carry this notice:
+
+> Forecast data from Open-Meteo.com, licensed CC BY 4.0
+> (https://creativecommons.org/licenses/by/4.0/). Values are modified: they are
+> paired with station observations and statistically bias-corrected by Atlas.
+
 ## Energy-Charts API
 
 Used for Hungary-wide generation by type, load, residual load, day-ahead price,

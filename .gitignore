@@ -17,6 +17,11 @@ theory/
 style-lab.html
 style-lab-report.html
 
+# The forecast archive is append-only and must survive between CI runs,
+# so unlike the rest of data/ it is committed.
+!data/forecast_archive/
+!data/forecast_archive/**
+
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep
