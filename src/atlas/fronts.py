@@ -24,6 +24,9 @@ class FrontAnalysis:
     events: list[FrontEvent]
     diagnostics: pd.DataFrame
     notes: list[str]
+    # No events means "no front passed" only when there was a series to search.
+    # With no observations the honest answer is that the question was not asked.
+    available: bool = True
 
 
 def _angular_change(direction: pd.Series, periods: int = 3) -> pd.Series:
@@ -60,7 +63,12 @@ def _weather_columns(frame: pd.DataFrame) -> pd.DataFrame:
 
 def detect_fronts(frame: pd.DataFrame) -> FrontAnalysis:
     if frame.empty:
-        return FrontAnalysis([], pd.DataFrame(), ["No surface observations were available for frontal analysis."])
+        return FrontAnalysis(
+            [],
+            pd.DataFrame(),
+            ["No surface observations were available for frontal analysis."],
+            available=False,
+        )
     prepared = _weather_columns(frame).set_index("time").sort_index()
     hourly = prepared.resample("1h").agg(
         {

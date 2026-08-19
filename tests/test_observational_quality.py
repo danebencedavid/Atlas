@@ -159,3 +159,40 @@ def test_published_text_distinguishes_unavailable_lightning_from_zero():
     assert "unavailable" in phrase
     assert "not zero strikes" in phrase
     assert "0 lightning event(s)" not in phrase
+
+
+def test_unavailable_radar_is_not_published_as_an_absence_of_echo():
+    import numpy as np
+
+    from atlas.site import _radar_peak_phrase
+
+    failed = RadarArchive([], np.array([]), np.array([]), np.empty((0, 0, 0)),
+                          np.empty((0, 0)), pd.DataFrame(), [], available=False)
+    working = RadarArchive([], np.array([]), np.array([]), np.empty((0, 0, 0)),
+                           np.empty((0, 0)), pd.DataFrame(), [], available=True)
+    assert "unavailable radar archive" in _radar_peak_phrase(failed, float("nan"))
+    assert "not an absence of echo" in _radar_peak_phrase(failed, float("nan"))
+    assert "maximum sampled radar reflectivity" in _radar_peak_phrase(working, 47.0)
+
+
+def test_frontal_analysis_without_a_series_says_none_was_attempted():
+    from atlas.fronts import FrontAnalysis
+    from atlas.site import _front_phrase
+
+    # detect_fronts returns this when there is no surface series to search.
+    unattempted = FrontAnalysis([], pd.DataFrame(), [], available=False)
+    searched = FrontAnalysis([], pd.DataFrame(), [], available=True)
+    assert "none was attempted" in _front_phrase(unattempted)
+    assert _front_phrase(searched) == "0 objective frontal passage candidate(s)"
+
+
+def test_phenomena_ledger_names_the_inputs_it_lacked():
+    from atlas.phenomena import PhenomenaAnalysis
+    from atlas.site import _phenomena_phrase
+
+    complete = PhenomenaAnalysis([], [])
+    degraded = PhenomenaAnalysis([], [], degraded_inputs=["radar", "lightning"])
+    assert _phenomena_phrase(complete) == "0 objective phenomenon candidate(s)"
+    phrase = _phenomena_phrase(degraded)
+    assert "radar, lightning" in phrase
+    assert "missing evidence rather than a quiet period" in phrase

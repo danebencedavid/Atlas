@@ -1632,6 +1632,37 @@ footer {
 """
 
 
+def _front_phrase(fronts: FrontAnalysis) -> str:
+    """Render a frontal count, or say the series was not there to search."""
+    if bool(getattr(fronts, "available", True)):
+        return f"{len(fronts.events)} objective frontal passage candidate(s)"
+    return "no frontal analysis (the surface series was unavailable, so none was attempted)"
+
+
+def _phenomena_phrase(phenomena: PhenomenaAnalysis) -> str:
+    """Render a phenomena count, naming any input the detector had to do without.
+
+    The ledger reads station, radar and lightning. An empty result with one of
+    them missing means the evidence was absent, not that the period was quiet.
+    """
+    count = len(phenomena.events)
+    degraded = list(getattr(phenomena, "degraded_inputs", []) or [])
+    if not degraded:
+        return f"{count} objective phenomenon candidate(s)"
+    missing = ", ".join(degraded)
+    return (
+        f"{count} objective phenomenon candidate(s), detected without {missing}, "
+        "so an empty ledger reflects missing evidence rather than a quiet period"
+    )
+
+
+def _radar_peak_phrase(radar: RadarArchive, peak: float) -> str:
+    """Render the radar peak, or say the archive did not answer."""
+    if not bool(getattr(radar, "available", True)):
+        return "an unavailable radar archive (no reflectivity reading, not an absence of echo)"
+    return f"a maximum sampled radar reflectivity of {_fmt(peak)} dBZ"
+
+
 def _lightning_phrase(lightning: LightningArchive, count: int) -> str:
     """Render a strike count, or say the archive was unavailable.
 
@@ -3918,7 +3949,7 @@ def build_site(
         "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation.",
         "meteogram",
     )
-    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {len(daily_events)} notable weather phenomenon candidate(s), {daily_lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(daily_radar_max)} dBZ.</p>'
+    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {_phenomena_phrase(phenomena)}, {daily_lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and {_radar_peak_phrase(radar, daily_radar_max)}.</p>'
 
     public_weather = _page_intro(
         "Yesterday's Weather",
@@ -3992,7 +4023,7 @@ def build_site(
         "meteogram",
     )
     analysis_overview += f"""
-<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {len(fronts.events)} objective frontal passage candidate(s), {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
+<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {_front_phrase(fronts)}, {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
 <div class="insight-grid">
   <article class="insight"><span class="provenance">Observed</span><h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
   <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_sentence}</p></article>
@@ -4047,7 +4078,7 @@ def build_site(
     weather += _air_mass_origin_section(air_mass_origin)
 
     storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
-    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reached {_fmt(radar_max)} dBZ in the sampled domain. LINET reported {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {len(phenomena.events)} objective phenomenon candidate(s).</p>'
+    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reported {_radar_peak_phrase(radar, radar_max)} in the sampled domain. LINET reported {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {_phenomena_phrase(phenomena)}.</p>'
     storms += _plot_section("Meteosat, Radar And Lightning Diary", figures["satellite_diary"], "Synchronized Meteosat satellite diary", "Choose Airmass, Natural Colour, Night Microphysics, Fog RGB or InfraCloud; play the frames while the cursor follows the nearest radar and lightning observations.", "satellite", "HungaroMet MSG imagery sampled every three hours for a practical self-contained archive.")
     storms += _plot_section("Objective Phenomena Strip", figures["phenomena_timeline"], "Objective weather phenomena chronology", "Each segment is a threshold-based candidate. Hover to inspect evidence, confidence and provenance.", "phenomena")
     storms += f'<section class="content-section"><h2>Evidence ledger</h2><ul class="event-list">{phenomenon_items(phenomena.events, "No objective phenomenon detected")}</ul></section>'

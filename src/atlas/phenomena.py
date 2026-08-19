@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,14 @@ class WeatherPhenomenon:
 class PhenomenaAnalysis:
     events: list[WeatherPhenomenon]
     notes: list[str]
+    # The detector reads station, radar and lightning. If any of them was
+    # unavailable, an empty ledger means the evidence was missing, not that the
+    # period was quiet, and the two must not be presented alike.
+    degraded_inputs: list[str] = field(default_factory=list)
+
+    @property
+    def complete(self) -> bool:
+        return not self.degraded_inputs
 
 
 def _runs(frame: pd.DataFrame, mask: pd.Series) -> list[pd.DataFrame]:
@@ -274,4 +282,18 @@ def detect_weather_phenomena(
         "Phenomena are deterministic candidates based on explicit thresholds; they are not manually quality-controlled reports.",
         "Observed station evidence is preferred, with gridded or model-derived evidence identified when observations are unavailable.",
     ]
-    return PhenomenaAnalysis(events, notes)
+    # Record which observational inputs were missing, so an empty ledger can be
+    # read as "the evidence was not there" rather than "nothing happened".
+    degraded = []
+    if station.frame.empty:
+        degraded.append("station")
+    if not bool(getattr(radar, "available", True)):
+        degraded.append("radar")
+    if not bool(getattr(lightning, "available", True)):
+        degraded.append("lightning")
+    if degraded:
+        notes.append(
+            "Detection ran without " + ", ".join(degraded)
+            + "; an empty ledger here reflects missing evidence, not a quiet period."
+        )
+    return PhenomenaAnalysis(events, notes, degraded_inputs=degraded)

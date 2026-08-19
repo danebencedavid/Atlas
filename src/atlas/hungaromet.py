@@ -47,6 +47,10 @@ class RadarArchive:
     accumulation_mm: np.ndarray
     timeline: pd.DataFrame
     notes: list[str]
+    # An empty archive means "no echo" only when the fetch succeeded. Without
+    # this a failed download reads as a quiet radar, which is the flattering
+    # interpretation and the wrong one.
+    available: bool = True
 
 
 @dataclass(frozen=True)
@@ -306,7 +310,7 @@ def fetch_radar_archive(
 ) -> RadarArchive:
     empty = RadarArchive([], np.array([]), np.array([]), np.empty((0, 0, 0)), np.empty((0, 0)), pd.DataFrame(), [])
     if not config.hungaromet.enabled:
-        return RadarArchive(**{**empty.__dict__, "notes": ["HungaroMet radar ingestion is disabled."]})
+        return RadarArchive(**{**empty.__dict__, "notes": ["HungaroMet radar ingestion is disabled."], "available": False})
     try:
         interval = config.hungaromet.radar_accumulation_interval_minutes
         utc_start, utc_end = local_period_to_utc_bounds(start, end, config.location.timezone)
@@ -381,7 +385,7 @@ def fetch_radar_archive(
     except Exception as exc:
         if config.hungaromet.required:
             raise RuntimeError(f"Required HungaroMet radar data was unavailable: {exc}") from exc
-        return RadarArchive(**{**empty.__dict__, "notes": [f"Radar archive unavailable: {exc}"]})
+        return RadarArchive(**{**empty.__dict__, "notes": [f"Radar archive unavailable: {exc}"], "available": False})
 
 
 def _haversine_km(lat: np.ndarray, lon: np.ndarray, target_lat: float, target_lon: float) -> np.ndarray:
