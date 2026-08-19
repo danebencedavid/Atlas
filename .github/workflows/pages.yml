@@ -99,6 +99,35 @@ jobs:
             atlas --refresh --skip-analysis-archive
           fi
 
+      - name: Report a withheld build
+        # A refusal to publish is correct but invisible: the deployment keeps
+        # serving the previous edition. Surface it in the run summary so a failed
+        # build is legible without opening the log, and commit the record so the
+        # next published edition can carry the notice.
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f reports/status/withheld.json ]; then
+            {
+              echo "## Edition withheld"
+              echo ""
+              echo "The build refused to publish because observations fell short of the"
+              echo "reporting window. The previous edition remains deployed."
+              echo ""
+              echo '```json'
+              cat reports/status/withheld.json
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add reports/status
+            if ! git diff --cached --quiet; then
+              git commit -m "Record withheld edition [skip ci]"
+              git pull --rebase origin "${GITHUB_REF_NAME}"
+              git push
+            fi
+          fi
+
       - name: Inspect reference-cache progress
         id: reference-state
         if: always()

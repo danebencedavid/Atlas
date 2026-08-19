@@ -38,7 +38,9 @@ from atlas.profile import fetch_model_profile
 from atlas.radar_cells import analyse_radar_cells
 from atlas.quality import (
     DataQualityReport,
+    ObservationFreshnessError,
     assert_observations_fresh,
+    observation_shortfall_hours,
     validate_hourly_period,
     validate_lightning_period,
     validate_radar_period,
@@ -187,14 +189,24 @@ def run_pipeline(
     # likely to pass: the provider controls when its file regenerates and may change
     # that without notice, so the assertion is on the data actually retrieved.
     if not station.frame.empty:
-        assert_observations_fresh(
-            station.frame["time"].max(),
-            start,
-            end,
-            config.location.timezone,
-            label="station",
-            tolerance_hours=config.operations.maximum_observation_shortfall_hours,
-        )
+        try:
+            assert_observations_fresh(
+                station.frame["time"].max(),
+                start,
+                end,
+                config.location.timezone,
+                label="station",
+                tolerance_hours=config.operations.maximum_observation_shortfall_hours,
+            )
+        except ObservationFreshnessError as exc:
+            # Refusing to publish is right, but silent refusal is not: the previous
+            # edition simply stays up with nothing saying a newer one was rejected.
+            # The record survives the runner and the next published edition carries it.
+            shortfall = observation_shortfall_hours(
+                station.frame["time"].max(), start, end, config.location.timezone
+            )
+            record_withheld(config, start, end, str(exc), shortfall_hours=shortfall)
+            raise
 
     frontal_source = station_hourly(station) if not station.frame.empty else current
     fronts = detect_fronts(frontal_source)
@@ -555,6 +567,7 @@ def run_pipeline(
         air_mass_origin=air_mass_origin,
         radar_cells=radar_cells,
         observational_coverage=observational_coverage,
+        withheld_notices=[item.describe() for item in read_withheld(config)],
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,
@@ -597,6 +610,8 @@ def run_pipeline(
             figure_paths["daily_climate_reference"].name,
         },
     )
+    # The notice has been published, so the pending record can be retired.
+    clear_withheld(config)
     if archive_analysis:
         archive_site(site_index.parent, archive_dir)
     build_report_archive(config, site_index.parent, config.outputs.reports_dir)

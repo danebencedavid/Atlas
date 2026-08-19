@@ -3612,9 +3612,19 @@ def build_site(
     air_mass_origin: AirMassOrigin | None = None,
     radar_cells: RadarCellAnalysis | None = None,
     observational_coverage: list[InputCoverage] | None = None,
+    withheld_notices: list[str] | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
+
+    # A withheld build leaves the previous edition serving with nothing to say a
+    # newer one was attempted and rejected. The first edition that does publish
+    # carries that history, so the gap in the record is legible on the page.
+    if withheld_notices:
+        withheld_text = " ".join(withheld_notices)
+        edition_notice = (
+            f"{edition_notice} {withheld_text}" if edition_notice else withheld_text
+        )
     analysis_dir = site_dir / "analysis"
     if analysis_dir.exists():
         shutil.rmtree(analysis_dir)
