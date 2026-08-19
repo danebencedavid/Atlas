@@ -36,6 +36,18 @@ from atlas.trajectory import AirMassOrigin
 from atlas.verification import StationVerification
 
 
+# CC BY 4.0 requires credit, a link to the licence, and an indication that changes
+# were made. Open-Meteo additionally asks for a link next to any location its data
+# is displayed, so this rides in the footer of every rendered page rather than
+# sitting on a single methods page.
+OPEN_METEO_ATTRIBUTION_HTML = (
+    'Weather data from <a href="https://open-meteo.com" rel="noopener">Open-Meteo.com</a>, '
+    'licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener">CC BY 4.0</a>. '
+    "Atlas modifies it: values are aggregated, combined with other sources and used to "
+    "derive diagnostics."
+)
+
+
 PUBLIC_PAGES = (
     ("report.html", "Overview"),
     ("weather.html", "Weather"),
@@ -1409,6 +1421,8 @@ th, td { border-color: var(--line); }
 }
 .kinematics-table h3 span { color: var(--muted); font-weight: 500; }
 .kinematics-table td { font-variant-numeric: tabular-nums; }
+.attribution { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.attribution a { color: var(--blue); text-decoration: underline; }
 .coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
 .coverage-block h3 { margin: 14px 0 4px; font-size: 12px; }
 .coverage-days { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
@@ -2378,7 +2392,9 @@ def _page_document(
         <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape(report_family)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
       </header>
 {notice_line}      <main><div class="page-shell">{content}</div></main>
-      <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.</div></footer>
+      <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.
+        <span class="attribution">{OPEN_METEO_ATTRIBUTION_HTML}</span>
+      </div></footer>
     </div>
   </div>
   {share_data_script}<script>

@@ -45,7 +45,7 @@ from atlas.ingest import fetch_open_meteo_period
 REPORT_PATH = Path("docs/forecast_verification.md")
 
 
-def _load_truth(config: AtlasConfig, start: date, end: date, refresh: bool) -> tuple[pd.DataFrame, list[str]]:
+def _load_truth(config: AtlasConfig, start: date, end: date, refresh: bool):
     """Station history plus the current year, with ERA5 available for the gaps."""
     notes: list[str] = []
     history = fetch_station_history(config, refresh=refresh)
@@ -87,7 +87,7 @@ def _load_truth(config: AtlasConfig, start: date, end: date, refresh: bool) -> t
 
     truth, truth_notes = build_truth_table(combined, era5, cams)
     notes.extend(truth_notes)
-    return truth, notes
+    return truth, notes, combined, era5, cams
 
 
 def _table(frame: pd.DataFrame, floats: int = 3) -> str:
@@ -102,6 +102,56 @@ def _table(frame: pd.DataFrame, floats: int = 3) -> str:
     lines = ["| " + " | ".join(header) + " |", "|" + "|".join(["---"] * len(header)) + "|"]
     lines.extend("| " + " | ".join(row) + " |" for row in rows)
     return "\n".join(lines)
+
+
+def _irradiance_truth_comparison(
+    forecasts: pd.DataFrame,
+    station,
+    era5: pd.DataFrame,
+    cams: pd.DataFrame,
+) -> pd.DataFrame:
+    """Score the same irradiance forecasts against CAMS and against ERA5.
+
+    The headline table deduplicates to one truth per hour, so it cannot show how
+    much the choice of truth matters. This scores identical forecasts twice, which
+    is the only way to separate "the forecast improved" from "the yardstick moved".
+    """
+    if cams.empty or era5.empty:
+        return pd.DataFrame()
+    irradiance = forecasts[forecasts["variable"].isin(IRRADIANCE_VARIABLES)]
+    if irradiance.empty:
+        return pd.DataFrame()
+
+    scored: list[pd.DataFrame] = []
+    for label, table in (("cams", cams), ("era5", era5)):
+        truth, _ = build_truth_table(station, None, table) if label == "cams" else build_truth_table(
+            station, table, None
+        )
+        truth = truth[truth["variable"].isin(IRRADIANCE_VARIABLES)]
+        if truth.empty:
+            continue
+        paired = pair_forecasts_with_truth(irradiance, truth)
+        if not paired.available:
+            continue
+        table_scores = score(paired.pairs, ["variable", "lead_time_hours", "model"])
+        table_scores["truth"] = label
+        scored.append(table_scores)
+    if len(scored) < 2:
+        return pd.DataFrame()
+
+    combined = pd.concat(scored, ignore_index=True)
+    wide = combined.pivot_table(
+        index=["variable", "lead_time_hours", "model"],
+        columns="truth",
+        values=["n", "bias", "mae", "rmse"],
+    )
+    wide.columns = [f"{metric}_{truth}" for metric, truth in wide.columns]
+    wide = wide.reset_index()
+    # Positive means the error is larger against CAMS than against ERA5, i.e. the
+    # ERA5-based figure was flattering the forecast.
+    wide["mae_change_pct"] = (wide["mae_cams"] - wide["mae_era5"]) / wide["mae_era5"] * 100.0
+    wide["rmse_change_pct"] = (wide["rmse_cams"] - wide["rmse_era5"]) / wide["rmse_era5"] * 100.0
+    return wide.sort_values(["variable", "lead_time_hours", "model"]).reset_index(drop=True)
 
 
 def command_backfill(config: AtlasConfig, args: argparse.Namespace) -> None:
@@ -133,7 +183,7 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
 
     start = forecasts["valid_time_utc"].min().date()
     end = forecasts["valid_time_utc"].max().date()
-    truth, notes = _load_truth(config, start, end, refresh=args.refresh)
+    truth, notes, station, era5, cams = _load_truth(config, start, end, refresh=args.refresh)
     result = pair_forecasts_with_truth(forecasts, truth)
     notes.extend(result.notes)
     if not result.available:
@@ -257,6 +307,23 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
     lines.append(_table(score(day_ahead, ["variable", "hour_utc"])))
     lines.append("")
 
+    comparison = _irradiance_truth_comparison(forecasts, station, era5, cams)
+    lines.append("## Irradiance: CAMS truth versus ERA5 truth")
+    lines.append("")
+    if comparison.empty:
+        lines.append(
+            "_Only one irradiance truth was available, so the two cannot be compared._"
+        )
+    else:
+        lines.append(
+            "Identical forecasts scored against both truths. A positive change means the "
+            "error is larger against CAMS, so the ERA5 figure was flattering the forecast. "
+            "This separates a better forecast from a moved yardstick."
+        )
+        lines.append("")
+        lines.append(_table(comparison))
+    lines.append("")
+
     irradiance = pairs[pairs["variable"].isin(IRRADIANCE_VARIABLES)]
     lines.append("## Irradiance by clear-sky regime")
     lines.append("")
@@ -271,6 +338,16 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
         )
         lines.append("")
         lines.append(_table(score(labelled, ["variable", "lead_time_hours", "sky_regime"])))
+    lines.append("")
+
+    lines.append("## Irradiance by season")
+    lines.append("")
+    if irradiance.empty:
+        lines.append("_No irradiance pairs._")
+    else:
+        lines.append(SNOW_CAVEAT)
+        lines.append("")
+        lines.append(_table(score(irradiance, ["variable", "season", "truth_source"])))
     lines.append("")
 
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)

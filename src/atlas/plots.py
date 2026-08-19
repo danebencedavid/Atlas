@@ -36,6 +36,15 @@ PLOT_CONFIG = {
 }
 
 
+FIGURE_ATTRIBUTION_HTML = (
+    '<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#7b7a77;'
+    'padding:4px 10px 8px">Weather data from '
+    '<a href="https://open-meteo.com" rel="noopener" style="color:#3f72a4">Open-Meteo.com</a>, '
+    'licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" '
+    'style="color:#3f72a4">CC BY 4.0</a>; modified by Atlas.</div>'
+)
+
+
 def _prepare(frame: pd.DataFrame, timezone_name: str) -> pd.DataFrame:
     prepared = frame.copy()
     prepared["local_time"] = pd.to_datetime(prepared["time"], utc=True).dt.tz_convert(timezone_name)
@@ -71,6 +80,15 @@ def _save(fig: go.Figure, path: Path) -> Path:
         )
     fig.update_layout(**layout_updates)
     fig.write_html(path, include_plotlyjs="cdn", full_html=True, config=PLOT_CONFIG)
+    # Each figure is its own document, embedded by iframe. CC BY asks for the link
+    # next to where the data is displayed, so the figure carries it rather than
+    # relying on the footer of whichever page happens to embed it.
+    document = path.read_text(encoding="utf-8")
+    if FIGURE_ATTRIBUTION_HTML not in document:
+        path.write_text(
+            document.replace("</body>", f"{FIGURE_ATTRIBUTION_HTML}</body>", 1),
+            encoding="utf-8",
+        )
     return path
 
 

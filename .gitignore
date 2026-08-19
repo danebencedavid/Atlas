@@ -37,3 +37,11 @@ style-lab-report.html
 
 # Local Claude Code permissions, specific to one machine.
 .claude/settings.local.json
+
+# Credentials. Never commit any of these; an accident here cannot be undone
+# once pushed.
+.env
+.env.*
+*.pem
+.cdsapirc
+*token*
