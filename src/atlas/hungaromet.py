@@ -7,7 +7,7 @@ import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -68,6 +68,16 @@ def _request_bytes(url: str, retries: int = 4, backoff: float = 1.7) -> bytes:
             if attempt < retries - 1:
                 time.sleep(backoff**attempt)
     raise RuntimeError(f"Failed to fetch {url} after {retries} attempts: {last_error}")
+
+
+def _rolling_cache_path(config: AtlasConfig, resource: str, retrieved_on: date) -> Path:
+    """Cache path for a rolling resource, keyed by identity and retrieval date.
+
+    A rolling file at a fixed URL changes content without changing address, so
+    the key has to carry when it was fetched. Anything derived from the caller's
+    requested period would let two callers disagree about what the same URL says.
+    """
+    return config.outputs.data_dir / "raw" / "hungaromet" / f"{resource}_{retrieved_on.isoformat()}.zip"
 
 
 def _cached_bytes(url: str, path: Path, refresh: bool) -> bytes:
@@ -140,11 +150,12 @@ def fetch_station_observations(
         return StationObservations(
             pd.DataFrame(), station.station_id, station.station_name, ["HungaroMet ingestion is disabled."]
         )
-    cache = (
-        config.outputs.data_dir
-        / "raw"
-        / "hungaromet"
-        / f"station_{station.station_id}_{start.year}.zip"
+    # Keyed by the resource and when it was retrieved, never by the requested
+    # period. The URL is one rolling "recent" file with no year in it, so keying on
+    # start.year filed the same resource under several names holding different
+    # vintages, and the period asked for silently chose which vintage came back.
+    cache = _rolling_cache_path(
+        config, f"station_{station.station_id}_recent", datetime.now(timezone.utc).date()
     )
     url = STATION_URL.format(station_id=station.station_id)
     try:
@@ -184,9 +195,6 @@ def fetch_station_history(
         return StationObservations(
             pd.DataFrame(), station.station_id, station.station_name, ["HungaroMet ingestion is disabled."]
         )
-    cache = (
-        config.outputs.data_dir / "raw" / "hungaromet" / f"station_{station.station_id}_history.zip"
-    )
     index_url = STATION_HISTORY_INDEX_URL
     try:
         listing = _request_bytes(index_url).decode("utf-8", errors="replace")
@@ -194,6 +202,9 @@ def fetch_station_history(
         names = sorted(set(re.findall(pattern, listing)))
         if not names:
             raise ValueError(f"No historical archive was listed for station {station.station_id}.")
+        # Keyed by the resolved filename, which carries its own date range, so a
+        # republished archive is a new key rather than a stale hit.
+        cache = config.outputs.data_dir / "raw" / "hungaromet" / names[-1]
         frame = _parse_station_csv(_zip_text(_cached_bytes(index_url + names[-1], cache, refresh)))
         notes = [
             f"HungaroMet station {station.station_id} historical archive {names[-1]}.",
