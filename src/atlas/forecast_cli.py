@@ -30,6 +30,7 @@ from atlas.forecast_archive import (
     write_archive,
 )
 from atlas.forecast_verification import (
+    IRRADIANCE_CAVEAT,
     IRRADIANCE_VARIABLES,
     STATION_EQUIVALENTS,
     build_truth_table,
@@ -142,6 +143,12 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
         "Stage 1 only: no correction is fitted and no value is adjusted."
     )
     lines.append("")
+    lines.append(
+        f"> **Irradiance ({', '.join(sorted(IRRADIANCE_VARIABLES))}) is {IRRADIANCE_CAVEAT}.** "
+        "ERA5 is model output. A correction trained toward it measures agreement between two "
+        "models, not skill against reality."
+    )
+    lines.append("")
     lines.append("## Attribution")
     lines.append("")
     lines.append(ATTRIBUTION)
@@ -238,8 +245,8 @@ def command_verify(config: AtlasConfig, args: argparse.Namespace) -> None:
         labelled = clear_sky_index(irradiance, config)
         labelled = labelled[labelled["sky_regime"].notna()]
         lines.append(
-            "Truth for irradiance is ERA5: the HungaroMet 10-minute export carries "
-            "no radiation channel."
+            f"All rows in this table are {IRRADIANCE_CAVEAT}. The HungaroMet 10-minute "
+            "export carries no radiation channel, so no measured irradiance is available here."
         )
         lines.append("")
         lines.append(_table(score(labelled, ["variable", "lead_time_hours", "sky_regime"])))

@@ -44,6 +44,11 @@ ERA5_EQUIVALENTS: dict[str, str] = {
     "cloud_cover": "cloud_cover",
 }
 
+IRRADIANCE_CAVEAT = (
+    "verified against ERA5 reanalysis, not observations; not validated against "
+    "measured irradiance"
+)
+
 # Irradiance is never verified against the station: HungaroMet's 10-minute export
 # carries no radiation channel, so ERA5 is the only available truth for it.
 IRRADIANCE_VARIABLES = {"shortwave_radiation", "direct_radiation", "diffuse_radiation"}
