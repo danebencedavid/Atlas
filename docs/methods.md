@@ -14,6 +14,19 @@ transitions. The publication requires at least 95% hourly coverage from the
 continuous Open-Meteo series and steps backward within a seven-day lag limit if
 the newest archive is incomplete.
 
+The observational inputs carry their own thresholds alongside that gridded
+check, because a complete grid says nothing about whether the station, radar or
+lightning archives answered. Station coverage is gated per local day, radar
+against the roughly 71 hours its archive retains rather than against the full
+window, and lightning on whether the archive responded at all, so a failed fetch
+is never published as zero strikes. The build also compares the newest
+observation actually retrieved against the window end and refuses to publish if
+it falls short; the schedule only makes that assertion likely to pass, since the
+provider controls when it regenerates its export.
+
+Editions published before those checks existed are listed in
+[errata.md](errata.md). They are annotated rather than regenerated.
+
 A separate seven-day diary preserves the transition into the active period.
 Daily public editions are copied to `reports/daily/YYYY-MM-DD/`; complete expert
 editions are copied to `reports/periods/YYYY-MM-DD_YYYY-MM-DD/` every three days.
