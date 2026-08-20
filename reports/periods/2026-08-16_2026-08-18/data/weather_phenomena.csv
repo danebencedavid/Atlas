@@ -1,0 +1,11 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-08-16 01:00:00+00:00,2026-08-16 04:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.2 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-16 10:00:00+00:00,2026-08-16 18:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 33.2 C.,0.92,HungaroMet station 64711
+2026-08-17 05:00:00+00:00,2026-08-17 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.4 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-17 09:00:00+00:00,2026-08-17 10:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 30.0 C.,0.92,HungaroMet station 64711
+2026-08-17 11:00:00+00:00,2026-08-17 17:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 32.8 C.,0.92,HungaroMet station 64711
+2026-08-18 01:00:00+00:00,2026-08-18 02:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +1.9 hPa, temperature -4.7 C, wind shifted 50 degrees, and 3-hour precipitation was 2.0 mm.",0.88,Objective compound surface-change detector
+2026-08-18 12:00:00+00:00,2026-08-18 13:00:00+00:00,Thunderstorm,1 LINET event(s) with radar reflectivity reaching 51.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-08-18 14:00:00+00:00,2026-08-18 15:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed -1.8 hPa, temperature +2.6 C, wind shifted 46 degrees, and 3-hour precipitation was 0.0 mm.",0.79,Objective compound surface-change detector
+2026-08-18 14:00:00+00:00,2026-08-18 16:00:00+00:00,Thunderstorm,41 LINET event(s) with radar reflectivity reaching 60.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-08-18 17:00:00+00:00,2026-08-18 18:00:00+00:00,Thunderstorm,7 LINET event(s) with radar reflectivity reaching 54.5 dBZ.,0.96,HungaroMet LINET and composite radar
