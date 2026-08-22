@@ -16,9 +16,16 @@ dependencies = [
   "metpy>=1.6",
   "pvlib>=0.11",
   "PyYAML>=6.0",
-  "pyarrow>=15.0",
+  # Floored at the version CI resolves to, not at the oldest that imports. CI
+  # writes the forecast archive with pyarrow 25 and a local 19.0.0 could not read
+  # it back: "Repetition level histogram size mismatch". The archive is the one
+  # store that must survive a version gap between the writer and the reader.
+  "pyarrow>=25.0",
   "requests>=2.31",
   "scipy>=1.11",
+  # Used by atlas.forecast_mos. It had been running undeclared, resolved only
+  # because it happened to be present in the development interpreter.
+  "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]

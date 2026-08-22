@@ -161,8 +161,11 @@ class ForecastArchiveConfig:
     enabled: bool = True
     start_date: str = "2024-01-22"
     lead_days: list[int] = field(default_factory=lambda: [1, 2, 3])
+    # ``best_match`` is deliberately absent: see EXCLUDED_MODELS in
+    # atlas.forecast_archive for why it cannot be scored. Historical rows for it
+    # remain in the parquet files and are filtered out on read.
     models: list[str] = field(
-        default_factory=lambda: ["best_match", "ecmwf_ifs025", "icon_seamless"]
+        default_factory=lambda: ["ecmwf_ifs025", "icon_seamless"]
     )
     variables: list[str] = field(
         default_factory=lambda: [

@@ -58,13 +58,42 @@ def test_export_parses_into_hourly_utc_irradiance():
     frame = parse_cams_csv(EXPORT)
     assert list(frame.columns) == ["time", "shortwave_radiation", "direct_radiation", "diffuse_radiation"]
     assert len(frame) == 3
-    # The interval start is the valid hour, and everything internal is UTC.
+    # The interval end is the valid hour, and everything internal is UTC.
     assert str(frame["time"].dt.tz) == "UTC"
-    assert frame["time"].iloc[1] == pd.Timestamp("2024-06-01T10:00:00Z")
+    assert frame["time"].iloc[1] == pd.Timestamp("2024-06-01T11:00:00Z")
     # GHI, BHI and DHI map to the archive's shortwave, direct and diffuse.
     assert frame["shortwave_radiation"].iloc[1] == pytest.approx(650.0)
     assert frame["direct_radiation"].iloc[1] == pytest.approx(540.0)
     assert frame["diffuse_radiation"].iloc[1] == pytest.approx(110.0)
+
+
+# Two rows, one hour apart, with values that cannot be confused for each other.
+# The whole point is that a one-hour error here is invisible in every aggregate
+# the report prints, so it has to be pinned at the parser.
+INTERVAL_PIN = """# Observation period;TOA;Clear sky GHI;Clear sky BHI;Clear sky DHI;Clear sky BNI;GHI;BHI;DHI;BNI;Reliability
+2024-06-01T04:00:00.0/2024-06-01T05:00:00.0;362.8;219.4;150.4;69.0;539.3;111.0;222.0;333.0;444.0;1.0
+2024-06-01T05:00:00.0/2024-06-01T06:00:00.0;576.8;393.4;300.7;92.7;687.1;555.0;666.0;777.0;888.0;1.0
+"""
+
+
+def test_the_valid_time_is_the_interval_end_not_its_start():
+    """CAMS integrates over [start, end) and labels the row by start.
+
+    Open-Meteo labels hourly radiation by the end of the hour it averages over,
+    as the preceding-hour mean. Reading the start therefore put every irradiance
+    pair one hour out of step: it inflated shortwave MAE at 24 h from 32 to 55
+    W/m^2, and left a clean one-hour shift in the residual for any correction to
+    find and remove, which would have read as skill. Nothing in a seasonal or
+    diurnal average reveals a uniform shift, so this is pinned here or nowhere.
+    """
+    frame = parse_cams_csv(INTERVAL_PIN)
+    assert len(frame) == 2
+    # 05:00, the end of the 04:00-05:00 integration, not 04:00.
+    assert frame["time"].iloc[0] == pd.Timestamp("2024-06-01T05:00:00Z")
+    assert frame["time"].iloc[1] == pd.Timestamp("2024-06-01T06:00:00Z")
+    # The values must travel with their own interval, not slide onto the next.
+    assert frame["shortwave_radiation"].iloc[0] == pytest.approx(111.0)
+    assert frame["shortwave_radiation"].iloc[1] == pytest.approx(555.0)
 
 
 def test_a_malformed_export_is_rejected_rather_than_half_parsed():

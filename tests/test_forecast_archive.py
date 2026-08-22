@@ -183,7 +183,7 @@ def test_archive_round_trips_and_partitions_by_month(tmp_path):
         {
             "valid_time_utc": times,
             "lead_time_hours": [24, 24],
-            "model": ["best_match", "best_match"],
+            "model": ["icon_seamless", "icon_seamless"],
             "variable": ["temperature_2m", "temperature_2m"],
             "value": [10.0, 11.0],
             "retrieved_at": pd.to_datetime(["2026-08-02T00:00Z"] * 2, utc=True),
@@ -200,7 +200,7 @@ def test_writing_is_append_only_and_repeat_writes_do_not_duplicate(tmp_path):
         {
             "valid_time_utc": pd.to_datetime(["2026-08-01T00:00Z"], utc=True),
             "lead_time_hours": [24],
-            "model": ["best_match"],
+            "model": ["icon_seamless"],
             "variable": ["temperature_2m"],
             "value": [10.0],
             "retrieved_at": pd.to_datetime(["2026-08-02T00:00Z"], utc=True),
@@ -235,6 +235,36 @@ def test_availability_report_counts_rows_per_variable_lead_and_model(tmp_path):
     report = availability_report(frame)
     assert len(report) == 3
     assert set(report["rows"]) == {1}
+
+
+def test_best_match_stays_on_disk_but_never_reaches_a_score(tmp_path):
+    """The archive keeps it; every reader drops it.
+
+    ``best_match`` is Open-Meteo's per-hour choice among several models, so the
+    series can switch physics between hours and between leads. In this archive it
+    scores better at 72 h than at 24 h, which no forecast does. Deleting the rows
+    would rewrite an append-only store to match a later opinion, so the exclusion
+    lives at the read instead.
+    """
+    config = _config(tmp_path)
+    frame = pd.DataFrame(
+        {
+            "valid_time_utc": pd.to_datetime(["2026-08-01T00:00Z"] * 2, utc=True),
+            "lead_time_hours": [24, 24],
+            "model": ["best_match", "icon_seamless"],
+            "variable": ["temperature_2m", "temperature_2m"],
+            "value": [10.0, 11.0],
+            "retrieved_at": pd.to_datetime(["2026-08-02T00:00Z"] * 2, utc=True),
+        }
+    )
+    write_archive(config, frame, "backfill")
+
+    scored = read_archive(config, "backfill")
+    assert list(scored["model"]) == ["icon_seamless"]
+
+    # Still on disk, and still reachable when the record itself is the question.
+    everything = read_archive(config, "backfill", include_excluded_models=True)
+    assert set(everything["model"]) == {"best_match", "icon_seamless"}
 
 
 def test_empty_archive_reads_back_with_the_schema(tmp_path):

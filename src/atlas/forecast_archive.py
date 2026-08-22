@@ -62,6 +62,19 @@ SCHEMA: dict[str, str] = {
 # Requested in metres per second so the archive matches the rest of the repo.
 WIND_VARIABLES = {"wind_speed_10m", "wind_gusts_10m"}
 
+# Excluded from every read, kept on disk. ``best_match`` is not a model: it is
+# Open-Meteo's per-hour choice among several, so a single "best_match" series can
+# change its underlying physics between one hour and the next and between one
+# lead and the next. That shows up in the archive as error falling with lead time
+# -- temperature MAE 1.730 at 24 h against 1.422 at 72 h -- which is not a
+# property any forecast has. Scores computed on it are uninterpretable and it
+# would poison a multi-model feature set.
+#
+# The rows stay in the parquet files. They are the record of what was retrieved,
+# and rewriting an append-only archive to reflect a later opinion is exactly what
+# this store exists to prevent.
+EXCLUDED_MODELS = frozenset({"best_match"})
+
 
 @dataclass
 class CallBudget:
@@ -389,8 +402,16 @@ def write_archive(config: AtlasConfig, frame: pd.DataFrame, kind: str) -> list[P
     return written
 
 
-def read_archive(config: AtlasConfig, kind: str | None = None) -> pd.DataFrame:
-    """Read the stored archive back, optionally limited to one collector."""
+def read_archive(
+    config: AtlasConfig,
+    kind: str | None = None,
+    include_excluded_models: bool = False,
+) -> pd.DataFrame:
+    """Read the stored archive back, optionally limited to one collector.
+
+    ``EXCLUDED_MODELS`` is dropped here rather than on disk, so the archive keeps
+    the full record of what was retrieved while nothing downstream scores it.
+    """
     root = config.forecast_archive.archive_dir
     if not root.exists():
         return _empty_frame()
@@ -401,7 +422,12 @@ def read_archive(config: AtlasConfig, kind: str | None = None) -> pd.DataFrame:
             frames.append(pd.read_parquet(path))
     if not frames:
         return _empty_frame()
-    return _conform(pd.concat(frames, ignore_index=True))
+    frame = pd.concat(frames, ignore_index=True)
+    if not include_excluded_models:
+        frame = frame[~frame["model"].isin(EXCLUDED_MODELS)]
+    if frame.empty:
+        return _empty_frame()
+    return _conform(frame)
 
 
 def availability_report(frame: pd.DataFrame) -> pd.DataFrame:

@@ -187,6 +187,14 @@ def parse_cams_csv(text: str) -> pd.DataFrame:
     The export is semicolon-separated with a commented header, and its period
     column is an ISO interval. CAMS reports energy over the interval in Wh/m^2,
     which for hourly steps is numerically the mean power in W/m^2.
+
+    The interval *end* is the valid time. CAMS labels each row by the start of
+    the hour it integrates over; Open-Meteo labels hourly radiation by the end of
+    the hour it averages over, as the preceding-hour mean. Taking the start put
+    every irradiance pair one hour out of step, which inflated shortwave MAE at
+    24 h from 32 to 55 W/m^2 and left a one-hour shift sitting in the residual
+    for any correction to discover and remove. The offset survives averaging, so
+    nothing in a seasonal or diurnal summary reveals it.
     """
     lines = [line for line in text.splitlines() if line.strip()]
     header_index = next(
@@ -200,9 +208,10 @@ def parse_cams_csv(text: str) -> pd.DataFrame:
     frame.columns = [column.strip() for column in frame.columns]
 
     period = frame["Observation period"].astype(str)
-    # The interval start is the valid hour; everything internal stays UTC.
-    starts = pd.to_datetime(period.str.split("/").str[0], utc=True, errors="coerce")
-    output = pd.DataFrame({"time": starts})
+    # The interval end is the valid hour, matching Open-Meteo's preceding-hour
+    # convention. Everything internal stays UTC.
+    ends = pd.to_datetime(period.str.split("/").str[1], utc=True, errors="coerce")
+    output = pd.DataFrame({"time": ends})
     for source, target in CAMS_COLUMNS.items():
         if source in frame:
             output[target] = pd.to_numeric(frame[source], errors="coerce")
