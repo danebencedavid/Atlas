@@ -40,6 +40,8 @@ from atlas.radar_cells import analyse_radar_cells
 from atlas.quality import (
     DataQualityReport,
     ObservationFreshnessError,
+    PublicationIntegrityError,
+    assert_required_input_coverage,
     assert_observations_fresh,
     observation_shortfall_hours,
     validate_hourly_period,
@@ -73,6 +75,9 @@ def run_pipeline(
     archive_analysis: bool = True,
 ) -> Path:
     config = load_config(config_path)
+    # Read this before fetching or rendering anything. A corrupt status record is
+    # an unknown publication state, never evidence that nothing was withheld.
+    withheld_notices = [item.describe() for item in read_withheld(config)]
     quality_notes: list[str] = []
     if period_start is None:
         start, end = last_complete_period(
@@ -186,28 +191,37 @@ def run_pipeline(
                 "reported as incomplete rather than presented as whole."
             )
 
-    # The load-bearing freshness guarantee. The build schedule only makes this
-    # likely to pass: the provider controls when its file regenerates and may change
-    # that without notice, so the assertion is on the data actually retrieved.
-    if not station.frame.empty:
-        try:
-            assert_observations_fresh(
-                station.frame["time"].max(),
-                start,
-                end,
-                config.location.timezone,
-                label="station",
-                tolerance_hours=config.operations.maximum_observation_shortfall_hours,
+    # Station values support headline measurements and the event ledger, so both
+    # completeness and recency are hard publication gates. Optional remote-sensing
+    # inputs remain publishable when their absence is stated explicitly.
+    latest_station = (
+        station.frame["time"].max()
+        if not station.frame.empty and "time" in station.frame
+        else None
+    )
+    try:
+        assert_required_input_coverage(observational_coverage)
+        assert_observations_fresh(
+            latest_station,
+            start,
+            end,
+            config.location.timezone,
+            label="station",
+            tolerance_hours=config.operations.maximum_observation_shortfall_hours,
+        )
+    except (PublicationIntegrityError, ObservationFreshnessError) as exc:
+        # Refusing to publish is right, but silent refusal is not: the previous
+        # edition simply stays up with nothing saying a newer one was rejected.
+        # The record survives the runner and the next published edition carries it.
+        shortfall = (
+            observation_shortfall_hours(
+                latest_station, start, end, config.location.timezone
             )
-        except ObservationFreshnessError as exc:
-            # Refusing to publish is right, but silent refusal is not: the previous
-            # edition simply stays up with nothing saying a newer one was rejected.
-            # The record survives the runner and the next published edition carries it.
-            shortfall = observation_shortfall_hours(
-                station.frame["time"].max(), start, end, config.location.timezone
-            )
-            record_withheld(config, start, end, str(exc), shortfall_hours=shortfall)
-            raise
+            if latest_station is not None and not pd.isna(latest_station)
+            else None
+        )
+        record_withheld(config, start, end, str(exc), shortfall_hours=shortfall)
+        raise
 
     frontal_source = station_hourly(station) if not station.frame.empty else current
     fronts = detect_fronts(frontal_source)
@@ -568,7 +582,7 @@ def run_pipeline(
         air_mass_origin=air_mass_origin,
         radar_cells=radar_cells,
         observational_coverage=observational_coverage,
-        withheld_notices=[item.describe() for item in read_withheld(config)],
+        withheld_notices=withheld_notices,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,
@@ -611,11 +625,12 @@ def run_pipeline(
             figure_paths["daily_climate_reference"].name,
         },
     )
-    # The notice has been published, so the pending record can be retired.
-    clear_withheld(config)
     if archive_analysis:
         archive_site(site_index.parent, archive_dir)
     build_report_archive(config, site_index.parent, config.outputs.reports_dir)
+    # Retire the pending record only after every deployable page, archive and
+    # carried notice has been built successfully.
+    clear_withheld(config)
     return site_index
 
 

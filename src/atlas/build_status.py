@@ -24,6 +24,10 @@ from atlas.config import AtlasConfig
 STATUS_FILENAME = "withheld.json"
 
 
+class WithheldStatusError(RuntimeError):
+    """Raised when the publication-status record cannot be trusted."""
+
+
 @dataclass(frozen=True)
 class WithheldBuild:
     attempted_at: str
@@ -31,6 +35,23 @@ class WithheldBuild:
     period_end: str
     reason: str
     shortfall_hours: float | None = None
+
+    def __post_init__(self) -> None:
+        for field_name in ("attempted_at", "period_start", "period_end", "reason"):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise TypeError(f"{field_name} must be a non-empty string")
+        attempted = datetime.fromisoformat(self.attempted_at.replace("Z", "+00:00"))
+        if attempted.tzinfo is None:
+            raise ValueError("attempted_at must include a timezone")
+        period_start = date.fromisoformat(self.period_start)
+        period_end = date.fromisoformat(self.period_end)
+        if period_end < period_start:
+            raise ValueError("period_end must not precede period_start")
+        if self.shortfall_hours is not None and not isinstance(
+            self.shortfall_hours, (int, float)
+        ):
+            raise TypeError("shortfall_hours must be numeric or null")
 
     def describe(self) -> str:
         window = f"{self.period_start} to {self.period_end}"
@@ -53,9 +74,14 @@ def read_withheld(config: AtlasConfig) -> list[WithheldBuild]:
         return []
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return []
-    return [WithheldBuild(**entry) for entry in payload.get("withheld", [])]
+        entries = payload["withheld"]
+        if not isinstance(entries, list):
+            raise TypeError("'withheld' must be a list")
+        return [WithheldBuild(**entry) for entry in entries]
+    except (json.JSONDecodeError, KeyError, OSError, TypeError, ValueError) as exc:
+        raise WithheldStatusError(
+            f"Cannot verify the withheld-build record at {path}; publication is blocked."
+        ) from exc
 
 
 def record_withheld(
@@ -79,15 +105,22 @@ def record_withheld(
     kept = [item for item in existing if (item.period_start, item.period_end) != (entry.period_start, entry.period_end)]
     path = status_path(config)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps({"withheld": [asdict(item) for item in [*kept, entry]]}, indent=2),
+    _write_status(path, [*kept, entry])
+    return entry
+
+
+def _write_status(path: Path, entries: list[WithheldBuild]) -> None:
+    """Replace the status record atomically so interruption leaves the old truth."""
+    temporary = path.with_suffix(f"{path.suffix}.tmp")
+    temporary.write_text(
+        json.dumps({"withheld": [asdict(item) for item in entries]}, indent=2),
         encoding="utf-8",
     )
-    return entry
+    temporary.replace(path)
 
 
 def clear_withheld(config: AtlasConfig) -> None:
     """Drop the record once an edition publishes and carries the notice."""
     path = status_path(config)
     if path.is_file():
-        path.write_text(json.dumps({"withheld": []}, indent=2), encoding="utf-8")
+        _write_status(path, [])

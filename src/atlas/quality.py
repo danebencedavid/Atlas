@@ -105,16 +105,50 @@ class ObservationFreshnessError(RuntimeError):
     """Raised when retrieved observations stop short of the window end."""
 
 
+class PublicationIntegrityError(RuntimeError):
+    """Raised when a required input cannot support a complete publication."""
+
+
+def assert_required_input_coverage(
+    coverages: list[InputCoverage],
+    required: tuple[str, ...] = ("station",),
+) -> None:
+    """Fail closed when a required source misses its completeness threshold.
+
+    Radar, lightning and the other contextual feeds remain optional: their
+    absence is disclosed in the edition instead of being converted into a
+    reassuring zero. The station ledger is different because its measurements
+    support headline values and the objective event record.
+    """
+    by_name = {coverage.name: coverage for coverage in coverages}
+    failures: list[str] = []
+    for name in required:
+        coverage = by_name.get(name)
+        if coverage is None:
+            failures.append(f"Required {name} coverage was not evaluated.")
+        elif not coverage.ok:
+            detail = " ".join(note.strip() for note in coverage.notes if note.strip())
+            failures.append(detail or f"Required {name} coverage did not pass.")
+    if failures:
+        raise PublicationIntegrityError(" ".join(failures))
+
+
 def _per_day_coverage(
     times: pd.Series,
     start: date,
     end: date,
     timezone_name: str,
-    per_day_expected: int,
+    interval_minutes: int,
 ) -> pd.DataFrame:
     """Coverage for each local day, so a thin trailing day cannot hide in an average."""
     days = pd.date_range(start, end, freq="D")
     counts = {day.date(): 0 for day in days}
+    expected = {}
+    for day in counts:
+        day_start, day_end = local_period_to_utc_bounds(day, day, timezone_name)
+        expected[day] = int(
+            (day_end - day_start).total_seconds() / (interval_minutes * 60)
+        )
     if len(times):
         local = pd.to_datetime(times, utc=True).dt.tz_convert(timezone_name).dt.date
         for day, count in local.value_counts().items():
@@ -124,7 +158,7 @@ def _per_day_coverage(
         {
             "local_day": list(counts),
             "observed": list(counts.values()),
-            "expected": per_day_expected,
+            "expected": [expected[day] for day in counts],
         }
     )
     frame["coverage"] = frame["observed"] / frame["expected"]
@@ -142,34 +176,45 @@ def validate_station_period(
     """Gate the station record, per day as well as in total."""
     utc_start, utc_end = local_period_to_utc_bounds(start, end, timezone_name)
     expected = int((utc_end - utc_start).total_seconds() / (interval_minutes * 60))
-    per_day_expected = int(24 * 60 / interval_minutes)
     frame = getattr(station, "frame", pd.DataFrame())
     available = not frame.empty
     times = frame["time"] if available and "time" in frame else pd.Series(dtype="datetime64[ns, UTC]")
+    times = pd.to_datetime(times, utc=True).drop_duplicates()
+    times = times[(times >= utc_start) & (times < utc_end)]
     observed = int(len(times))
-    per_day = _per_day_coverage(times, start, end, timezone_name, per_day_expected)
+    available = observed > 0
+    per_day = _per_day_coverage(times, start, end, timezone_name, interval_minutes)
 
     notes: list[str] = []
     coverage = observed / expected if expected else 0.0
     if not available:
         notes.append("Station observations were unavailable for this period.")
-    elif coverage < minimum_coverage:
+    else:
         thin = per_day[per_day["coverage"] < minimum_coverage]
-        notes.append(
-            f"Station coverage {observed}/{expected} ({coverage:.0%}) is below the "
-            f"{minimum_coverage:.0%} threshold."
-        )
+        if coverage < minimum_coverage:
+            notes.append(
+                f"Station coverage {observed}/{expected} ({coverage:.0%}) is below the "
+                f"{minimum_coverage:.0%} threshold."
+            )
+        if not thin.empty:
+            notes.append(
+                f"{len(thin)} local day(s) are below the {minimum_coverage:.0%} "
+                "station threshold:"
+            )
         for row in thin.itertuples():
             notes.append(
                 f"  {row.local_day}: {row.observed}/{row.expected} ({row.coverage:.0%})."
             )
+    every_day_ok = bool(len(per_day)) and bool(
+        (per_day["coverage"] >= minimum_coverage).all()
+    )
     return InputCoverage(
         name="station",
         available=available,
         observed=observed,
         expected=expected,
         threshold=minimum_coverage,
-        ok=available and coverage >= minimum_coverage,
+        ok=available and coverage >= minimum_coverage and every_day_ok,
         per_day=per_day,
         structural_note=None,
         notes=notes,
@@ -205,7 +250,7 @@ def validate_radar_period(
     times = pd.to_datetime(times, utc=True) if len(times) else pd.Series(dtype="datetime64[ns, UTC]")
     observed = int(len(times))
     available = observed > 0
-    per_day = _per_day_coverage(times, start, end, timezone_name, int(24 * 60 / interval_minutes))
+    per_day = _per_day_coverage(times, start, end, timezone_name, interval_minutes)
 
     structural_note = None
     if expected < window_frames:

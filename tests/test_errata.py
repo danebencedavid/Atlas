@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from atlas.errata import MARKER, annotate_edition, measure_edition
+from atlas.errata import (
+    MARKER,
+    annotate_daily_from_periods,
+    annotate_edition,
+    measure_edition,
+)
 
 PAGE = (
     "<!doctype html><html><body><div class='app-shell'>"
@@ -79,3 +84,24 @@ def test_an_edition_without_observations_is_skipped(tmp_path):
     (directory / "page0.html").write_text(PAGE, encoding="utf-8")
     assert measure_edition(directory) is None
     assert annotate_edition(directory, date(2026, 8, 19)) == 0
+
+
+def test_daily_edition_inherits_reproducible_erratum_from_its_period(tmp_path):
+    periods = tmp_path / "periods"
+    daily = tmp_path / "daily"
+    _edition(periods, "2026-08-14_2026-08-16", "2026-08-15 22:00")
+    daily_page = daily / "2026-08-16"
+    daily_page.mkdir(parents=True)
+    (daily_page / "index.html").write_text(PAGE, encoding="utf-8")
+    unaffected = daily / "2026-08-15"
+    unaffected.mkdir()
+    (unaffected / "index.html").write_text(PAGE, encoding="utf-8")
+
+    result = annotate_daily_from_periods(daily, periods, date(2026, 8, 19))
+
+    assert result == {"2026-08-16": 1}
+    corrected = (daily_page / "index.html").read_text(encoding="utf-8")
+    assert MARKER in corrected
+    assert "288/432" in corrected
+    assert "0/144" in corrected
+    assert MARKER not in (unaffected / "index.html").read_text(encoding="utf-8")

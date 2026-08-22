@@ -22,6 +22,7 @@ from atlas.site import archive_public_site
 from atlas.site import archive_site
 from atlas.site import build_report_archive
 from atlas.site import build_site
+from atlas.site import collect_weather_event_index
 from atlas.synoptic import SynopticArchive
 
 
@@ -210,6 +211,14 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "<iframe" not in html
     report_html = (target.parent / "report.html").read_text(encoding="utf-8")
     assert "<iframe" in report_html
+    assert 'loading="lazy" fetchpriority="low"' in report_html
+    assert "Open this interactive figure in a separate page" in report_html
+    assert 'class="skip-link" href="#main-content"' in report_html
+    assert '<main id="main-content" tabindex="-1">' in report_html
+    assert 'aria-controls="site-navigation" aria-expanded="false"' in report_html
+    assert "prefers-reduced-motion: reduce" in report_html
+    assert "Hungarian Meteorological Service (HungaroMet)" in report_html
+    assert "Contains modified" in report_html
     assert "Yesterday Hour By Hour" in report_html
     assert (target.parent / "weather.html").exists()
     assert not (target.parent / "assets" / "site").exists()
@@ -344,8 +353,10 @@ def test_archive_site_copies_latest_dashboard_assets_and_data(tmp_path: Path):
     (site_dir / "data").mkdir()
     (site_dir / "index.html").write_text("<html>Atlas</html>", encoding="utf-8")
     (site_dir / "weather.html").write_text("<html>Weather</html>", encoding="utf-8")
+    (site_dir / "event-atlas.html").write_text("cross-edition history", encoding="utf-8")
     (site_dir / "assets" / "meteogram.html").write_text("plot", encoding="utf-8")
     (site_dir / "data" / "summary.json").write_text("{}", encoding="utf-8")
+    (site_dir / "data" / "event_atlas.json").write_text("{}", encoding="utf-8")
     (site_dir / "archive").mkdir()
     (site_dir / "archive" / "index.html").write_text("old archive", encoding="utf-8")
 
@@ -354,8 +365,10 @@ def test_archive_site_copies_latest_dashboard_assets_and_data(tmp_path: Path):
     assert archived_index.exists()
     assert (archived_index.parent / "assets" / "meteogram.html").exists()
     assert (archived_index.parent / "data" / "summary.json").exists()
+    assert not (archived_index.parent / "data" / "event_atlas.json").exists()
     assert (archived_index.parent / "weather.html").exists()
     assert not (archived_index.parent / "archive").exists()
+    assert not (archived_index.parent / "event-atlas.html").exists()
 
 
 def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
@@ -436,3 +449,78 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     assert 'class="app-shell"' in published_weekly
     assert 'class="archived-legacy-content"' in published_weekly
     assert "Weekly data" in published_weekly
+
+
+def _event_ledger(directory: Path, evidence: str, extra: bool = False) -> None:
+    data_dir = directory / "data"
+    data_dir.mkdir(parents=True)
+    (directory / "analysis").mkdir()
+    (directory / "analysis" / "storms-satellite.html").write_text(
+        "<html><body>evidence</body></html>", encoding="utf-8"
+    )
+    rows = [
+        {
+            "start_time": "2026-08-18T12:00:00+00:00",
+            "end_time": "2026-08-18T13:00:00+00:00",
+            "kind": "Thunderstorm",
+            "evidence": evidence,
+            "confidence": 0.96,
+            "source": "HungaroMet LINET and composite radar",
+        }
+    ]
+    if extra:
+        rows.append(
+            {
+                "start_time": "2026-08-17T05:00:00+00:00",
+                "end_time": "2026-08-17T06:00:00+00:00",
+                "kind": "Nocturnal low-level inversion",
+                "evidence": "A 1.4 C inversion was detected.",
+                "confidence": 0.66,
+                "source": "Open-Meteo historical-model pressure levels",
+            }
+        )
+    pd.DataFrame(rows).to_csv(data_dir / "weather_phenomena.csv", index=False)
+
+
+def test_weather_event_index_deduplicates_overlapping_periods_and_keeps_latest_evidence(tmp_path):
+    reports = tmp_path / "reports"
+    first = reports / "periods" / "2026-08-14_2026-08-16"
+    later = reports / "periods" / "2026-08-16_2026-08-18"
+    _event_ledger(first, "earlier copy")
+    _event_ledger(later, "later copy", extra=True)
+
+    events = collect_weather_event_index(reports)
+
+    assert len(events) == 2
+    thunderstorm = next(event for event in events if event["kind"] == "Thunderstorm")
+    assert thunderstorm["evidence"] == "later copy"
+    assert thunderstorm["source_type"] == "Observed"
+    assert thunderstorm["edition"] == later.name
+    assert thunderstorm["report_href"].endswith("analysis/storms-satellite.html")
+
+
+def test_archive_search_includes_weather_events_and_machine_readable_data(tmp_path):
+    reports = tmp_path / "reports"
+    _event_ledger(reports / "periods" / "2026-08-16_2026-08-18", "radar evidence")
+    config = AtlasConfig(
+        outputs=OutputConfig(site_dir=tmp_path / "site", reports_dir=reports)
+    )
+
+    page = build_report_archive(config, updated="2026-08-22 12:00 UTC")
+
+    document = page.read_text(encoding="utf-8")
+    assert "Weather Event Index" in document
+    assert 'id="archive-search"' in document
+    assert 'id="event-search"' not in document
+    assert 'id="archive-year"' not in document
+    assert 'role="status" aria-live="polite"' in document
+    assert 'aria-current="page"' in document
+    assert "radar evidence" in document
+    assert 'class="skip-link" href="#main-content"' in document
+    assert '<main id="main-content" tabindex="-1">' in document
+    assert '<th scope="col">When</th>' in document
+    assert "prefers-reduced-motion: reduce" in document
+    payload = json.loads(
+        (page.parent / "data" / "weather_event_index.json").read_text(encoding="utf-8")
+    )
+    assert len(payload["events"]) == 1

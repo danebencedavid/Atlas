@@ -4,7 +4,10 @@ import json
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from atlas.build_status import (
+    WithheldStatusError,
     clear_withheld,
     read_withheld,
     record_withheld,
@@ -65,9 +68,43 @@ def test_publishing_clears_the_pending_record(tmp_path):
     assert json.loads(status_path(config).read_text(encoding="utf-8")) == {"withheld": []}
 
 
-def test_a_corrupt_record_does_not_break_the_build(tmp_path):
+def test_a_corrupt_record_blocks_publication(tmp_path):
     config = _config(tmp_path)
     path = status_path(config)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{not json", encoding="utf-8")
-    assert read_withheld(config) == []
+    with pytest.raises(WithheldStatusError, match="publication is blocked"):
+        read_withheld(config)
+
+
+def test_a_schema_invalid_record_blocks_publication(tmp_path):
+    config = _config(tmp_path)
+    path = status_path(config)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('{"withheld": [{"period_start": "2026-08-14"}]}', encoding="utf-8")
+    with pytest.raises(WithheldStatusError, match="publication is blocked"):
+        read_withheld(config)
+
+
+def test_a_wrongly_typed_record_blocks_publication(tmp_path):
+    config = _config(tmp_path)
+    path = status_path(config)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "withheld": [
+                    {
+                        "attempted_at": "2026-08-22T12:00:00+00:00",
+                        "period_start": "2026-08-19",
+                        "period_end": "2026-08-21",
+                        "reason": "stale",
+                        "shortfall_hours": "unknown",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(WithheldStatusError, match="publication is blocked"):
+        read_withheld(config)

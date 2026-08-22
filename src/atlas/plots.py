@@ -13,6 +13,7 @@ from pvlib.location import Location
 from plotly.subplots import make_subplots
 
 from atlas.anomalies import Anomaly
+from atlas.attribution import SOURCE_ATTRIBUTION_HTML
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
@@ -37,11 +38,8 @@ PLOT_CONFIG = {
 
 
 FIGURE_ATTRIBUTION_HTML = (
-    '<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#7b7a77;'
-    'padding:4px 10px 8px">Weather data from '
-    '<a href="https://open-meteo.com" rel="noopener" style="color:#3f72a4">Open-Meteo.com</a>, '
-    'licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" '
-    'style="color:#3f72a4">CC BY 4.0</a>; modified by Atlas.</div>'
+    '<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#66645f;'
+    f'padding:4px 10px 8px">{SOURCE_ATTRIBUTION_HTML}</div>'
 )
 
 
@@ -1565,9 +1563,11 @@ def plot_satellite_diary(
 *{{box-sizing:border-box}} body{{margin:0;padding:18px;font-family:Inter,Segoe UI,Arial,sans-serif;color:#172033;background:#fff}}
 .toolbar{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}} select,button{{height:36px;border:1px solid #cfd7e3;background:#fff;color:#172033;padding:0 11px;font:inherit}} button{{cursor:pointer}} input[type=range]{{flex:1;min-width:240px}}
 .layout{{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:16px}} .image-wrap{{background:#0b0f17;min-height:540px;display:grid;place-items:center;overflow:hidden}} #satellite{{display:block;max-width:100%;max-height:620px;object-fit:contain}} .status{{padding:12px 0;color:#475467;font-size:14px}} #timeline{{height:560px}} .stamp{{font-weight:700;min-width:185px}} @media(max-width:800px){{.layout{{grid-template-columns:1fr}} .image-wrap{{min-height:380px}} #timeline{{height:420px}}}}
+*:focus-visible{{outline:3px solid #2563eb;outline-offset:3px}} @media(prefers-reduced-motion:reduce){{*,*::before,*::after{{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}}}
 </style></head><body>
-<div class="toolbar"><label for="product">Product</label><select id="product"></select><button id="play" type="button">Play</button><button id="pause" type="button">Pause</button><button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">-</button><button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button><button id="zoom-reset" type="button" title="Reset zoom" aria-label="Reset zoom">1:1</button><input id="frame" type="range" min="0" max="0" value="0"><span class="stamp" id="stamp"></span></div>
-<div class="layout"><div><div class="image-wrap"><img id="satellite" alt="HungaroMet Meteosat satellite product"></div><div class="status" id="status"></div></div><div id="timeline"></div></div>
+<div class="toolbar"><label for="product">Product</label><select id="product"></select><button id="play" type="button">Play</button><button id="pause" type="button">Pause</button><button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">-</button><button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button><button id="zoom-reset" type="button" title="Reset zoom" aria-label="Reset zoom">1:1</button><label for="frame">Frame</label><input id="frame" type="range" min="0" max="0" value="0"><span class="stamp" id="stamp"></span></div>
+<div class="layout"><div><div class="image-wrap"><img id="satellite" alt="HungaroMet Meteosat satellite product" decoding="async"></div><div class="status" id="status" role="status" aria-live="polite"></div></div><div id="timeline" role="img" aria-label="Synchronized radar and lightning event timeline"></div></div>
+<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#66645f;padding:4px 10px 8px">{SOURCE_ATTRIBUTION_HTML}</div>
 <script>
 const data={payload}; const product=document.getElementById('product'); const slider=document.getElementById('frame'); const image=document.getElementById('satellite'); const stamp=document.getElementById('stamp'); const status=document.getElementById('status'); let timer=null; let zoom=1;
 Object.keys(data.products).forEach(name=>{{const option=document.createElement('option');option.value=name;option.textContent=name;product.appendChild(option)}});

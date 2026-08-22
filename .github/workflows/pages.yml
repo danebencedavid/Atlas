@@ -111,8 +111,8 @@ jobs:
             {
               echo "## Edition withheld"
               echo ""
-              echo "The build refused to publish because observations fell short of the"
-              echo "reporting window. The previous edition remains deployed."
+              echo "The build refused to publish because a publication-integrity gate"
+              echo "failed. The previous edition remains deployed."
               echo ""
               echo '```json'
               cat reports/status/withheld.json
@@ -148,7 +148,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/daily reports/periods
+          git add reports/daily reports/periods reports/status
           if ! git diff --cached --quiet; then
             git commit -m "Archive Atlas rolling report [skip ci]"
             git pull --rebase origin "${GITHUB_REF_NAME}"

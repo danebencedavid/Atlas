@@ -23,6 +23,7 @@ import pandas as pd
 MARKER = "data-atlas-erratum"
 STATION_INTERVAL_MINUTES = 10
 DEFAULT_TIMEZONE = "Europe/Budapest"
+INCOMPLETE_STATION_ERRATUM_ISSUED = date(2026, 8, 19)
 
 # Products computed from the station record over the whole window, and therefore
 # computed over a window whose final day was largely unobserved.
@@ -106,6 +107,13 @@ def erratum_html(coverage: EditionCoverage, issued: date) -> str:
     )
 
 
+def _insert_erratum(text: str, banner: str) -> str | None:
+    main = re.search(r"<main(?:\s[^>]*)?>", text)
+    if main is None:
+        return None
+    return f"{text[:main.start()]}{banner}{text[main.start():]}"
+
+
 def annotate_edition(directory: Path, issued: date, timezone_name: str = DEFAULT_TIMEZONE) -> int:
     """Insert the erratum into every page of one edition. Idempotent."""
     coverage = measure_edition(directory, timezone_name)
@@ -123,15 +131,98 @@ def annotate_edition(directory: Path, issued: date, timezone_name: str = DEFAULT
                 text,
                 flags=re.S,
             )
-        if "<main>" not in text:
+        annotated = _insert_erratum(text, banner)
+        if annotated is None:
             continue
-        page.write_text(text.replace("<main>", f"{banner}<main>", 1), encoding="utf-8")
+        page.write_text(annotated, encoding="utf-8")
         touched += 1
     return touched
 
 
-def annotate_all(reports_dir: Path, issued: date, timezone_name: str = DEFAULT_TIMEZONE) -> dict[str, int]:
+def annotate_daily_edition(
+    directory: Path,
+    coverage: EditionCoverage,
+    issued: date,
+) -> int:
+    """Attach a period's reproducible erratum to its final-day publication.
+
+    Historical daily editions intentionally contain no copied data directory.
+    Their source period does, so the coverage is measured there and carried to
+    the daily pages instead of being guessed from the daily artefact.
+    """
+    try:
+        daily_date = date.fromisoformat(directory.name)
+    except ValueError:
+        return 0
+    if daily_date != coverage.end or not coverage.defective:
+        return 0
+    banner = erratum_html(coverage, issued)
+    touched = 0
+    for page in sorted(directory.rglob("*.html")):
+        text = page.read_text(encoding="utf-8", errors="replace")
+        if MARKER in text:
+            text = re.sub(
+                rf'<div class="edition-notice" role="note" {MARKER}=.*?</div>\s*(?=<main)',
+                "",
+                text,
+                flags=re.S,
+            )
+        annotated = _insert_erratum(text, banner)
+        if annotated is None:
+            continue
+        page.write_text(annotated, encoding="utf-8")
+        touched += 1
+    return touched
+
+
+def annotate_daily_from_periods(
+    daily_dir: Path,
+    periods_dir: Path,
+    issued: date = INCOMPLETE_STATION_ERRATUM_ISSUED,
+    timezone_name: str = DEFAULT_TIMEZONE,
+) -> dict[str, int]:
+    """Annotate final-day reports using measured coverage from saved periods."""
+    coverage_by_day: dict[date, EditionCoverage] = {}
+    if periods_dir.is_dir():
+        for period in sorted(periods_dir.iterdir()):
+            if not period.is_dir():
+                continue
+            coverage = measure_edition(period, timezone_name)
+            if coverage is not None and coverage.defective:
+                coverage_by_day[coverage.end] = coverage
+
     results: dict[str, int] = {}
+    if not daily_dir.is_dir():
+        return results
+    for directory in sorted(daily_dir.iterdir()):
+        if not directory.is_dir():
+            continue
+        try:
+            daily_date = date.fromisoformat(directory.name)
+        except ValueError:
+            continue
+        coverage = coverage_by_day.get(daily_date)
+        if coverage is None:
+            continue
+        touched = annotate_daily_edition(directory, coverage, issued)
+        if touched:
+            results[directory.name] = touched
+    return results
+
+
+def annotate_all(reports_dir: Path, issued: date, timezone_name: str = DEFAULT_TIMEZONE) -> dict[str, int]:
+    if (reports_dir / "periods").is_dir():
+        period_results = annotate_all(reports_dir / "periods", issued, timezone_name)
+        daily_results = annotate_daily_from_periods(
+            reports_dir / "daily", reports_dir / "periods", issued, timezone_name
+        )
+        return {
+            **{f"periods/{name}": count for name, count in period_results.items()},
+            **{f"daily/{name}": count for name, count in daily_results.items()},
+        }
+    results: dict[str, int] = {}
+    if not reports_dir.is_dir():
+        return results
     for child in sorted(reports_dir.iterdir()):
         if not child.is_dir():
             continue
@@ -145,17 +236,12 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Annotate editions with incomplete observations.")
-    parser.add_argument("--reports", default="reports/periods")
+    parser.add_argument("--reports", default="reports")
     parser.add_argument("--issued", default=date.today().isoformat())
     args = parser.parse_args()
     results = annotate_all(Path(args.reports), date.fromisoformat(args.issued))
     for edition, pages in results.items():
-        coverage = measure_edition(Path(args.reports) / edition)
-        print(
-            f"{edition}: annotated {pages} page(s); "
-            f"{coverage.observed}/{coverage.expected} ({coverage.coverage:.0%}), "
-            f"final day {coverage.final_day_coverage:.0%}"
-        )
+        print(f"{edition}: annotated {pages} page(s)")
     if not results:
         print("No edition required annotation.")
 

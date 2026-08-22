@@ -15,6 +15,8 @@ import pytest
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
 from atlas.quality import (
     ObservationFreshnessError,
+    PublicationIntegrityError,
+    assert_required_input_coverage,
     assert_observations_fresh,
     observation_shortfall_hours,
     validate_lightning_period,
@@ -65,6 +67,59 @@ def test_fully_observed_station_passes():
     assert coverage.ok
     assert coverage.observed == 432
     assert (coverage.per_day["observed"] == 144).all()
+
+
+def test_a_thin_middle_day_cannot_hide_inside_a_passing_aggregate():
+    station = _station(WINDOW_END)
+    local_day = station.frame["time"].dt.tz_convert(TZ).dt.date
+    middle_day = date(2026, 8, 15)
+    drop = station.frame.index[local_day == middle_day][:21]
+    station = StationObservations(
+        station.frame.drop(drop), station.station_id, station.station_name, station.notes
+    )
+
+    coverage = validate_station_period(station, START, END, TZ)
+
+    assert coverage.coverage == pytest.approx(411 / 432)
+    assert not coverage.ok
+    assert any("2026-08-15" in note for note in coverage.notes)
+    with pytest.raises(PublicationIntegrityError, match="2026-08-15"):
+        assert_required_input_coverage([coverage])
+
+
+def test_required_coverage_fails_if_the_station_check_is_missing():
+    with pytest.raises(PublicationIntegrityError, match="was not evaluated"):
+        assert_required_input_coverage([])
+
+
+def test_duplicate_station_rows_cannot_mask_a_missing_interval():
+    station = _station(WINDOW_END)
+    frame = station.frame.drop(index=100)
+    frame = pd.concat([frame, frame.iloc[[0]]], ignore_index=True)
+    station = StationObservations(frame, station.station_id, station.station_name, station.notes)
+
+    coverage = validate_station_period(station, START, END, TZ, minimum_coverage=1.0)
+
+    assert coverage.observed == 431
+    assert not coverage.ok
+
+
+def test_station_daily_expectation_respects_the_dst_clock_change():
+    dst_day = date(2026, 3, 29)
+    start = pd.Timestamp("2026-03-29 00:00", tz=TZ).tz_convert("UTC")
+    end = pd.Timestamp("2026-03-30 00:00", tz=TZ).tz_convert("UTC")
+    station = StationObservations(
+        pd.DataFrame({"time": pd.date_range(start, end, freq="10min", inclusive="left")}),
+        64711,
+        "Debrecen Airport",
+        [],
+    )
+
+    coverage = validate_station_period(station, dst_day, dst_day, TZ)
+
+    assert coverage.expected == 138
+    assert coverage.per_day.iloc[0]["expected"] == 138
+    assert coverage.ok
 
 
 def test_radar_missing_leading_frames_is_judged_against_what_is_retained():

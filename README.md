@@ -74,7 +74,8 @@ reports/periods/YYYY-MM-DD_YYYY-MM-DD/         versioned complete report
 site/index.html                                project overview and publication guide
 site/report.html                               latest daily public report
 site/analysis/                                 latest 72-hour expert analysis
-site/archive/                                  browsable saved-report ledger
+site/archive/                                  reports plus searchable weather-event index
+site/archive/data/weather_event_index.json     machine-readable de-duplicated events
 ```
 
 ## Main Commands
@@ -125,6 +126,11 @@ The **Meteorological Analysis** covers 72 hours:
   before physical renewable yields and measured Hungary-wide conditions.
 - **Methods & Evidence** records provenance, limitations, confidence, and direct
   downloads of every generated data product.
+
+The **Report Archive** includes a Weather Event Index. One search field covers
+saved report dates and the event ledgers from preserved 72-hour editions. Event
+detections repeated by overlapping rolling windows are de-duplicated, and each
+result links back to the edition that carries its evidence.
 
 All analytical plots are interactive Plotly documents with zoom, pan, hover,
 series selection, animation where appropriate, and image export. Each plot has
@@ -193,7 +199,7 @@ reports/weeks/           Preserved historical weekly editions
 site/index.html          Project home and publication guide
 site/report.html         Latest daily public overview
 site/analysis/           Latest rolling expert analysis
-site/archive/            Generated index and deployable copies of saved reports
+site/archive/            Saved reports and searchable weather-event evidence
 src/atlas/               Ingestion, diagnostics, plotting, site, and CLI code
 tests/                   Offline unit and report smoke tests
 ```

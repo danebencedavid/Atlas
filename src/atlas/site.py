@@ -19,6 +19,7 @@ from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex, PhysicalEnergy
+from atlas.errata import annotate_daily_from_periods
 from atlas.fronts import FrontAnalysis
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
 from atlas.kinematics import StormKinematics
@@ -34,18 +35,7 @@ from atlas.story import WeatherStory, build_weather_story
 from atlas.synoptic import SynopticArchive
 from atlas.trajectory import AirMassOrigin
 from atlas.verification import StationVerification
-
-
-# CC BY 4.0 requires credit, a link to the licence, and an indication that changes
-# were made. Open-Meteo additionally asks for a link next to any location its data
-# is displayed, so this rides in the footer of every rendered page rather than
-# sitting on a single methods page.
-OPEN_METEO_ATTRIBUTION_HTML = (
-    'Weather data from <a href="https://open-meteo.com" rel="noopener">Open-Meteo.com</a>, '
-    'licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener">CC BY 4.0</a>. '
-    "Atlas modifies it: values are aggregated, combined with other sources and used to "
-    "derive diagnostics."
-)
+from atlas.attribution import SOURCE_ATTRIBUTION_HTML
 
 
 PUBLIC_PAGES = (
@@ -101,6 +91,33 @@ SHARED_CSS = """
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 9px 12px;
+  color: #ffffff;
+  background: var(--ink);
+  border-radius: 4px;
+  transform: translateY(-160%);
+}
+.skip-link:focus { transform: translateY(0); }
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
 body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -601,7 +618,7 @@ DATA_FIRST_CSS = """
 :root {
   --ink: #232323;
   --ink-soft: #50504d;
-  --muted: #7b7a77;
+  --muted: #66645f;
   --line: #e7e7e3;
   --line-strong: #d8d8d3;
   --paper: #ffffff;
@@ -610,11 +627,11 @@ DATA_FIRST_CSS = """
   --rail: #f6f6f4;
   --hover: #ebebe8;
   --selected: #e7e7e3;
-  --blue: #3f72a4;
+  --blue: #315f8d;
   --blue-soft: #eaf1f7;
-  --green: #43816b;
-  --gold: #b47a27;
-  --red: #cf5146;
+  --green: #2f6f58;
+  --gold: #8a5b16;
+  --red: #a83b33;
   --sidebar: 208px;
   --topbar: 48px;
 }
@@ -1138,6 +1155,10 @@ h2 { font-size: 19px; font-weight: 620; }
   padding: 24px 0 34px;
   border-top-color: var(--line);
 }
+.plot-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
 .plot-section:first-of-type { margin-top: 24px; }
 .section-heading { align-items: flex-start; margin-bottom: 14px; }
 .section-heading::before {
@@ -1290,6 +1311,15 @@ th, td { border-color: var(--line); }
 }
 .archive-group[data-empty="true"] .archive-empty { display: block; }
 .archive-group[data-empty="true"] .table-scroll { display: none; }
+.event-kind { display: block; font-weight: 650; }
+.event-source { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.event-evidence { min-width: 280px; color: var(--ink-soft); line-height: 1.55; }
+.event-confidence { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.event-download {
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
 .story-section {
   padding: 24px 0 34px;
   border-top: 1px solid var(--line);
@@ -1642,6 +1672,14 @@ footer {
   .story-evidence { padding: 17px 0 0; border-top: 1px solid var(--line-strong); border-left: 0; }
   .viz-frame { min-width: 720px; }
   .footer-wrap { padding: 18px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 """
 
@@ -2042,8 +2080,9 @@ def _plot_section(
   </div>
 {source_note}
   <div class="viz-scroll">
-    <iframe class="{classes}" src="{html.escape(path)}" title="{html.escape(frame_title)}" loading="lazy" scrolling="no"></iframe>
+    <iframe class="{classes}" src="{html.escape(path)}" title="{html.escape(frame_title)}" loading="lazy" fetchpriority="low" scrolling="no"></iframe>
   </div>
+  <p class="source-note"><a href="{html.escape(path)}" target="_blank" rel="noopener">Open this interactive figure in a separate page</a>.</p>
 </section>
 """
 
@@ -2347,6 +2386,9 @@ def _page_document(
     edition_notice: str | None = None,
     share: dict[str, Any] | None = None,
 ) -> str:
+    # Generated tables use column headers throughout. Adding scope centrally keeps
+    # screen-reader associations intact as new scientific panels are introduced.
+    content = re.sub(r"<th(?![^>]*\bscope=)([^>]*)>", r'<th scope="col"\1>', content)
     title = config.project.name if active == "index.html" else f"{page_name} | {config.project.name}"
     notice_line = (
         f'  <div class="edition-notice" role="note">{html.escape(edition_notice)}</div>\n'
@@ -2380,20 +2422,22 @@ def _page_document(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
   <meta name="description" content="{html.escape(description)}">
+  <link rel="dns-prefetch" href="//cdn.plot.ly">
 {_social_meta(config, active, family, title, description)}  <style>{SHARED_CSS}{DATA_FIRST_CSS}</style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <header class="site-header" id="site-navigation">{_navigation(active, family, share_id)}</header>
-    <div class="sidebar-scrim" id="sidebar-scrim"></div>
+    <div class="sidebar-scrim" id="sidebar-scrim" aria-hidden="true"></div>
     <div class="workspace">
       <header class="report-topbar">
-        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation">&#9776;</button>
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-controls="site-navigation" aria-expanded="false">&#9776;</button>
         <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape(report_family)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
       </header>
-{notice_line}      <main><div class="page-shell">{content}</div></main>
+{notice_line}      <main id="main-content" tabindex="-1"><div class="page-shell">{content}</div></main>
       <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.
-        <span class="attribution">{OPEN_METEO_ATTRIBUTION_HTML}</span>
+        <span class="attribution">{SOURCE_ATTRIBUTION_HTML}</span>
       </div></footer>
     </div>
   </div>
@@ -2401,13 +2445,33 @@ def _page_document(
     const navigation = document.querySelector('#site-navigation');
     const scrim = document.querySelector('#sidebar-scrim');
     const menuButton = document.querySelector('#menu-button');
-    const setMenu = open => {{
+    const mobileMenu = window.matchMedia('(max-width: 720px)');
+    const setMenu = (open, restoreFocus = false) => {{
       navigation.classList.toggle('open', open);
       scrim.classList.toggle('open', open);
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+      if (mobileMenu.matches) {{
+        navigation.setAttribute('aria-hidden', String(!open));
+        navigation.toggleAttribute('inert', !open);
+      }} else {{
+        navigation.removeAttribute('aria-hidden');
+        navigation.removeAttribute('inert');
+      }}
+      if (open && mobileMenu.matches) {{
+        window.requestAnimationFrame(() => navigation.querySelector('a')?.focus());
+      }} else if (restoreFocus) {{
+        menuButton.focus();
+      }}
     }};
     menuButton.addEventListener('click', () => setMenu(true));
-    scrim.addEventListener('click', () => setMenu(false));
+    scrim.addEventListener('click', () => setMenu(false, true));
     navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', event => {{
+      if (event.key === 'Escape' && navigation.classList.contains('open')) setMenu(false, true);
+    }});
+    mobileMenu.addEventListener?.('change', () => setMenu(false));
+    setMenu(false);
   </script>
   {SHARE_SCRIPT if share_id else ""}
 </body>
@@ -3165,6 +3229,100 @@ def _archived_navigation(
     return navigation, page_name
 
 
+def _enhance_archived_document(document: str) -> str:
+    """Add low-risk accessibility and loading hints to preserved outer pages."""
+    if "<body" not in document:
+        return document
+    marker = "data-atlas-archive-accessibility"
+    if marker not in document:
+        patch_css = """
+<style data-atlas-archive-accessibility>
+:root{--muted:#66645f;--blue:#315f8d;--green:#2f6f58;--gold:#8a5b16;--red:#a83b33}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:fixed;top:8px;left:8px;z-index:100;padding:9px 12px;color:#fff;background:#232323;border-radius:4px;transform:translateY(-160%)}
+.skip-link:focus{transform:translateY(0)}
+:where(a,button,input,select,summary,[tabindex]):focus-visible{outline:3px solid #3f72a4;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+"""
+        document = document.replace("</head>", f"{patch_css}</head>", 1)
+        document = re.sub(
+            r"(<body[^>]*>)",
+            r'\1<a class="skip-link" href="#main-content">Skip to main content</a>',
+            document,
+            count=1,
+        )
+
+    document = re.sub(
+        r"<main(?![^>]*\bid=)([^>]*)>",
+        r'<main id="main-content" tabindex="-1"\1>',
+        document,
+        count=1,
+    )
+    document = re.sub(r"<th(?![^>]*\bscope=)([^>]*)>", r'<th scope="col"\1>', document)
+
+    def iframe_hints(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        if " loading=" not in tag:
+            tag = tag[:-1] + ' loading="lazy">'
+        if " title=" not in tag:
+            tag = tag[:-1] + ' title="Interactive data figure">'
+        return tag
+
+    def image_hints(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        if " loading=" not in tag:
+            tag = tag[:-1] + ' loading="lazy">'
+        if " decoding=" not in tag:
+            tag = tag[:-1] + ' decoding="async">'
+        return tag
+
+    document = re.sub(r"<iframe\b[^>]*>", iframe_hints, document, flags=re.I)
+    document = re.sub(r"<img\b[^>]*>", image_hints, document, flags=re.I)
+    if 'id="menu-button"' in document:
+        document = re.sub(
+            r'(<button\b[^>]*id="menu-button"[^>]*)(>)',
+            lambda match: (
+                match.group(1)
+                + (' aria-controls="site-navigation"' if "aria-controls=" not in match.group(1) else "")
+                + (' aria-expanded="false"' if "aria-expanded=" not in match.group(1) else "")
+                + match.group(2)
+            ),
+            document,
+            count=1,
+        )
+        if "menuButton.setAttribute('aria-expanded'" not in document:
+            menu_patch = """
+<script data-atlas-archive-menu-accessibility>
+(() => {
+  const nav = document.querySelector('#site-navigation');
+  const scrim = document.querySelector('#sidebar-scrim');
+  const button = document.querySelector('#menu-button');
+  if (!nav || !button) return;
+  const sync = () => {
+    const open = nav.classList.contains('open');
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  };
+  button.addEventListener('click', () => requestAnimationFrame(sync));
+  scrim?.addEventListener('click', () => requestAnimationFrame(sync));
+  nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => requestAnimationFrame(sync)));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && nav.classList.contains('open')) {
+      nav.classList.remove('open');
+      scrim?.classList.remove('open');
+      sync();
+      button.focus();
+    }
+  });
+  sync();
+})();
+</script>
+"""
+            document = document.replace("</body>", f"{menu_patch}</body>", 1)
+    return document
+
+
 def _restyle_archived_document(
     document: str,
     page: Path,
@@ -3173,7 +3331,7 @@ def _restyle_archived_document(
     root_prefix: str = "",
 ) -> str:
     if 'class="app-shell"' in document or "<body>" not in document:
-        return document
+        return _enhance_archived_document(document)
 
     navigation, page_name = _archived_navigation(
         page.name,
@@ -3190,10 +3348,10 @@ def _restyle_archived_document(
     shell_start = f"""
   <div class="app-shell" data-atlas-restyled="true">
     <header class="site-header" id="site-navigation">{navigation}</header>
-    <div class="sidebar-scrim" id="sidebar-scrim"></div>
+    <div class="sidebar-scrim" id="sidebar-scrim" aria-hidden="true"></div>
     <div class="workspace">
       <header class="report-topbar">
-        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation">&#9776;</button>
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-controls="site-navigation" aria-expanded="false">&#9776;</button>
         <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>Archive</span><span>/</span><span>{html.escape(family_label)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
       </header>
 """
@@ -3224,10 +3382,18 @@ def _restyle_archived_document(
         const setMenu = open => {
           navigation.classList.toggle('open', open);
           scrim.classList.toggle('open', open);
+          menuButton.setAttribute('aria-expanded', String(open));
+          menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
         };
         menuButton.addEventListener('click', () => setMenu(true));
         scrim.addEventListener('click', () => setMenu(false));
         navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+        document.addEventListener('keydown', event => {
+          if (event.key === 'Escape' && navigation.classList.contains('open')) {
+            setMenu(false);
+            menuButton.focus();
+          }
+        });
       </script>
 """
     document = document.replace(
@@ -3235,7 +3401,7 @@ def _restyle_archived_document(
         f"{legacy_close}{menu_script}    </div>\n  </div>\n</body>",
         1,
     )
-    return document
+    return _enhance_archived_document(document)
 
 
 def _rewrite_published_archive_links(target: Path, collection: str) -> None:
@@ -3292,7 +3458,8 @@ def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -
     table = f"""
       <div class="table-scroll">
         <table class="archive-table">
-          <thead><tr><th>Date</th><th>Edition</th><th>Coverage</th><th>Report</th></tr></thead>
+          <caption class="sr-only">{html.escape(title)}</caption>
+          <thead><tr><th scope="col">Date</th><th scope="col">Edition</th><th scope="col">Coverage</th><th scope="col">Report</th></tr></thead>
           <tbody>{rows}</tbody>
         </table>
       </div>""" if rows else ""
@@ -3305,6 +3472,123 @@ def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -
 """
 
 
+def collect_weather_event_index(
+    reports_dir: Path,
+    timezone_name: str = "Europe/Budapest",
+) -> list[dict[str, Any]]:
+    """Read and de-duplicate the objective event ledgers in saved periods."""
+    required = {"start_time", "end_time", "kind", "evidence", "confidence", "source"}
+    deduplicated: dict[tuple[str, str, str], dict[str, Any]] = {}
+    periods_dir = reports_dir / "periods"
+    if not periods_dir.is_dir():
+        return []
+
+    # Later rolling editions replace an overlapping event with their newer copy.
+    for edition_dir in sorted(path for path in periods_dir.iterdir() if path.is_dir()):
+        ledger = edition_dir / "data" / "weather_phenomena.csv"
+        if not ledger.is_file():
+            continue
+        try:
+            frame = pd.read_csv(ledger)
+        except (OSError, pd.errors.ParserError):
+            continue
+        if not required.issubset(frame.columns):
+            continue
+        for row in frame.itertuples(index=False):
+            try:
+                start = pd.Timestamp(row.start_time)
+                end = pd.Timestamp(row.end_time)
+                if start.tzinfo is None or end.tzinfo is None:
+                    continue
+                start = start.tz_convert("UTC")
+                end = end.tz_convert("UTC")
+                confidence = float(row.confidence)
+            except (TypeError, ValueError):
+                continue
+            if end <= start or not 0.0 <= confidence <= 1.0:
+                continue
+            if any(pd.isna(value) for value in (row.kind, row.evidence, row.source)):
+                continue
+            kind = str(row.kind).strip()
+            evidence = str(row.evidence).strip()
+            source = str(row.source).strip()
+            if not kind or not evidence or not source:
+                continue
+            source_lower = source.lower()
+            if "hungaromet" in source_lower:
+                source_type = "Observed"
+            elif "open-meteo" in source_lower:
+                source_type = "Model-derived"
+            elif "objective" in source_lower:
+                source_type = "Derived"
+            else:
+                source_type = "Other"
+
+            preferred_page = edition_dir / "analysis" / "storms-satellite.html"
+            if preferred_page.is_file():
+                report_page = "analysis/storms-satellite.html"
+            elif (edition_dir / "events.html").is_file():
+                report_page = "events.html"
+            else:
+                report_page = "index.html"
+            local_start = start.tz_convert(timezone_name)
+            local_end = end.tz_convert(timezone_name)
+            key = (start.isoformat(), end.isoformat(), kind.casefold())
+            deduplicated[key] = {
+                "start_time": start.isoformat(),
+                "end_time": end.isoformat(),
+                "local_date": local_start.strftime("%Y-%m-%d"),
+                "local_time": f"{local_start.strftime('%H:%M')}–{local_end.strftime('%H:%M %Z')}",
+                "kind": kind,
+                "evidence": evidence,
+                "confidence": confidence,
+                "source": source,
+                "source_type": source_type,
+                "edition": edition_dir.name,
+                "report_href": f"periods/{edition_dir.name}/{report_page}",
+            }
+
+    return sorted(
+        deduplicated.values(),
+        key=lambda event: (event["start_time"], event["kind"]),
+        reverse=True,
+    )
+
+
+def _weather_event_index(events: list[dict[str, Any]]) -> str:
+    """Render event evidence as a searchable section inside the report archive."""
+    rows = "".join(
+        f"""
+        <tr data-event-row data-search="{html.escape(' '.join((event['local_date'], event['kind'], event['evidence'], event['source'], event['source_type'], event['edition'])).casefold())}">
+          <td class="archive-date"><strong><time datetime="{html.escape(event['start_time'])}">{html.escape(event['local_date'])}</time></strong><span>{html.escape(event['local_time'])}</span></td>
+          <td><span class="event-kind">{html.escape(event['kind'])}</span><span class="event-source">{html.escape(event['source_type'])} &middot; {html.escape(event['source'])}</span></td>
+          <td class="event-evidence">{html.escape(event['evidence'])}</td>
+          <td class="event-confidence">{event['confidence']:.0%}</td>
+          <td><a class="archive-open" href="{html.escape(event['report_href'])}">Evidence &rarr;</a></td>
+        </tr>"""
+        for event in events
+    )
+    table = (
+        f"""
+  <div class="table-scroll">
+    <table class="archive-table event-table">
+      <caption class="sr-only">Detected weather events across saved Atlas editions</caption>
+      <thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Evidence</th><th scope="col">Confidence</th><th scope="col">Report</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>"""
+        if rows
+        else ""
+    )
+    empty = "true" if not events else "false"
+    return f"""
+<section class="archive-group" id="weather-event-index" data-event-group data-empty="{empty}">
+  <div class="archive-group-header"><h2>Weather Event Index</h2><span>{len(events)} unique detection{'s' if len(events) != 1 else ''}</span></div>
+  <p class="event-download">Objective detections de-duplicated across overlapping 72-hour reports. Times are Europe/Budapest local time. <a href="data/weather_event_index.json" download>Download JSON</a>.</p>
+  {table}
+  <p class="archive-empty">No weather events match the current search.</p>
+</section>
+"""
 def build_report_archive(
     config: AtlasConfig,
     site_dir: Path | None = None,
@@ -3317,6 +3601,11 @@ def build_report_archive(
     if archive_dir.exists():
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
+    # This history now lives inside the Archive. Remove files from the earlier
+    # standalone-page implementation so a local rebuild cannot keep serving it.
+    for stale in (site_dir / "event-atlas.html", site_dir / "data" / "event_atlas.json"):
+        if stale.is_file():
+            stale.unlink()
 
     collections = {
         "daily": [
@@ -3341,17 +3630,26 @@ def build_report_archive(
             shutil.copytree(entry["source"], target)
             _rewrite_published_archive_links(target, collection)
 
+    # Daily editions contain no copied observation ledger, so their historic
+    # coverage defect is measured from the corresponding saved 72-hour period.
+    # Applying the banner to the published copy preserves the source artefact
+    # while ensuring the more public daily report carries the correction too.
+    annotate_daily_from_periods(archive_dir / "daily", reports_dir / "periods")
+
     all_entries = [entry for entries in collections.values() for entry in entries]
-    years = sorted({entry["year"] for entry in all_entries}, reverse=True)
     earliest = min((entry["start"] for entry in all_entries), default="n/a")
     total = len(all_entries)
-    year_options = "".join(
-        f'<option value="{html.escape(year)}">{html.escape(year)}</option>' for year in years
+    events = collect_weather_event_index(reports_dir, config.location.timezone)
+    archive_data_dir = archive_dir / "data"
+    archive_data_dir.mkdir(parents=True, exist_ok=True)
+    (archive_data_dir / "weather_event_index.json").write_text(
+        json.dumps({"events": events}, indent=2, ensure_ascii=False, allow_nan=False),
+        encoding="utf-8",
     )
 
     content = _page_intro(
         "Report Archive",
-        "Every preserved Atlas public report and meteorological analysis for Debrecen, in reverse chronological order.",
+        "Search preserved public reports, meteorological analyses and their objective weather-event evidence in one place.",
         "Saved Atlas editions",
     )
     content += f"""
@@ -3361,40 +3659,43 @@ def build_report_archive(
   <div class="archive-stat"><span>72-hour analysis</span><strong>{len(collections['periods'])}</strong><small>rolling periods</small></div>
   <div class="archive-stat"><span>Record begins</span><strong>{html.escape(earliest)}</strong><small>earliest saved window</small></div>
 </div>
-<div class="archive-toolbar" aria-label="Archive filters">
-  <label class="archive-control"><span>Find report</span><input id="archive-search" type="search" placeholder="YYYY-MM-DD" autocomplete="off"></label>
-  <label class="archive-control"><span>Year</span><select id="archive-year"><option value="">All years</option>{year_options}</select></label>
-  <div class="archive-visible-count" id="archive-visible-count">{total} reports</div>
+<div class="archive-toolbar" aria-label="Search the archive">
+  <label class="archive-control"><span>Search reports and events</span><input id="archive-search" type="search" placeholder="Date, thunderstorm, heat, gust, source…" autocomplete="off"></label>
+  <div class="archive-visible-count" id="archive-visible-count" role="status" aria-live="polite">{total} reports · {len(events)} events</div>
 </div>
 """
     content += _archive_table(collections["daily"], "daily-reports", "Daily Public Reports")
     content += _archive_table(collections["periods"], "analysis-reports", "72-Hour Meteorological Analysis")
     content += _archive_table(collections["weeks"], "weekly-reports", "Legacy Weekly Reports")
+    content += _weather_event_index(events)
     content += """
 <script>
   const archiveSearch = document.querySelector('#archive-search');
-  const archiveYear = document.querySelector('#archive-year');
   const archiveRows = Array.from(document.querySelectorAll('[data-archive-row]'));
   const archiveGroups = Array.from(document.querySelectorAll('[data-archive-group]'));
+  const eventRows = Array.from(document.querySelectorAll('[data-event-row]'));
+  const eventGroup = document.querySelector('[data-event-group]');
   const archiveVisibleCount = document.querySelector('#archive-visible-count');
   const filterArchive = () => {
-    const query = archiveSearch.value.trim().toLowerCase();
-    const year = archiveYear.value;
-    let visible = 0;
+    const query = archiveSearch.value.trim().toLocaleLowerCase();
+    let visibleReports = 0;
+    let visibleEvents = 0;
     archiveRows.forEach(row => {
-      const matchesQuery = !query || row.dataset.search.includes(query);
-      const matchesYear = !year || row.dataset.year === year;
-      row.hidden = !(matchesQuery && matchesYear);
-      if (!row.hidden) visible += 1;
+      row.hidden = Boolean(query && !row.dataset.search.includes(query));
+      if (!row.hidden) visibleReports += 1;
     });
     archiveGroups.forEach(group => {
       const hasVisibleRows = Array.from(group.querySelectorAll('[data-archive-row]')).some(row => !row.hidden);
       group.dataset.empty = String(!hasVisibleRows);
     });
-    archiveVisibleCount.textContent = `${visible} report${visible === 1 ? '' : 's'}`;
+    eventRows.forEach(row => {
+      row.hidden = Boolean(query && !row.dataset.search.includes(query));
+      if (!row.hidden) visibleEvents += 1;
+    });
+    if (eventGroup) eventGroup.dataset.empty = String(!visibleEvents);
+    archiveVisibleCount.textContent = `${visibleReports} report${visibleReports === 1 ? '' : 's'} · ${visibleEvents} event${visibleEvents === 1 ? '' : 's'}`;
   };
   archiveSearch.addEventListener('input', filterArchive);
-  archiveYear.addEventListener('change', filterArchive);
   filterArchive();
 </script>
 """
@@ -3406,7 +3707,7 @@ def build_report_archive(
             config,
             "index.html",
             "Report Archive",
-            "Saved daily and 72-hour Debrecen weather reports.",
+            "Search saved Debrecen reports and their weather-event evidence.",
             content,
             updated,
             "archive",
@@ -3421,11 +3722,12 @@ def archive_site(site_dir: Path, archive_dir: Path) -> Path:
         shutil.rmtree(archive_dir)
     archive_dir.mkdir(parents=True, exist_ok=True)
     for source in site_dir.iterdir():
-        if source.name in {".gitkeep", "archive"}:
+        if source.name in {".gitkeep", "archive", "event-atlas.html"}:
             continue
         target = archive_dir / source.name
         if source.is_dir():
-            shutil.copytree(source, target)
+            ignore = shutil.ignore_patterns("event_atlas.json") if source.name == "data" else None
+            shutil.copytree(source, target, ignore=ignore)
         else:
             shutil.copy2(source, target)
     return archive_dir / "index.html"
@@ -3919,7 +4221,7 @@ def build_site(
     </a>
     <a class="publication-row" href="archive/index.html">
       <span class="publication-kind">PRESERVED RECORD</span>
-      <div class="publication-copy"><h2>Report Archive</h2><p>Saved daily reports, rolling analyses and legacy weekly editions, presented in the current Atlas reading environment.</p></div>
+      <div class="publication-copy"><h2>Report Archive</h2><p>One search across saved reports, rolling analyses and their de-duplicated objective weather-event evidence.</p></div>
       <div class="publication-date">Browse history<strong>Open archive &rarr;</strong></div>
     </a>
   </div>

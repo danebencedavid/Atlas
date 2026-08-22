@@ -23,6 +23,7 @@ the rolling provider archive does not contain every requested frame.
 - [Lightning data](https://odp.met.hu/weather/lightning/)
 - [Meteosat products](https://odp.met.hu/weather/satellite/MSG/)
 - [Meteosat product descriptions](https://odp.met.hu/weather/satellite/MSG/Description_MSG-en.pdf)
+- [HungaroMet Open Data Portal terms](https://odp.met.hu/ODP_General_Term_of_Use.pdf)
 
 ## Open-Meteo Historical Weather API
 
@@ -54,6 +55,18 @@ Atlas modifies the data by aggregating values, combining sources, and deriving
 diagnostics. Generated pages and figures carry the required attribution and
 licence link.
 
+HungaroMet is credited visibly as “Source: Hungarian Meteorological Service
+(HungaroMet)” on every page and embedded figure, as well as beside individual
+HungaroMet products. The English Open Data Portal terms currently state that
+changes require prior written consent. Atlas has requested that consent; until a
+written answer is received, attribution is complete but permission for the
+project's derived HungaroMet products remains an external publication risk.
+
+ERA5-derived climate material carries the notice “Contains modified Copernicus
+Climate Change Service information 2026” and the required disclaimer that
+neither the European Commission nor ECMWF is responsible for its use. See the
+[Copernicus licence](https://cds.climate.copernicus.eu/licences/licence-to-use-copernicus-products).
+
 ## Energy-Charts API
 
 Used for Hungary-wide generation by type, load, residual load, day-ahead price,
@@ -62,6 +75,10 @@ underlying European power-system data originates from ENTSO-E. National values
 are never labelled as Debrecen measurements.
 
 [Official API](https://api.energy-charts.info/)
+
+Generated pages and figures credit Energy-Charts and Fraunhofer ISE wherever
+the Hungary-wide electricity context is published. No licence claim beyond the
+provider's published API terms is made.
 
 ## Scientific Libraries
 

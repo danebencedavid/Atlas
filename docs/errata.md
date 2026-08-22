@@ -119,10 +119,10 @@ day, which the aggregate absorbs and which `max(time)` cannot see.
 An erratum containing an uncorrected error is the one thing this mechanism must
 not ship.
 
-### Recorded, open, not fixed
+### Original audit record (superseded by the closure below)
 
-Found while auditing on 2026-08-22 and deliberately recorded rather than folded
-into an unbounded refactor.
+Found while auditing on 2026-08-22. The numbered findings are preserved here as
+the contemporaneous audit record; their current status is stated below.
 
 1. **The per-day gate is not enforced** (above). `quality.py`. Open.
 2. **`record_withheld` reports "nothing withheld" when its own record is
@@ -150,3 +150,38 @@ into an unbounded refactor.
 7. **Attribution for HungaroMet, Energy-Charts and Copernicus is still absent
    from the site.** Only Open-Meteo is credited. HungaroMet consent for modified
    use of Open Data Portal data is requested and unanswered.
+
+### Publication-integrity follow-up, completed 2026-08-22
+
+The engineering defects above were closed without changing the scientific scope:
+
+1. **Per-day station coverage is now enforced.** Every local day must meet the
+   configured station threshold as well as the aggregate window. Thin days are
+   always named in the coverage notes, including when the aggregate would pass.
+2. **The withheld-build record now fails closed.** Invalid JSON, an unreadable
+   file, a missing top-level key, or a schema-invalid entry raises
+   `WithheldStatusError` and blocks publication. The pipeline reads the record
+   before fetching or rendering anything.
+3. **Affected daily editions now carry the measured erratum.** Daily artefacts
+   intentionally contain no copied observation ledger, so the archive builder
+   measures the corresponding saved 72-hour period and propagates that exact,
+   reproducible banner to the published daily copy.
+4. **A total station failure is refused.** Missing station data is passed into
+   the same freshness assertion as a stale series instead of skipping it.
+5. **Station coverage is a hard publication gate.** It supports headline values
+   and the objective event record. Radar and lightning remain optional by
+   design: when unavailable they are identified as unavailable and never
+   converted into zero observations.
+6. **Source attribution is now visible on every generated page and figure.** It
+   credits HungaroMet, Energy-Charts/Fraunhofer ISE, Open-Meteo and Copernicus,
+   including the modified-Copernicus notice and disclaimer.
+
+Two limits remain explicit:
+
+- `demo.py` remains a parallel synthetic-layout pipeline. It is not called by
+  the scheduled production workflow, so it is outside this publication gate,
+  but its duplication is still a maintenance defect.
+- HungaroMet's current English Open Data Portal terms say modified use requires
+  prior written consent. Attribution is now complete, but the requested consent
+  remains unanswered. That external permission risk cannot be represented as a
+  completed engineering fix.
