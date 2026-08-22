@@ -23,9 +23,6 @@ STATION_URL = (
     "https://odp.met.hu/climate/observations_hungary/10_minutes/recent/"
     "HABP_10M_{station_id}_akt.zip"
 )
-# The recent file holds only the current calendar year; multi-year verification
-# needs the historical archive alongside it.
-STATION_HISTORY_INDEX_URL = "https://odp.met.hu/climate/observations_hungary/10_minutes/historical/"
 RADAR_INDEX_URL = "https://odp.met.hu/weather/radar/composite/nc/refl2D/"
 LIGHTNING_URL = "https://odp.met.hu/weather/lightning/alHa/alHa{day}_0000.txt.zip"
 
@@ -185,49 +182,6 @@ def fetch_station_observations(
             raise RuntimeError(f"Required HungaroMet station data was unavailable: {exc}") from exc
         return StationObservations(
             pd.DataFrame(), station.station_id, station.station_name, [f"Station observations unavailable: {exc}"]
-        )
-
-
-def fetch_station_history(
-    config: AtlasConfig,
-    refresh: bool = False,
-) -> StationObservations:
-    """Fetch the multi-year historical station archive.
-
-    ``fetch_station_observations`` reads the ``recent`` file, which holds only the
-    current calendar year and is all the daily pipeline needs. Verification over
-    several years needs the ``historical`` archive as well, so this fetches that
-    file and leaves the daily path untouched.
-    """
-    station = config.hungaromet
-    if not station.enabled:
-        return StationObservations(
-            pd.DataFrame(), station.station_id, station.station_name, ["HungaroMet ingestion is disabled."]
-        )
-    index_url = STATION_HISTORY_INDEX_URL
-    try:
-        listing = _request_bytes(index_url).decode("utf-8", errors="replace")
-        pattern = rf'href="(HABP_10M_{station.station_id}_[^"]*hist\.zip)"'
-        names = sorted(set(re.findall(pattern, listing)))
-        if not names:
-            raise ValueError(f"No historical archive was listed for station {station.station_id}.")
-        # Keyed by the resolved filename, which carries its own date range, so a
-        # republished archive is a new key rather than a stale hit.
-        cache = config.outputs.data_dir / "raw" / "hungaromet" / names[-1]
-        frame = _parse_station_csv(_zip_text(_cached_bytes(index_url + names[-1], cache, refresh)))
-        notes = [
-            f"HungaroMet station {station.station_id} historical archive {names[-1]}.",
-            f"Historical coverage: {frame['time'].min()} to {frame['time'].max()}.",
-        ]
-        return StationObservations(frame, station.station_id, station.station_name, notes)
-    except Exception as exc:
-        if station.required:
-            raise RuntimeError(f"Required HungaroMet station history was unavailable: {exc}") from exc
-        return StationObservations(
-            pd.DataFrame(),
-            station.station_id,
-            station.station_name,
-            [f"Station history unavailable: {exc}"],
         )
 
 

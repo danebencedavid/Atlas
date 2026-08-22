@@ -52,27 +52,6 @@ $env:PYTHONPATH="src"
 python -m atlas.cli --refresh
 ```
 
-### Optional: forecast verification credentials
-
-The daily pipeline and the site build need no key. The separate forecast
-verification work (`atlas-forecast`) uses one authenticated source, the CAMS
-Radiation Service, for irradiance ground truth. ERA5 is model output, so
-verifying irradiance against it would compare two models rather than measure
-skill against reality.
-
-Register at [ads.atmosphere.copernicus.eu](https://ads.atmosphere.copernicus.eu),
-accept the dataset licence, copy the personal access token from your profile, and
-set it in your environment:
-
-```powershell
-$env:ADS_API_TOKEN="<token>"
-```
-
-In CI, supply the same name as a repository secret. The token is read from the
-environment only: no token and no `.cdsapirc` belongs anywhere in this
-repository. Without it, verification still runs and falls back to ERA5, and every
-irradiance result is labelled accordingly rather than presented as observed.
-
 The command creates:
 
 ```text
@@ -192,7 +171,7 @@ deploys Atlas. In GitHub, set:
 Settings > Pages > Build and deployment > Source > GitHub Actions
 ```
 
-The workflow runs daily at 05:15 UTC, on pushes, and by manual dispatch. Every
+The workflow runs daily at 11:00 UTC, on pushes, and by manual dispatch. Every
 scheduled build commits a lightweight public edition under `reports/daily/`.
 A full self-contained expert edition is committed under `reports/periods/` on a
 true three-day cadence. The latest versions of both are deployed from `site/`.

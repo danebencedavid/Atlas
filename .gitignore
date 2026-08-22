@@ -17,17 +17,6 @@ theory/
 style-lab.html
 style-lab-report.html
 
-# The forecast archive is append-only and must survive between CI runs,
-# so unlike the rest of data/ it is committed.
-!data/forecast_archive/
-!data/forecast_archive/**
-
-# CAMS irradiance truth. Committed for the same reason: it costs 32 authenticated
-# ADS job submissions to rebuild, and it is the only irradiance truth Atlas has.
-# 2.8 MB of CC BY 4.0 CSV is a cheap price for reproducibility.
-!data/raw/cams/
-!data/raw/cams/**
-
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep
