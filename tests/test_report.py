@@ -213,6 +213,10 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "<iframe" in report_html
     assert 'loading="lazy" fetchpriority="low"' in report_html
     assert "Open this interactive figure in a separate page" in report_html
+    assert 'class="figure-open"' in report_html
+    assert "data-atlas-figure" in report_html
+    assert "data-atlas-figure-resize" in report_html
+    assert 'class="source-note"><a href=' not in report_html
     assert 'class="skip-link" href="#main-content"' in report_html
     assert '<main id="main-content" tabindex="-1">' in report_html
     assert 'aria-controls="site-navigation" aria-expanded="false"' in report_html
@@ -223,13 +227,19 @@ def test_report_generation_smoke(tmp_path: Path):
     assert (target.parent / "weather.html").exists()
     assert not (target.parent / "assets" / "site").exists()
     assert (target.parent / "assets" / "satellite_media" / "frame.webp").exists()
-    assert "Public report" in html
-    assert "Meteorological analysis" in html
+    assert "Daily Report" in html
+    assert "72-Hour Analysis" in html
     assert 'class="app-shell"' in html
     assert 'class="source-key"' in report_html
     assert 'href="archive/index.html"' in html
-    assert 'class="archive-nav-link"' in html
-    assert ">History<" in html
+    assert 'aria-label="Atlas publications"' in html
+    assert "Report edition" not in html
+    assert 'class="publication-state"' in report_html
+    assert 'data-state="incomplete"' in report_html
+    assert "Observed, not forecast" in report_html
+    assert "2026-07-29" in report_html
+    assert 'class="evidence-badge observed"' in report_html
+    assert 'class="evidence-badge derived"' in report_html
     assert report_html.index("Yesterday Hour By Hour") < report_html.index("Deterministic interpretation.")
     assert "Demonstration edition: synthetic data." in html
     analysis_dir = target.parent / "analysis"
@@ -240,6 +250,11 @@ def test_report_generation_smoke(tmp_path: Path):
     assert analysis_html.index("Annotated 72-Hour Meteogram") < analysis_html.index(
         "Deterministic interpretation."
     )
+    surface_html = (analysis_dir / "surface-synoptic.html").read_text(encoding="utf-8")
+    assert 'class="page-outline" aria-label="On this page"' in surface_html
+    assert 'href="#debrecen-airport-observation-ledger"' in surface_html
+    assert 'id="debrecen-airport-observation-ledger"' in surface_html
+    assert "aria-current', 'location'" in surface_html
     story_html = (analysis_dir / "story.html").read_text(encoding="utf-8")
     assert "Weather Story Graph" in story_html
     assert 'id="weather-story-data"' in story_html
@@ -267,10 +282,12 @@ def test_report_generation_smoke(tmp_path: Path):
     assert json.loads(summary_text)["physical_energy"]["pv_yield_kwh_per_kwp"] is None
 
     assert (target.parent / "data" / "climate_almanac.json").exists()
-    assert 'href="summary.html"' in html
-    assert 'href="records.html"' in html
+    assert (target.parent / "summary.html").exists()
+    assert (target.parent / "records.html").exists()
     summary_page = (target.parent / "summary.html").read_text(encoding="utf-8")
     assert "Season &amp; Month Summary" in summary_page
+    assert 'href="records.html"' in summary_page
+    assert 'href="archive/index.html#weather-event-index"' in summary_page
     # Months and seasons share one select, so there is no mode toggle to fall out of sync.
     assert "data-summary-mode-button" not in summary_page
     assert summary_page.count("<select data-summary-select") == 1
@@ -422,8 +439,10 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     archive_html = index.read_text(encoding="utf-8")
     assert "Report Archive" in archive_html
     assert '<span>All editions</span><strong>3</strong>' in archive_html
-    assert 'class="archive-nav-link"' in archive_html
-    assert 'aria-current="page"' in archive_html
+    assert 'aria-label="Atlas publications"' in archive_html
+    assert '<a href="index.html" aria-current="true">Archive</a>' in archive_html
+    assert "Season &amp; month summary" in archive_html
+    assert "Weather Event Index" in archive_html
     assert "daily/2026-08-03/index.html" in archive_html
     assert "periods/2026-08-01_2026-08-03/analysis/index.html" in archive_html
     assert "weeks/2026-07-20_2026-07-26/index.html" in archive_html
@@ -432,16 +451,20 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     published_daily = (
         index.parent / "daily" / "2026-08-03" / "index.html"
     ).read_text(encoding="utf-8")
-    assert 'href="../../index.html#analysis-reports"' in published_daily
+    assert 'href="../../../analysis/index.html"' in published_daily
     assert 'href="../../index.html"' in published_daily
     assert 'class="app-shell"' in published_daily
     assert 'data-atlas-restyled="true"' in published_daily
     assert "Saved daily report" in published_daily
+    assert 'class="publication-state"' in published_daily
+    assert "Observed, not forecast" in published_daily
     published_analysis = (
         index.parent / "periods" / "2026-08-01_2026-08-03" / "analysis" / "index.html"
     ).read_text(encoding="utf-8")
     assert 'href="../../../index.html"' in published_analysis
+    assert 'href="../../../../report.html"' in published_analysis
     assert 'class="app-shell"' in published_analysis
+    assert 'class="publication-state"' in published_analysis
     assert "Period analysis" in published_analysis
     published_weekly = (
         index.parent / "weeks" / "2026-07-20_2026-07-26" / "index.html"

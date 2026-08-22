@@ -38,8 +38,12 @@ PLOT_CONFIG = {
 
 
 FIGURE_ATTRIBUTION_HTML = (
-    '<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#66645f;'
-    f'padding:4px 10px 8px">{SOURCE_ATTRIBUTION_HTML}</div>'
+    '<style data-atlas-figure-attribution>'
+    '.atlas-figure-attribution{padding:10px 12px 14px;color:#66645f;'
+    'border-top:1px solid #e7e7e3;font:11px/1.55 Inter,Segoe UI,Arial,sans-serif}'
+    '.atlas-figure-attribution a{color:#315f8d;text-decoration:underline}'
+    '</style>'
+    f'<div class="atlas-figure-attribution">{SOURCE_ATTRIBUTION_HTML}</div>'
 )
 
 
@@ -1567,7 +1571,7 @@ def plot_satellite_diary(
 </style></head><body>
 <div class="toolbar"><label for="product">Product</label><select id="product"></select><button id="play" type="button">Play</button><button id="pause" type="button">Pause</button><button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">-</button><button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button><button id="zoom-reset" type="button" title="Reset zoom" aria-label="Reset zoom">1:1</button><label for="frame">Frame</label><input id="frame" type="range" min="0" max="0" value="0"><span class="stamp" id="stamp"></span></div>
 <div class="layout"><div><div class="image-wrap"><img id="satellite" alt="HungaroMet Meteosat satellite product" decoding="async"></div><div class="status" id="status" role="status" aria-live="polite"></div></div><div id="timeline" role="img" aria-label="Synchronized radar and lightning event timeline"></div></div>
-<div style="font:10px Inter,Segoe UI,Arial,sans-serif;color:#66645f;padding:4px 10px 8px">{SOURCE_ATTRIBUTION_HTML}</div>
+{FIGURE_ATTRIBUTION_HTML}
 <script>
 const data={payload}; const product=document.getElementById('product'); const slider=document.getElementById('frame'); const image=document.getElementById('satellite'); const stamp=document.getElementById('stamp'); const status=document.getElementById('status'); let timer=null; let zoom=1;
 Object.keys(data.products).forEach(name=>{{const option=document.createElement('option');option.value=name;option.textContent=name;product.appendChild(option)}});

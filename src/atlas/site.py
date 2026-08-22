@@ -340,7 +340,7 @@ h2 {
 .viz-frame {
   display: block;
   width: 100%;
-  height: 640px;
+  height: 728px;
   min-width: 0;
   border: 1px solid #e6eaf0;
   border-radius: 6px;
@@ -352,18 +352,18 @@ h2 {
   overflow-x: auto;
   border-radius: 6px;
 }
-.viz-frame.meteogram { height: 1000px; }
-.viz-frame.context { height: 740px; }
-.viz-frame.electricity { height: 840px; }
-.viz-frame.relationships { height: 800px; }
-.viz-frame.profile, .viz-frame.time-pressure { height: 840px; }
-.viz-frame.hodograph { height: 780px; }
-.viz-frame.radar, .viz-frame.synoptic, .viz-frame.physical-energy { height: 780px; }
-.viz-frame.satellite { height: 860px; }
-.viz-frame.land-surface { height: 940px; }
-.viz-frame.climate-reference { height: 800px; }
-.viz-frame.phenomena { height: 560px; }
-.viz-frame.compact { height: 280px; }
+.viz-frame.meteogram { height: 1088px; }
+.viz-frame.context { height: 828px; }
+.viz-frame.electricity { height: 928px; }
+.viz-frame.relationships { height: 888px; }
+.viz-frame.profile, .viz-frame.time-pressure { height: 928px; }
+.viz-frame.hodograph { height: 868px; }
+.viz-frame.radar, .viz-frame.synoptic, .viz-frame.physical-energy { height: 868px; }
+.viz-frame.satellite { height: 948px; }
+.viz-frame.land-surface { height: 1028px; }
+.viz-frame.climate-reference { height: 888px; }
+.viz-frame.phenomena { height: 648px; }
+.viz-frame.compact { height: 368px; }
 .metric-band {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -600,15 +600,15 @@ footer {
   .metric { border-right: 0; border-bottom: 1px solid var(--line); }
   .metric:last-child { border-bottom: 0; }
   h1 { font-size: 3.5rem; }
-  .viz-frame { height: 570px; }
+  .viz-frame { height: 658px; }
   .viz-frame { min-width: 720px; }
   .viz-frame.compact { min-width: 520px; }
-  .viz-frame.meteogram { height: 940px; }
-  .viz-frame.context, .viz-frame.hodograph { height: 650px; }
+  .viz-frame.meteogram { height: 1028px; }
+  .viz-frame.context, .viz-frame.hodograph { height: 738px; }
   .viz-frame.electricity, .viz-frame.relationships, .viz-frame.profile,
   .viz-frame.time-pressure, .viz-frame.radar, .viz-frame.synoptic,
-  .viz-frame.physical-energy { height: 760px; }
-  .viz-frame.satellite, .viz-frame.land-surface { height: 820px; }
+  .viz-frame.physical-energy { height: 848px; }
+  .viz-frame.satellite, .viz-frame.land-surface { height: 908px; }
   .help-panel { left: auto; right: -8px; }
 }
 """
@@ -755,41 +755,8 @@ a { color: inherit; }
   border-bottom-color: transparent;
   font-weight: 600;
 }
-.archive-nav-wrap {
-  margin: 16px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--line-strong);
-}
-.archive-nav-wrap .nav-label { margin-top: 0; }
-.archive-nav-link {
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 8px 6px 11px;
-  color: var(--ink);
-  background: rgba(255,255,255,.65);
-  border-left: 3px solid var(--blue);
-  border-radius: 0 5px 5px 0;
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
-}
-.archive-nav-link span {
-  color: var(--muted);
-  font-size: 9px;
-  font-weight: 500;
-}
-.archive-nav-link:hover { background: var(--hover); }
-.archive-nav-link[aria-current="page"] {
-  color: var(--ink);
-  background: var(--selected);
-  border-left-color: var(--ink);
-}
-.archive-nav-link + .archive-nav-link { margin-top: 3px; }
-/* Flat surface, ink text and a single blue glyph, matching .archive-nav-link above
-   it. A saturated gradient read as an advert against this paper-toned sidebar. */
+/* The report card action follows the same restrained paper-and-ink treatment as
+   the publication links above it. */
 .share-day-button {
   display: flex;
   align-items: center;
@@ -835,7 +802,7 @@ a { color: inherit; }
 .share-menu-title {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 .share-menu-title strong { display: block; color: var(--ink); font-size: 11px; }
@@ -843,9 +810,9 @@ a { color: inherit; }
   margin: 6px 0 2px;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .share-menu-primary,
 .share-menu-item {
@@ -871,7 +838,7 @@ a { color: inherit; }
   background: var(--ink);
   border-color: var(--ink);
 }
-.share-menu-primary span { color: rgba(255,255,255,.62); font-size: 10px; font-weight: 500; }
+.share-menu-primary span { color: rgba(255,255,255,.62); font-size: 11px; font-weight: 500; }
 .share-menu-item:hover { background: var(--hover); }
 .share-menu-primary:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
 .share-menu-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
@@ -901,7 +868,7 @@ a { color: inherit; }
   background: rgba(255,255,255,.55);
   border: 1px solid var(--line-strong);
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 .sidebar-note strong {
@@ -964,6 +931,40 @@ a { color: inherit; }
   margin: 0 auto;
   padding: 34px 48px 72px;
 }
+.page-shell.with-outline { width: min(100%, 1480px); }
+.page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 184px;
+  gap: 56px;
+  align-items: start;
+}
+.page-body { min-width: 0; }
+.page-body h2[id] { scroll-margin-top: calc(var(--topbar) + 22px); }
+.page-outline { min-width: 0; }
+.page-outline nav {
+  position: sticky;
+  top: calc(var(--topbar) + 24px);
+  display: grid;
+  gap: 2px;
+  padding-left: 13px;
+  border-left: 1px solid var(--line-strong);
+}
+.page-outline strong {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.page-outline a {
+  padding: 4px 7px;
+  color: var(--muted);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.page-outline a:hover { color: var(--ink); background: var(--hover); }
+.page-outline a.current { color: var(--ink); font-weight: 600; }
 .hero {
   min-height: 0;
   display: block;
@@ -973,9 +974,9 @@ a { color: inherit; }
   margin-bottom: 7px;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
 }
 h1 {
   margin: 0 0 8px;
@@ -996,7 +997,46 @@ h2 { font-size: 19px; font-weight: 620; }
   font-size: 14px;
   line-height: 1.62;
 }
-.meta { margin: 9px 0 0; font-size: 10px; }
+.meta { margin: 9px 0 0; font-size: 11px; }
+.publication-state {
+  display: grid;
+  grid-template-columns: 1.2fr 1.35fr 1.2fr 1fr;
+  margin: 0 0 30px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.publication-state > div {
+  min-width: 0;
+  padding: 11px 16px;
+  border-right: 1px solid var(--line);
+}
+.publication-state > div:first-child { padding-left: 0; }
+.publication-state > div:last-child { padding-right: 0; border-right: 0; }
+.publication-state span,
+.publication-state strong,
+.publication-state small { display: block; }
+.publication-state span {
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.publication-state strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 600;
+}
+.publication-state small { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.publication-integrity strong::before {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  margin-right: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  content: "";
+}
+.publication-state[data-state="incomplete"] .publication-integrity strong { color: var(--red); }
+.publication-state[data-state="incomplete"] .publication-integrity strong::before { background: var(--red); }
 .source-key {
   display: flex;
   flex-wrap: wrap;
@@ -1006,22 +1046,47 @@ h2 { font-size: 19px; font-weight: 620; }
 .source-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 7px;
+  gap: 6px;
+  padding: 0;
   color: var(--ink-soft);
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  font-size: 10px;
+  background: transparent;
+  border: 0;
+  font-size: 11px;
 }
 .source-chip b {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
 }
-.source-chip.observed b { color: var(--green); }
-.source-chip.gridded b { color: var(--blue); }
-.source-chip.remote b { color: var(--gold); }
-.source-chip.derived b { color: var(--red); }
+.evidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 2px 7px;
+  color: var(--ink-soft);
+  background: var(--rail);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.evidence-badge::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  background: var(--muted);
+  border-radius: 50%;
+  content: "";
+}
+.evidence-badge.observed::before { background: var(--green); }
+.evidence-badge.remote::before { background: var(--gold); }
+.evidence-badge.model::before { background: var(--blue); }
+.evidence-badge.derived::before { background: var(--red); }
+.insight .evidence-badge { margin-bottom: 7px; }
+.analysis-lead .evidence-badge,
+.public-lead .evidence-badge { margin-right: 8px; vertical-align: 1px; }
 .summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1095,7 +1160,7 @@ h2 { font-size: 19px; font-weight: 620; }
 .publication-date {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 10px;
+  font-size: 11px;
 }
 .publication-copy h2 { margin: 0 0 4px; font-size: 17px; }
 .publication-copy p { margin: 0; color: var(--ink-soft); font-size: 12px; }
@@ -1133,8 +1198,7 @@ h2 { font-size: 19px; font-weight: 620; }
 .home-definition span {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
-  text-transform: uppercase;
+  font-size: 11px;
 }
 .home-definition strong { margin-top: 4px; font-size: 13px; font-weight: 600; }
 .public-facts,
@@ -1165,9 +1229,9 @@ h2 { font-size: 19px; font-weight: 620; }
   flex: 0 0 auto;
   padding-top: 5px;
   color: #93928e;
-  content: "DATA";
+  content: "Section";
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
 }
 .section-heading h2 { padding-top: 0; }
@@ -1180,9 +1244,15 @@ h2 { font-size: 19px; font-weight: 620; }
 .source-note {
   margin: -7px 0 12px 41px;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
-  text-transform: uppercase;
+  font-size: 11px;
 }
+.figure-open {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.figure-open a { color: var(--blue); text-decoration: underline; }
 .viz-scroll { border-radius: 5px; }
 .viz-frame { border-color: var(--line-strong); border-radius: 5px; }
 .analysis-lead,
@@ -1200,8 +1270,10 @@ h2 { font-size: 19px; font-weight: 620; }
 .insight .provenance, .provenance {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
+  text-transform: none;
 }
+.download-copy small { font-size: 11px; text-transform: none; }
 .insight p, .event-copy p { color: var(--ink-soft); font-size: 12px; }
 .event-list, .analog-list { border-top-color: var(--line-strong); }
 table { font-size: 12px; }
@@ -1227,7 +1299,7 @@ th, td { border-color: var(--line); }
 .archive-stat small {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .archive-stat strong {
   display: block;
@@ -1247,9 +1319,8 @@ th, td { border-color: var(--line); }
 .archive-control span {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
 }
 .archive-control input,
 .archive-control select {
@@ -1272,7 +1343,7 @@ th, td { border-color: var(--line); }
   padding-bottom: 8px;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .archive-group { padding: 24px 0 34px; border-top: 1px solid var(--line); }
@@ -1283,16 +1354,15 @@ th, td { border-color: var(--line); }
   gap: 16px;
   margin-bottom: 12px;
 }
-.archive-group-header span { color: var(--muted); font-size: 10px; }
+.archive-group-header span { color: var(--muted); font-size: 11px; }
 .archive-table { width: 100%; border-collapse: collapse; }
 .archive-table th {
   padding: 8px 10px;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   text-align: left;
-  text-transform: uppercase;
 }
 .archive-table td { padding: 12px 10px; vertical-align: middle; }
 .archive-table th:first-child,
@@ -1300,7 +1370,7 @@ th, td { border-color: var(--line); }
 .archive-date strong,
 .archive-date span { display: block; }
 .archive-date strong { font-weight: 600; }
-.archive-date span { color: var(--muted); font-size: 10px; }
+.archive-date span { color: var(--muted); font-size: 11px; }
 .archive-open { font-weight: 600; text-decoration: none; white-space: nowrap; }
 .archive-open:hover { color: var(--blue); text-decoration: underline; }
 .archive-empty {
@@ -1312,7 +1382,7 @@ th, td { border-color: var(--line); }
 .archive-group[data-empty="true"] .archive-empty { display: block; }
 .archive-group[data-empty="true"] .table-scroll { display: none; }
 .event-kind { display: block; font-weight: 650; }
-.event-source { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.event-source { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; color: var(--muted); font-size: 11px; }
 .event-evidence { min-width: 280px; color: var(--ink-soft); line-height: 1.55; }
 .event-confidence { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .event-download {
@@ -1340,8 +1410,7 @@ th, td { border-color: var(--line); }
   gap: 7px 15px;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
-  text-transform: uppercase;
+  font-size: 11px;
 }
 .story-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .story-dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -1403,9 +1472,8 @@ th, td { border-color: var(--line); }
   display: block;
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
 }
 .story-node-label { display: block; padding-top: 2px; font-size: 12px; font-weight: 600; line-height: 1.25; }
 /* Full width below the graph, so the reading, the numbers and the connections sit
@@ -1424,12 +1492,12 @@ th, td { border-color: var(--line); }
 .story-reading { margin: 11px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
 .story-facts { margin: 18px 0 0; }
 .story-facts div { padding: 9px 0; border-top: 1px solid var(--line); }
-.story-facts dt { color: var(--muted); font-size: 10px; }
+.story-facts dt { color: var(--muted); font-size: 11px; }
 .story-facts dd { margin: 2px 0 0; font-size: 12px; font-weight: 600; }
 .story-source,
 .story-connections { margin-top: 16px; padding-top: 11px; border-top: 1px solid var(--line); }
-.story-source { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 9px; }
-.story-connections strong { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
+.story-source { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; }
+.story-connections strong { display: block; color: var(--muted); font-size: 11px; }
 .story-connections ul { margin: 6px 0 0; padding-left: 17px; color: var(--ink-soft); font-size: 11px; }
 .story-evidence-column > :first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .kinematics-motion { margin: 14px 0 4px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1437,7 +1505,7 @@ th, td { border-color: var(--line); }
   display: block;
   margin-top: 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-style: normal;
 }
 .kinematics-grid {
@@ -1451,7 +1519,7 @@ th, td { border-color: var(--line); }
 }
 .kinematics-table h3 span { color: var(--muted); font-weight: 500; }
 .kinematics-table td { font-variant-numeric: tabular-nums; }
-.attribution { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.attribution { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .attribution a { color: var(--blue); text-decoration: underline; }
 .coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
 .coverage-block h3 { margin: 14px 0 4px; font-size: 12px; }
@@ -1465,9 +1533,9 @@ th, td { border-color: var(--line); }
   border-radius: 0 5px 5px 0;
 }
 .coverage-day[data-thin="true"] { border-left-color: var(--red); background: var(--paper); }
-.coverage-day span { display: block; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 9px; }
+.coverage-day span { display: block; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; }
 .coverage-day strong { display: block; margin-top: 2px; font-size: 15px; font-variant-numeric: tabular-nums; }
-.coverage-day em { display: block; color: var(--muted); font-size: 10px; font-style: normal; }
+.coverage-day em { display: block; color: var(--muted); font-size: 11px; font-style: normal; }
 .radar-subhead { margin: 18px 0 6px; font-size: 12px; }
 .verification-bias { font-variant-numeric: tabular-nums; font-weight: 650; }
 .verification-bias[data-sign="high"] { color: var(--red); }
@@ -1477,10 +1545,10 @@ th, td { border-color: var(--line); }
   margin: 11px 0 0;
   padding-left: 17px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
-.story-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+.story-caption { margin: 9px 0 0; color: var(--muted); font-size: 11px; }
 @media (max-width: 900px) {
   .story-evidence { grid-template-columns: minmax(0, 1fr); gap: 18px 0; }
   .story-evidence-column + .story-evidence-column { padding-top: 14px; border-top: 1px solid var(--line); }
@@ -1500,9 +1568,9 @@ th, td { border-color: var(--line); }
 .almanac-select span {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .almanac-select select {
   min-height: 34px;
@@ -1522,7 +1590,7 @@ th, td { border-color: var(--line); }
   gap: 16px;
   margin-bottom: 12px;
 }
-.almanac-panel-header span { color: var(--muted); font-size: 10px; }
+.almanac-panel-header span { color: var(--muted); font-size: 11px; }
 .almanac-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1535,7 +1603,7 @@ th, td { border-color: var(--line); }
 .almanac-stats span {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .almanac-stats strong { display: block; margin-top: 2px; font-size: 18px; font-weight: 600; }
 .almanac-records { margin: 8px 0 0; padding: 0; list-style: none; }
@@ -1567,9 +1635,8 @@ th, td { border-color: var(--line); }
 .record-label {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
 }
 .record-value { font-size: 22px; font-weight: 650; }
 .record-date { color: var(--muted); font-size: 11px; }
@@ -1584,7 +1651,11 @@ footer {
   width: min(100%, 1320px);
   margin: 0 auto;
   padding: 18px 48px;
-  font-size: 10px;
+  font-size: 11px;
+}
+@media (max-width: 1180px) {
+  .page-layout { grid-template-columns: minmax(0, 1fr); }
+  .page-outline { display: none; }
 }
 @media (max-width: 980px) and (min-width: 721px) {
   :root { --sidebar: 190px; }
@@ -1622,6 +1693,12 @@ footer {
   }
   .sidebar-scrim.open { display: block; }
   .page-shell { padding: 28px 20px 56px; }
+  .publication-state { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .publication-state > div,
+  .publication-state > div:first-child,
+  .publication-state > div:last-child { padding: 10px 9px; border-bottom: 1px solid var(--line); }
+  .publication-state > div:nth-child(2n) { border-right: 0; }
+  .publication-state > div:nth-last-child(-n+2) { border-bottom: 0; }
   h1, .page-intro h1 { font-size: 28px; }
   .home-intro { padding-top: 6px; }
   .home-intro h1 { font-size: 32px; }
@@ -1982,25 +2059,38 @@ def _analysis_url(config: AtlasConfig) -> str:
 def _navigation(active: str, family: str, share_id: str | None = None) -> str:
     nested = family == "analysis"
     archive = family == "archive"
-    history_family = family in ("summary", "records")
+    archive_family = family in ("archive", "summary", "records")
     prefix = "../" if nested or archive else ""
-    pages = (
-        ()
-        if archive or history_family or family == "home"
-        else (ANALYSIS_PAGES if nested else PUBLIC_PAGES)
-    )
-    links = []
-    for filename, label in pages:
-        current = ' aria-current="page"' if filename == active else ""
-        links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
+    links: list[str] = []
+    if family in ("public", "analysis"):
+        pages = ANALYSIS_PAGES if nested else PUBLIC_PAGES
+        for filename, label in pages:
+            current = ' aria-current="page"' if filename == active else ""
+            links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
+    elif archive_family:
+        archive_pages = (
+            (f"{prefix}summary.html", "Season & month summary", family == "summary"),
+            (f"{prefix}records.html", "Record Book", family == "records"),
+            (
+                "index.html#weather-event-index"
+                if archive
+                else f"{prefix}archive/index.html#weather-event-index",
+                "Weather Event Index",
+                False,
+            ),
+        )
+        for href, label, current_page in archive_pages:
+            current = ' aria-current="page"' if current_page else ""
+            links.append(f'<a href="{href}"{current}>{html.escape(label)}</a>')
     public_current = ' aria-current="true"' if family == "public" else ""
     analysis_current = ' aria-current="true"' if family == "analysis" else ""
+    archive_current = ' aria-current="true"' if archive_family else ""
     family_label = {
         "public": "Daily public report",
         "analysis": "72-hour analysis",
-        "archive": "Saved reports",
-        "summary": "Season & month summary",
-        "records": "All-time record book",
+        "archive": "Archive",
+        "summary": "Archive",
+        "records": "Archive",
         "home": "Atlas project",
     }[family]
     page_navigation = (
@@ -2009,12 +2099,7 @@ def _navigation(active: str, family: str, share_id: str | None = None) -> str:
         if links
         else ""
     )
-    archive_current = ' aria-current="page"' if archive else ""
     archive_href = "index.html" if archive else f"{prefix}archive/index.html"
-    summary_current = ' aria-current="page"' if family == "summary" else ""
-    records_current = ' aria-current="page"' if family == "records" else ""
-    summary_href = f"{prefix}summary.html"
-    records_href = f"{prefix}records.html"
     # The report always describes the last complete day, never "today" — the label says so
     # rather than promising same-day data the archive cannot deliver.
     share_button = (
@@ -2042,21 +2127,107 @@ def _navigation(active: str, family: str, share_id: str | None = None) -> str:
     )
     return (
         f'<div class="nav-wrap"><a class="brand" href="{prefix}index.html">Atlas</a>'
-        f'<span class="nav-label">Report edition</span>'
-        f'<div class="report-switch" aria-label="Report edition"><a href="{prefix}report.html"{public_current}>Public report</a>'
-        f'<a href="{prefix}analysis/index.html"{analysis_current}>Meteorological analysis</a></div>'
+        f'<span class="nav-label">Publications</span>'
+        f'<nav class="report-switch" aria-label="Atlas publications"><a href="{prefix}report.html"{public_current}>Daily Report</a>'
+        f'<a href="{prefix}analysis/index.html"{analysis_current}>72-Hour Analysis</a>'
+        f'<a href="{archive_href}"{archive_current}>Archive</a></nav>'
         f'{page_navigation}'
-        f'<div class="archive-nav-wrap"><span class="nav-label">History</span>'
-        f'<a class="archive-nav-link" href="{summary_href}"{summary_current}>'
-        f'Summary <span>Month &amp; season digest</span></a>'
-        f'<a class="archive-nav-link" href="{records_href}"{records_current}>'
-        f'Record Book <span>All-time extremes</span></a>'
-        f'<a class="archive-nav-link" data-atlas-archive-link href="{archive_href}"{archive_current}>'
-        f'Archive <span>Saved editions</span></a></div>'
         f'{share_button}'
         f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
         f'Daily public record and rolling expert analysis.</div></div>'
     )
+
+
+def _heading_slug(value: str) -> str:
+    plain = html.unescape(re.sub(r"<[^>]+>", "", value)).casefold()
+    return re.sub(r"[^a-z0-9]+", "-", plain).strip("-") or "section"
+
+
+def _analysis_outline(content: str) -> tuple[str, str]:
+    """Add stable heading anchors and a compact outline to long analysis pages."""
+    headings: list[tuple[str, str]] = []
+    used: set[str] = set()
+    pattern = re.compile(r"<h2(?P<attrs>[^>]*)>(?P<label>.*?)</h2>", re.IGNORECASE | re.DOTALL)
+
+    def anchor(match: re.Match[str]) -> str:
+        attrs = match.group("attrs")
+        label_html = match.group("label")
+        label = html.unescape(re.sub(r"<[^>]+>", "", label_html)).strip()
+        existing = re.search(r'\bid=["\']([^"\']+)["\']', attrs, re.IGNORECASE)
+        slug = existing.group(1) if existing else _heading_slug(label)
+        base = slug
+        suffix = 2
+        while slug in used:
+            slug = f"{base}-{suffix}"
+            suffix += 1
+        used.add(slug)
+        headings.append((slug, label))
+        if not existing:
+            attrs = f'{attrs} id="{html.escape(slug)}"'
+        return f"<h2{attrs}>{label_html}</h2>"
+
+    anchored = pattern.sub(anchor, content)
+    if len(headings) < 2:
+        return anchored, ""
+    links = "".join(
+        f'<a href="#{html.escape(slug)}">{html.escape(label)}</a>'
+        for slug, label in headings
+    )
+    outline = (
+        '<aside class="page-outline" aria-label="On this page">'
+        '<nav><strong>On this page</strong>'
+        f'{links}</nav></aside>'
+    )
+    return anchored, outline
+
+
+def _publication_strip(
+    family: str,
+    period: str,
+    updated: str,
+    complete: bool,
+) -> str:
+    label = {
+        "public": "Daily observation",
+        "analysis": "72-hour reconstruction",
+        "weekly": "Preserved observation",
+    }.get(family, "Observed record")
+    state = "Complete" if complete else "Incomplete"
+    state_note = (
+        "Required observation coverage passed"
+        if complete
+        else "Required evidence is incomplete; see Methods"
+    )
+    return f"""
+<section class="publication-state" aria-label="Publication state" data-state="{state.casefold()}">
+  <div><span>Record type</span><strong>{label}</strong><small>Observed, not forecast</small></div>
+  <div><span>Observed period</span><strong>{html.escape(period)}</strong></div>
+  <div class="publication-integrity"><span>Integrity</span><strong>{state}</strong><small>{state_note}</small></div>
+  <div><span>Updated</span><strong>{html.escape(updated)}</strong></div>
+</section>
+"""
+
+
+def _evidence_badge(kind: str, label: str | None = None) -> str:
+    normalized = kind.casefold().replace("_", "-").replace(" ", "-")
+    aliases = {
+        "observed": "observed",
+        "remote": "remote",
+        "remote-sensed": "remote",
+        "gridded": "model",
+        "model": "model",
+        "model-derived": "model",
+        "derived": "derived",
+        "other": "derived",
+    }
+    css_class = aliases.get(normalized, "derived")
+    default = {
+        "observed": "Observed",
+        "remote": "Remote-sensed",
+        "model": "Model-derived",
+        "derived": "Derived",
+    }[css_class]
+    return f'<span class="evidence-badge {css_class}">{html.escape(label or default)}</span>'
 
 
 def _plot_section(
@@ -2080,9 +2251,9 @@ def _plot_section(
   </div>
 {source_note}
   <div class="viz-scroll">
-    <iframe class="{classes}" src="{html.escape(path)}" title="{html.escape(frame_title)}" loading="lazy" fetchpriority="low" scrolling="no"></iframe>
+    <iframe class="{classes}" src="{html.escape(path)}" title="{html.escape(frame_title)}" loading="lazy" fetchpriority="low" scrolling="no" data-atlas-figure></iframe>
   </div>
-  <p class="source-note"><a href="{html.escape(path)}" target="_blank" rel="noopener">Open this interactive figure in a separate page</a>.</p>
+  <p class="figure-open"><a href="{html.escape(path)}" target="_blank" rel="noopener">Open this interactive figure in a separate page</a>.</p>
 </section>
 """
 
@@ -2375,6 +2546,37 @@ SHARE_SCRIPT = r"""<script>
 </script>"""
 
 
+FIGURE_RESIZE_SCRIPT = r"""<script data-atlas-figure-resize>
+  (() => {
+    const fitFigure = frame => {
+      try {
+        const figureDocument = frame.contentDocument;
+        if (!figureDocument?.body) return;
+        const resize = () => {
+          const measured = Math.max(
+            figureDocument.body.scrollHeight,
+            figureDocument.documentElement?.scrollHeight || 0,
+          );
+          if (measured > 0) frame.style.height = `${Math.max(320, Math.ceil(measured) + 2)}px`;
+        };
+        frame._atlasFigureObserver?.disconnect();
+        resize();
+        if ('ResizeObserver' in window) {
+          frame._atlasFigureObserver = new ResizeObserver(resize);
+          frame._atlasFigureObserver.observe(figureDocument.body);
+        }
+      } catch (error) {
+        /* The fixed CSS height remains as the safe fallback. */
+      }
+    };
+    document.querySelectorAll('iframe[data-atlas-figure]').forEach(frame => {
+      frame.addEventListener('load', () => fitFigure(frame));
+      if (frame.contentDocument?.readyState === 'complete') fitFigure(frame);
+    });
+  })();
+</script>"""
+
+
 def _page_document(
     config: AtlasConfig,
     active: str,
@@ -2385,10 +2587,15 @@ def _page_document(
     family: str,
     edition_notice: str | None = None,
     share: dict[str, Any] | None = None,
+    publication_period: str | None = None,
+    publication_complete: bool | None = None,
 ) -> str:
     # Generated tables use column headers throughout. Adding scope centrally keeps
     # screen-reader associations intact as new scientific panels are introduced.
     content = re.sub(r"<th(?![^>]*\bscope=)([^>]*)>", r'<th scope="col"\1>', content)
+    outline = ""
+    if family == "analysis":
+        content, outline = _analysis_outline(content)
     title = config.project.name if active == "index.html" else f"{page_name} | {config.project.name}"
     notice_line = (
         f'  <div class="edition-notice" role="note">{html.escape(edition_notice)}</div>\n'
@@ -2415,6 +2622,43 @@ def _page_document(
         if share
         else ""
     )
+    publication = (
+        _publication_strip(family, publication_period, updated, publication_complete is True)
+        if publication_period and family in ("public", "analysis")
+        else ""
+    )
+    shell_class = "page-shell with-outline" if outline else "page-shell"
+    page_content = (
+        f'<div class="page-layout"><div class="page-body">{content}</div>{outline}</div>'
+        if outline
+        else content
+    )
+    outline_script = """
+  <script>
+    const outlineLinks = Array.from(document.querySelectorAll('.page-outline a'));
+    const outlineHeadings = outlineLinks
+      .map(link => document.getElementById(link.hash.slice(1)))
+      .filter(Boolean);
+    if (outlineLinks.length && outlineHeadings.length && 'IntersectionObserver' in window) {
+      const markCurrent = id => {
+        outlineLinks.forEach(link => {
+          const current = link.hash === `#${id}`;
+          link.classList.toggle('current', current);
+          if (current) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      };
+      const observer = new IntersectionObserver(entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) markCurrent(visible[0].target.id);
+      }, { rootMargin: '-72px 0px -65% 0px', threshold: 0 });
+      outlineHeadings.forEach(heading => observer.observe(heading));
+      markCurrent(outlineHeadings[0].id);
+    }
+  </script>""" if outline else ""
+    figure_resize_script = FIGURE_RESIZE_SCRIPT if "<iframe" in content else ""
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -2435,7 +2679,7 @@ def _page_document(
         <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-controls="site-navigation" aria-expanded="false">&#9776;</button>
         <div class="breadcrumbs"><span class="optional">Atlas</span><span class="optional">/</span><span>{html.escape(report_family)}</span><span>/</span><strong>{html.escape(page_name)}</strong></div>
       </header>
-{notice_line}      <main id="main-content" tabindex="-1"><div class="page-shell">{content}</div></main>
+{notice_line}      <main id="main-content" tabindex="-1"><div class="{shell_class}">{publication}{page_content}</div></main>
       <footer><div class="footer-wrap">Last updated {updated}. Debrecen weather with Hungary-wide electricity context.
         <span class="attribution">{SOURCE_ATTRIBUTION_HTML}</span>
       </div></footer>
@@ -2473,6 +2717,8 @@ def _page_document(
     mobileMenu.addEventListener?.('change', () => setMenu(false));
     setMenu(false);
   </script>
+{outline_script}
+  {figure_resize_script}
   {SHARE_SCRIPT if share_id else ""}
 </body>
 </html>
@@ -3097,7 +3343,7 @@ ARCHIVE_COMPAT_CSS = """
   width: min(100%, 1320px);
   margin: 0 auto;
   padding: 18px 48px;
-  font-size: 10px;
+  font-size: 11px;
 }
 @media (max-width: 720px) {
   .archived-legacy-content > header .wrap,
@@ -3197,36 +3443,48 @@ def _archived_navigation(
         current = ' aria-current="page"' if filename == active else ""
         links.append(f'<a href="{filename}"{current}>{html.escape(label)}</a>')
 
-    if family == "public":
-        public_href = "index.html"
-        analysis_href = (
-            "analysis/index.html"
-            if (page_dir / "analysis" / "index.html").is_file()
-            else f"{archive_href}#analysis-reports"
-        )
-    elif family == "analysis":
-        public_href = f"{root_prefix}index.html" if root_prefix else f"{archive_href}#daily-reports"
-        analysis_href = "index.html"
-    else:
-        public_href = f"{archive_href}#daily-reports"
-        analysis_href = f"{archive_href}#analysis-reports"
-
-    public_current = ' aria-current="true"' if family == "public" else ""
-    analysis_current = ' aria-current="true"' if family == "analysis" else ""
+    # An archived edition remains part of Archive even when it is a daily or
+    # 72-hour report. The three global destinations therefore always return to
+    # the live publications or the archive root, while the secondary list moves
+    # within the preserved edition.
+    live_root = f'{archive_href.removesuffix("index.html")}../'
     navigation = (
-        f'<div class="nav-wrap"><a class="brand" href="{root_prefix}index.html">Atlas</a>'
-        f'<span class="nav-label">Report edition</span>'
-        f'<div class="report-switch" aria-label="Report edition"><a href="{html.escape(public_href)}"{public_current}>Public report</a>'
-        f'<a href="{html.escape(analysis_href)}"{analysis_current}>Meteorological analysis</a></div>'
+        f'<div class="nav-wrap"><a class="brand" href="{html.escape(live_root)}index.html">Atlas</a>'
+        f'<span class="nav-label">Publications</span>'
+        f'<nav class="report-switch" aria-label="Atlas publications">'
+        f'<a href="{html.escape(live_root)}report.html">Daily Report</a>'
+        f'<a href="{html.escape(live_root)}analysis/index.html">72-Hour Analysis</a>'
+        f'<a href="{html.escape(archive_href)}" aria-current="true">Archive</a></nav>'
         f'<span class="nav-label">{family_label}</span>'
         f'<nav class="primary-nav" aria-label="Primary">{"".join(links)}</nav>'
-        f'<div class="archive-nav-wrap"><span class="nav-label">History</span>'
-        f'<a class="archive-nav-link" data-atlas-archive-link href="{html.escape(archive_href)}">'
-        f'Archive <span>Saved editions</span></a></div>'
         f'<div class="sidebar-note"><strong>Debrecen, Hungary</strong>'
         f'Archived meteorological record. Values and interpretation are preserved.</div></div>'
     )
     return navigation, page_name
+
+
+def _ensure_archived_publication_strip(
+    document: str,
+    page: Path,
+    family: str,
+) -> str:
+    if 'class="publication-state"' in document:
+        return document
+    edition_dir = page.parent.parent if page.parent.name == "analysis" else page.parent
+    period = edition_dir.name.replace("_", " to ")
+    updated_match = re.search(r"Last updated\s+([^.<]+(?:UTC|CEST|CET)?)", document)
+    updated = updated_match.group(1).strip() if updated_match else "Preserved edition"
+    complete = "data-atlas-erratum" not in document
+    strip = _publication_strip(family, period, updated, complete)
+    shell = re.compile(r'(<div class="page-shell(?: [^"]*)?">)')
+    if shell.search(document):
+        return shell.sub(lambda match: f"{match.group(1)}{strip}", document, count=1)
+    return re.sub(
+        r"(<main\b[^>]*>)",
+        lambda match: f"{match.group(1)}{strip}",
+        document,
+        count=1,
+    )
 
 
 def _enhance_archived_document(document: str) -> str:
@@ -3267,6 +3525,8 @@ def _enhance_archived_document(document: str) -> str:
             tag = tag[:-1] + ' loading="lazy">'
         if " title=" not in tag:
             tag = tag[:-1] + ' title="Interactive data figure">'
+        if " data-atlas-figure" not in tag:
+            tag = tag[:-1] + " data-atlas-figure>"
         return tag
 
     def image_hints(match: re.Match[str]) -> str:
@@ -3279,6 +3539,8 @@ def _enhance_archived_document(document: str) -> str:
 
     document = re.sub(r"<iframe\b[^>]*>", iframe_hints, document, flags=re.I)
     document = re.sub(r"<img\b[^>]*>", image_hints, document, flags=re.I)
+    if "<iframe" in document and "data-atlas-figure-resize" not in document:
+        document = document.replace("</body>", f"{FIGURE_RESIZE_SCRIPT}</body>", 1)
     if 'id="menu-button"' in document:
         document = re.sub(
             r'(<button\b[^>]*id="menu-button"[^>]*)(>)',
@@ -3330,9 +3592,6 @@ def _restyle_archived_document(
     archive_href: str,
     root_prefix: str = "",
 ) -> str:
-    if 'class="app-shell"' in document or "<body>" not in document:
-        return _enhance_archived_document(document)
-
     navigation, page_name = _archived_navigation(
         page.name,
         page.parent,
@@ -3340,6 +3599,24 @@ def _restyle_archived_document(
         archive_href,
         root_prefix,
     )
+    if 'class="app-shell"' in document:
+        document = re.sub(
+            r'<header class="site-header"[^>]*>.*?</header>',
+            f'<header class="site-header" id="site-navigation">{navigation}</header>',
+            document,
+            count=1,
+            flags=re.DOTALL,
+        )
+        if ".publication-state {" not in document:
+            document = document.replace(
+                "</head>",
+                f'<style data-atlas-archive-current-design>{DATA_FIRST_CSS}</style></head>',
+                1,
+            )
+        document = _ensure_archived_publication_strip(document, page, family)
+        return _enhance_archived_document(document)
+    if "<body>" not in document:
+        return _enhance_archived_document(document)
     family_label = {
         "public": "Daily report",
         "analysis": "72-hour analysis",
@@ -3401,6 +3678,7 @@ def _restyle_archived_document(
         f"{legacy_close}{menu_script}    </div>\n  </div>\n</body>",
         1,
     )
+    document = _ensure_archived_publication_strip(document, page, family)
     return _enhance_archived_document(document)
 
 
@@ -3561,7 +3839,7 @@ def _weather_event_index(events: list[dict[str, Any]]) -> str:
         f"""
         <tr data-event-row data-search="{html.escape(' '.join((event['local_date'], event['kind'], event['evidence'], event['source'], event['source_type'], event['edition'])).casefold())}">
           <td class="archive-date"><strong><time datetime="{html.escape(event['start_time'])}">{html.escape(event['local_date'])}</time></strong><span>{html.escape(event['local_time'])}</span></td>
-          <td><span class="event-kind">{html.escape(event['kind'])}</span><span class="event-source">{html.escape(event['source_type'])} &middot; {html.escape(event['source'])}</span></td>
+          <td><span class="event-kind">{html.escape(event['kind'])}</span><span class="event-source">{_evidence_badge(event['source_type'])} {html.escape(event['source'])}</span></td>
           <td class="event-evidence">{html.escape(event['evidence'])}</td>
           <td class="event-confidence">{event['confidence']:.0%}</td>
           <td><a class="archive-open" href="{html.escape(event['report_href'])}">Evidence &rarr;</a></td>
@@ -4116,6 +4394,19 @@ def build_site(
     period_label = f"{config.location.name}, {config.location.region} - {period_start} to {period_end}"
     daily_label = f"{config.location.name}, {config.location.region} - {daily_date}"
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    station_coverage = next(
+        (
+            coverage
+            for coverage in (observational_coverage or [])
+            if coverage.name == "station"
+        ),
+        None,
+    )
+    publication_complete = (
+        station_coverage.ok
+        if station_coverage is not None
+        else not station.frame.empty
+    )
 
     observed_temp = float(pd.to_numeric(station.frame.get("temperature_c"), errors="coerce").mean()) if not station.frame.empty else float("nan")
     observed_rain = float(pd.to_numeric(station.frame.get("precipitation_mm"), errors="coerce").sum()) if not station.frame.empty else float("nan")
@@ -4191,7 +4482,8 @@ def build_site(
             items.append(
                 f'<li><div class="event-time">{start.strftime("%d %b %H:%M")} - {end.strftime("%H:%M %Z")}</div>'
                 f'<div class="event-copy"><strong>{html.escape(event.kind)}</strong><p>{html.escape(event.evidence)}</p>'
-                f'<div class="evidence-meta">{event.confidence:.0%} confidence | {html.escape(event.source)}</div></div></li>'
+                f'<div class="evidence-meta">{_evidence_badge("derived")} '
+                f'{event.confidence:.0%} confidence &middot; {html.escape(event.source)}</div></div></li>'
             )
         return "".join(items)
 
@@ -4210,17 +4502,17 @@ def build_site(
   <div class="section-heading"><h2 id="current-publications">Current publications</h2></div>
   <div class="publication-ledger">
     <a class="publication-row" href="report.html">
-      <span class="publication-kind">DAILY / PUBLIC</span>
+      <span class="publication-kind">Daily public</span>
       <div class="publication-copy"><h2>Daily Public Report</h2><p>The last complete local day, with a concise weather account, objective events, renewable yield and climate context.</p></div>
       <div class="publication-date">Latest edition<strong>{html.escape(daily_date)} &rarr;</strong></div>
     </a>
     <a class="publication-row" href="analysis/index.html">
-      <span class="publication-kind">72 HOURS / EXPERT</span>
+      <span class="publication-kind">72-hour expert</span>
       <div class="publication-copy"><h2>Meteorological Analysis</h2><p>Surface, synoptic, satellite, radar, upper-air, land-surface, climate and energy diagnostics for the latest complete period.</p></div>
       <div class="publication-date">Current window<strong>{html.escape(period_start)} to {html.escape(period_end)} &rarr;</strong></div>
     </a>
     <a class="publication-row" href="archive/index.html">
-      <span class="publication-kind">PRESERVED RECORD</span>
+      <span class="publication-kind">Preserved record</span>
       <div class="publication-copy"><h2>Report Archive</h2><p>One search across saved reports, rolling analyses and their de-duplicated objective weather-event evidence.</p></div>
       <div class="publication-date">Browse history<strong>Open archive &rarr;</strong></div>
     </a>
@@ -4230,10 +4522,10 @@ def build_site(
   <h2>Evidence, not decoration</h2>
   <p class="home-section-lead">The report begins with what was observed and labels every gridded, remotely sensed or model-derived contribution. Interactive figures support inspection, while deterministic text records the thresholds and evidence behind each interpretation.</p>
   <div class="source-key" aria-label="Atlas evidence sources">
-    <span class="source-chip observed"><b>OBS</b> HungaroMet Debrecen Airport</span>
-    <span class="source-chip remote"><b>REMOTE</b> Radar + LINET + Meteosat</span>
-    <span class="source-chip gridded"><b>GRID</b> Open-Meteo + ERA5</span>
-    <span class="source-chip derived"><b>MODEL</b> Column diagnostics + renewable yield</span>
+    <span class="source-chip">{_evidence_badge("observed")} HungaroMet Debrecen Airport</span>
+    <span class="source-chip">{_evidence_badge("remote")} Radar + LINET + Meteosat</span>
+    <span class="source-chip">{_evidence_badge("model")} Open-Meteo + ERA5</span>
+    <span class="source-chip">{_evidence_badge("derived")} Column diagnostics + renewable yield</span>
   </div>
   <div class="home-definition">
     <div><span>Geographic scope</span><strong>Debrecen, Hungary</strong></div>
@@ -4256,10 +4548,10 @@ def build_site(
     <p class="brief">{html.escape(day_briefing)}</p>
     <p class="meta">A concise account of the last complete day in Debrecen.</p>
     <div class="source-key" aria-label="Daily report evidence">
-      <span class="source-chip observed"><b>OBS</b> Debrecen Airport</span>
-      <span class="source-chip gridded"><b>GRID</b> Open-Meteo</span>
-      <span class="source-chip remote"><b>REMOTE</b> Radar + lightning</span>
-      <span class="source-chip derived"><b>MODEL</b> Renewable yield</span>
+      <span class="source-chip">{_evidence_badge("observed")} Debrecen Airport</span>
+      <span class="source-chip">{_evidence_badge("model")} Open-Meteo</span>
+      <span class="source-chip">{_evidence_badge("remote")} Radar + lightning</span>
+      <span class="source-chip">{_evidence_badge("derived")} Renewable yield</span>
     </div>
   </div>
   <div class="summary" aria-label="Daily renewable weather summary">
@@ -4277,14 +4569,14 @@ def build_site(
         "Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation.",
         "meteogram",
     )
-    public_overview += f'<p class="public-lead"><strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {_phenomena_phrase(phenomena)}, {daily_lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and {_radar_peak_phrase(radar, daily_radar_max)}.</p>'
+    public_overview += f'<p class="public-lead">{_evidence_badge("derived")}<strong>Deterministic interpretation.</strong> Yesterday was classified as {html.escape(day_regime_label.lower())}. Atlas detected {_phenomena_phrase(phenomena)}, {daily_lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and {_radar_peak_phrase(radar, daily_radar_max)}.</p>'
 
     public_weather = _page_intro(
         "Yesterday's Weather",
         "The observed day at Debrecen Airport with gridded context used where continuous station data is unavailable.",
         daily_label,
     )
-    public_weather += f'<p class="analysis-lead"><strong>Observed at the airport.</strong> Mean {_fmt(daily_observed_temp)} C, {_fmt(daily_observed_rain)} mm precipitation and a peak gust of {_fmt(daily_observed_gust)} m/s.</p>'
+    public_weather += f'<p class="analysis-lead">{_evidence_badge("observed")}<strong>Observed at the airport.</strong> Mean {_fmt(daily_observed_temp)} C, {_fmt(daily_observed_rain)} mm precipitation and a peak gust of {_fmt(daily_observed_gust)} m/s.</p>'
     public_weather += _plot_section("Daily Meteogram", public_figures["daily_meteogram"], "Daily weather timeline", "Hover or zoom to inspect the timing of temperature, pressure, wind, rain, cloud and sunshine.", "meteogram")
 
     public_events = _page_intro(
@@ -4330,10 +4622,10 @@ def build_site(
     <p class="brief">{html.escape(regime.briefing)}</p>
     <p class="meta">{html.escape(config.project.tagline)}</p>
     <div class="source-key" aria-label="Analysis evidence">
-      <span class="source-chip observed"><b>OBS</b> Station 64711</span>
-      <span class="source-chip remote"><b>REMOTE</b> Radar + LINET + MSG</span>
-      <span class="source-chip gridded"><b>GRID</b> ERA5 + model levels</span>
-      <span class="source-chip derived"><b>MODEL</b> Energy + diagnostics</span>
+      <span class="source-chip">{_evidence_badge("observed")} Station 64711</span>
+      <span class="source-chip">{_evidence_badge("remote")} Radar + LINET + MSG</span>
+      <span class="source-chip">{_evidence_badge("model")} ERA5 + model levels</span>
+      <span class="source-chip">{_evidence_badge("derived")} Energy + diagnostics</span>
     </div>
   </div>
   <div class="summary" aria-label="Renewable weather scores">
@@ -4351,12 +4643,12 @@ def build_site(
         "meteogram",
     )
     analysis_overview += f"""
-<p class="analysis-lead"><strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {_front_phrase(fronts)}, {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
+<p class="analysis-lead">{_evidence_badge("derived")}<strong>Deterministic interpretation.</strong> {html.escape(regime.briefing)} Atlas found {_front_phrase(fronts)}, {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and a maximum sampled radar reflectivity of {_fmt(radar_max)} dBZ.</p>
 <div class="insight-grid">
-  <article class="insight"><span class="provenance">Observed</span><h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
-  <article class="insight"><span class="provenance">Radar + LINET</span><h3>Storm character</h3><p>{lightning_sentence}</p></article>
-  <article class="insight"><span class="provenance">Model-derived</span><h3>Atmospheric column</h3><p>Selected-profile surface-based CAPE was {_fmt(cape, 0)} J/kg and boundary-layer height was {_fmt(pbl, 0)} m.</p></article>
-  <article class="insight"><span class="provenance">ERA5 analog</span><h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
+  <article class="insight">{_evidence_badge("observed")}<h3>Debrecen Airport</h3><p>Mean {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm precipitation and a peak gust of {_fmt(observed_gust)} m/s from station {station.station_id}.</p></article>
+  <article class="insight">{_evidence_badge("remote")}<h3>Storm character</h3><p>{lightning_sentence}</p></article>
+  <article class="insight">{_evidence_badge("model")}<h3>Atmospheric column</h3><p>Selected-profile surface-based CAPE was {_fmt(cape, 0)} J/kg and boundary-layer height was {_fmt(pbl, 0)} m.</p></article>
+  <article class="insight">{_evidence_badge("derived")}<h3>Historical likeness</h3><p>{html.escape(best_analog.start_date + ' to ' + best_analog.end_date + ': ' + best_analog.character) if best_analog else 'No robust seasonal analog was available.'}</p></article>
 </div>
 """
 
@@ -4372,7 +4664,7 @@ def build_site(
         "Observed conditions at Debrecen Airport, their relationship to the gridded record, and the synoptic environment in which the period evolved.",
         period_label,
     )
-    weather += f'<p class="analysis-lead"><strong>Observation first.</strong> Station {station.station_id} recorded a mean temperature of {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm of precipitation and a maximum gust of {_fmt(observed_gust)} m/s. Dotted lines in the comparison are gridded context, not observations.</p>'
+    weather += f'<p class="analysis-lead">{_evidence_badge("observed")}<strong>Observation first.</strong> Station {station.station_id} recorded a mean temperature of {_fmt(observed_temp)} C, {_fmt(observed_rain)} mm of precipitation and a maximum gust of {_fmt(observed_gust)} m/s. Dotted lines in the comparison are gridded context, not observations.</p>'
     weather += _plot_section(
         "Debrecen Airport Observation Ledger",
         figures["station_comparison"],
@@ -4406,7 +4698,7 @@ def build_site(
     weather += _air_mass_origin_section(air_mass_origin)
 
     storms = _page_intro("Storms And Satellite", "A synchronized Meteosat, radar, lightning and objective-phenomena reconstruction of the complete 72-hour period.", period_label)
-    storms += f'<p class="analysis-lead"><strong>Event diagnosis.</strong> Radar reported {_radar_peak_phrase(radar, radar_max)} in the sampled domain. LINET reported {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {_phenomena_phrase(phenomena)}.</p>'
+    storms += f'<p class="analysis-lead">{_evidence_badge("derived")}<strong>Event diagnosis.</strong> Radar reported {_radar_peak_phrase(radar, radar_max)} in the sampled domain. LINET reported {lightning_phrase} within {config.hungaromet.lightning_radius_km:.0f} km, and Atlas identified {_phenomena_phrase(phenomena)}.</p>'
     storms += _plot_section("Meteosat, Radar And Lightning Diary", figures["satellite_diary"], "Synchronized Meteosat satellite diary", "Choose Airmass, Natural Colour, Night Microphysics, Fog RGB or InfraCloud; play the frames while the cursor follows the nearest radar and lightning observations.", "satellite", "HungaroMet MSG imagery sampled every three hours for a practical self-contained archive.")
     storms += _plot_section("Objective Phenomena Strip", figures["phenomena_timeline"], "Objective weather phenomena chronology", "Each segment is a threshold-based candidate. Hover to inspect evidence, confidence and provenance.", "phenomena")
     storms += f'<section class="content-section"><h2>Evidence ledger</h2><ul class="event-list">{phenomenon_items(phenomena.events, "No objective phenomenon detected")}</ul></section>'
@@ -4427,7 +4719,7 @@ def build_site(
     ]
     ledger = "".join(f'<div><span>{html.escape(label)}</span><strong>{_fmt(value, 0)} {html.escape(unit)}</strong></div>' for label, value, unit in diagnostic_cells)
     upper_air = _page_intro("Atmospheric Column", "Thermodynamic structure, parcel behavior, wind shear and boundary-layer evolution through the complete 72-hour period.", period_label)
-    upper_air += f'<p class="analysis-lead"><strong>Selected profile.</strong> CAPE {_fmt(cape, 0)} J/kg, precipitable water {_fmt(profile.diagnostics.get("precipitable_water_mm", float("nan")), 0)} mm and wet-bulb-zero height {_fmt(profile.diagnostics.get("wet_bulb_zero_m_asl", float("nan")), 0)} m ASL.</p><div class="diagnostic-ledger">{ledger}</div>'
+    upper_air += f'<p class="analysis-lead">{_evidence_badge("model")}<strong>Selected profile.</strong> CAPE {_fmt(cape, 0)} J/kg, precipitable water {_fmt(profile.diagnostics.get("precipitable_water_mm", float("nan")), 0)} mm and wet-bulb-zero height {_fmt(profile.diagnostics.get("wet_bulb_zero_m_asl", float("nan")), 0)} m ASL.</p><div class="diagnostic-ledger">{ledger}</div>'
     upper_air += _plot_section("Model Skew-T", figures["model_profile"], "Interactive Skew-T-style model atmospheric profile", "Temperature, dew point and wind are plotted on pressure surfaces. The ledger adds parcel-derived CAPE, CIN, LCL, LFC, equilibrium level and precipitable water where calculable.", "profile", profile_note)
     upper_air += _plot_section("Hodograph", figures["hodograph"], "Interactive hodograph and bulk wind shear", "The curve traces horizontal wind components with height. Length shows speed shear, curvature shows directional turning, and the inset reports layer bulk shear.", "hodograph", profile_note)
     upper_air += _storm_kinematics_section(kinematics)
@@ -4440,16 +4732,16 @@ def build_site(
     ) or '<p>No robust historical analogs were available.</p>'
     climate = _page_intro("Debrecen Climate And Analogs", "The current period compared with the 1991-2020 standard normal, the recent decade, the full ERA5 record and closest seasonal analogs.", period_label)
     climate += _plot_section("Standard Normal, Recent Decade And Full Record", figures["climate_reference"], "Climatological reference comparison", "Compare standardized anomalies against 1991-2020 and the recent decade, then inspect the empirical percentile across the full ERA5 record.", "climate-reference")
-    climate += f'<p class="analysis-lead"><strong>Historical likeness.</strong> {html.escape(best_analog.start_date + " to " + best_analog.end_date) + " was the closest match, described as " + html.escape(best_analog.character) + "." if best_analog else "No robust analog could be selected."}</p><section class="content-section"><h2>Closest seasonal analogs</h2><div class="analog-list">{analog_rows}</div></section>'
+    climate += f'<p class="analysis-lead">{_evidence_badge("derived")}<strong>Historical likeness.</strong> {html.escape(best_analog.start_date + " to " + best_analog.end_date) + " was the closest match, described as " + html.escape(best_analog.character) + "." if best_analog else "No robust analog could be selected."}</p><section class="content-section"><h2>Closest seasonal analogs</h2><div class="analog-list">{analog_rows}</div></section>'
     climate += _plot_section("Seven-Day Weather Diary", figures["seven_day_context"], "Seven-day weather context", "The highlighted final three days are the active report; the preceding four days preserve the transition into the current regime.", "context")
     climate += _plot_section("Anomaly Structure", figures["anomaly_bars"], "Weather anomaly bars", "Bars show standard deviations from the same calendar window in prior years. Sign means above or below normal, not favorable or unfavorable.")
     climate += _plot_section("Daily Regime Evolution", figures["regime_strip"], "Daily regime strip", "Each segment is one local day classified with transparent weather rules.", "compact")
     climate += _plot_section("Solar Climatology", figures["solar_diurnal"], "Solar diurnal curves", "Daily radiation profiles are compared with the historical median to distinguish clear, overcast and intermittently cloudy solar regimes.")
 
     electricity_page = _page_intro("Land Surface And Energy", "Ninety-day soil and atmospheric water balance followed by physical renewable yields and Hungary-wide electricity-system context.", period_label)
-    electricity_page += f'<p class="analysis-lead"><strong>{html.escape(land.moisture_context)}.</strong> The 90-day precipitation-minus-ET0 balance was {_fmt(land.metrics.get("water_balance_90d_mm", float("nan")))} mm, at the {_fmt(land.water_balance_percentiles.get(90, float("nan")), 0)}th percentile of 1991-2020.</p>'
+    electricity_page += f'<p class="analysis-lead">{_evidence_badge("model")}<strong>{html.escape(land.moisture_context)}.</strong> The 90-day precipitation-minus-ET0 balance was {_fmt(land.metrics.get("water_balance_90d_mm", float("nan")))} mm, at the {_fmt(land.water_balance_percentiles.get(90, float("nan")), 0)}th percentile of 1991-2020.</p>'
     electricity_page += _plot_section("Land Surface And Water Balance", figures["land_surface"], "Soil, VPD, ET0 and water-balance analysis", "Read soil temperature and moisture by depth, atmospheric vapour-pressure deficit, ET0, and daily/cumulative precipitation minus ET0 across the preceding 90 days.", "land-surface", "Open-Meteo best-match gridded land fields; the 1991-2020 reference is fixed ERA5, and water balance excludes runoff and irrigation.")
-    electricity_page += f'<p class="analysis-lead"><strong>Weather translated into production.</strong> A fixed south-facing reference array produced an estimated {_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)} kWh/kWp. A generic 100 m turbine produced {_fmt(physical_energy.wind_full_load_hours, 1)} full-load hours at a mean capacity factor of {_fmt(physical_energy.wind_capacity_factor_pct, 1)}%.</p><div class="metric-band" aria-label="Physical and system energy summary"><div class="metric"><span>PV weather yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Hungary average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div><div class="metric"><span>Day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div></div>'
+    electricity_page += f'<p class="analysis-lead">{_evidence_badge("derived")}<strong>Weather translated into production.</strong> A fixed south-facing reference array produced an estimated {_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)} kWh/kWp. A generic 100 m turbine produced {_fmt(physical_energy.wind_full_load_hours, 1)} full-load hours at a mean capacity factor of {_fmt(physical_energy.wind_capacity_factor_pct, 1)}%.</p><div class="metric-band" aria-label="Physical and system energy summary"><div class="metric"><span>PV weather yield</span><strong>{_fmt(physical_energy.pv_yield_kwh_per_kwp, 1)}</strong><span>kWh/kWp</span></div><div class="metric"><span>Wind capacity factor</span><strong>{_fmt(physical_energy.wind_capacity_factor_pct, 1)}</strong><span>percent</span></div><div class="metric"><span>Hungary average load</span><strong>{_fmt_grouped(electricity.average_load_mw)}</strong><span>MW</span></div><div class="metric"><span>Day-ahead price</span><strong>{_fmt(electricity.average_price_eur_mwh, 0)}</strong><span>EUR/MWh</span></div></div>'
     electricity_page += _plot_section("Physical PV And Wind Yield", figures["physical_energy"], "Physically based renewable weather yield", "PV uses solar position, plane-of-array irradiance and cell-temperature derating. Wind uses 100 m speed, moist-air density and a generic turbine power curve.", "physical-energy")
     electricity_page += _plot_section("Hungary Electricity Context", figures["electricity_overview"], "Hungary electricity system overview", "Compare national load, residual load, generation and price with the local Debrecen weather chronology.", "electricity", "Energy-Charts and ENTSO-E are Hungary-wide context, not Debrecen metering.")
     electricity_page += _plot_section("Weather-Electricity Relationships", figures["weather_electricity_links"], "Weather and electricity relationships", "Hourly associations are diagnostic and do not establish causality or represent a plant-level power forecast.", "relationships")
@@ -4598,6 +4890,8 @@ def build_site(
                 "public",
                 edition_notice,
                 share_payload,
+                daily_date,
+                publication_complete,
             ),
             encoding="utf-8",
         )
@@ -4625,6 +4919,8 @@ def build_site(
                 "analysis",
                 edition_notice,
                 analysis_share_payload,
+                f"{period_start} to {period_end}",
+                publication_complete,
             ),
             encoding="utf-8",
         )

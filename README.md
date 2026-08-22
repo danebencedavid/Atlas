@@ -97,8 +97,16 @@ pytest
 The landing page is a compact project guide based on this README: it states the
 research question, evidence hierarchy, scientific scope, update cadence, and
 links to the current publications and archive. The reporting area is organized
-as two meteorological publications rather than a plot wall. A persistent switch
-moves between them.
+as two meteorological publications rather than a plot wall. The global
+navigation has three destinations: **Daily Report**, **72-Hour Analysis**, and
+**Archive**. Climate summaries, the Record Book, and the Weather Event Index sit
+inside the Archive family instead of competing as top-level sections.
+
+Every report page begins with a compact publication-state strip naming the
+observed period, integrity state, and update time, and explicitly identifies the
+edition as an observed record rather than a forecast. Long analysis pages add a
+sticky section outline, while findings use one evidence vocabulary throughout:
+Observed, Remote-sensed, Model-derived, and Derived.
 
 The **Public Report** updates daily:
 

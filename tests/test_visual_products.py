@@ -153,6 +153,9 @@ def test_new_scientific_visuals_render(tmp_path: Path):
     ):
         assert path.exists()
         assert path.stat().st_size > 1_000
+        figure_html = path.read_text(encoding="utf-8")
+        assert 'class="atlas-figure-attribution"' in figure_html
+        assert "font:11px/1.55" in figure_html
     assert (tmp_path / "satellite_media").is_dir()
     satellite_html = satellite_path.read_text(encoding="utf-8")
     assert "AirmassRGB" in satellite_html
