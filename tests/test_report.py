@@ -216,6 +216,8 @@ def test_report_generation_smoke(tmp_path: Path):
     assert 'class="figure-open"' in report_html
     assert "data-atlas-figure" in report_html
     assert "data-atlas-figure-resize" in report_html
+    assert "querySelector('.atlas-figure-attribution')" in report_html
+    assert "attribution.getBoundingClientRect().bottom" in report_html
     assert 'class="source-note"><a href=' not in report_html
     assert 'class="skip-link" href="#main-content"' in report_html
     assert '<main id="main-content" tabindex="-1">' in report_html

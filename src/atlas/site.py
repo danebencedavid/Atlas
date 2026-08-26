@@ -2553,10 +2553,18 @@ FIGURE_RESIZE_SCRIPT = r"""<script data-atlas-figure-resize>
         const figureDocument = frame.contentDocument;
         if (!figureDocument?.body) return;
         const resize = () => {
-          const measured = Math.max(
-            figureDocument.body.scrollHeight,
-            figureDocument.documentElement?.scrollHeight || 0,
-          );
+          // scrollHeight is never shorter than the iframe viewport, so using it
+          // prevents an oversized fallback frame from shrinking. Every current
+          // figure ends with its attribution; its lower edge is the intended
+          // lower edge of the bordered iframe.
+          const attribution = figureDocument.querySelector('.atlas-figure-attribution');
+          const measured = attribution
+            ? attribution.getBoundingClientRect().bottom +
+              (figureDocument.defaultView?.scrollY || 0)
+            : Math.max(
+                figureDocument.body.scrollHeight,
+                figureDocument.documentElement?.scrollHeight || 0,
+              );
           if (measured > 0) frame.style.height = `${Math.max(320, Math.ceil(measured) + 2)}px`;
         };
         frame._atlasFigureObserver?.disconnect();
