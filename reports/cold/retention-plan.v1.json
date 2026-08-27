@@ -1,0 +1,24 @@
+{
+  "blocked": [],
+  "cutoff_exclusive": "2026-08-01",
+  "eligible": [],
+  "execution": {
+    "enabled": false,
+    "reason": "Planning only: activation requires a separate reviewed publisher change after the capacity threshold is reached. This command cannot delete or omit files."
+  },
+  "mode": "dry-run",
+  "policy": {
+    "minimum_capacity_level_for_execution": "watch",
+    "requires_exact_cold_release": true,
+    "requires_matching_compact_core_copy": true,
+    "requires_remote_restore_drill": true,
+    "scope": "future-published-copies-only",
+    "source_editions_remain_immutable": true
+  },
+  "schema": "atlas.archive-retention-plan/1",
+  "totals": {
+    "blocked_editions_or_resources": 0,
+    "eligible_bytes": 0,
+    "eligible_resources": 0
+  }
+}

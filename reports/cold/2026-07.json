@@ -1,0 +1,41 @@
+{
+  "asset": "atlas-debrecen-archive-2026-07.zip",
+  "asset_id": 532365768,
+  "asset_url": "https://github.com/danebencedavid/Atlas/releases/download/atlas-archive-2026/atlas-debrecen-archive-2026-07.zip",
+  "bytes": 817080,
+  "editions": [
+    {
+      "collection": "periods",
+      "content_sha256": "2e8fb0c58b8b5a45f0260634dd470c55701f42eddfce0848cc4a381df8428b92",
+      "id": "2026-07-27_2026-07-29",
+      "source_tree_sha256": "ae8ac74faf5fdb28d16275e74925619c11637080c26cc199e89ecac44b40ffdd"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "46d07e4db3ea7f9f8b9f76afcbb1c651fb8872ea88ea4e644f063101e517eb68",
+      "id": "2026-07-28_2026-07-30",
+      "source_tree_sha256": "aa1f5397a5a5ee5546232e113694fcc5adcd7e4f5f00fac74219a9076ca66205"
+    },
+    {
+      "collection": "weeks",
+      "content_sha256": "891757a79291869ba7f7c18256697b91bfca8487ef1c33600920c85d795e18e1",
+      "id": "2026-07-20_2026-07-26",
+      "source_tree_sha256": "2374e7ef46d22c6cdbcfab586eb55ea71974315125d1715787b22934fbfad7b6"
+    }
+  ],
+  "github_digest": "sha256:ecde30b093b3e39ec2402b080395ec8daaa685d5251c64e2681818dd8d29389f",
+  "month": "2026-07",
+  "release_tag": "atlas-archive-2026",
+  "release_url": "https://github.com/danebencedavid/Atlas/releases/tag/atlas-archive-2026",
+  "repository": "danebencedavid/Atlas",
+  "schema": "atlas.cold-release-verification/1",
+  "sha256": "ecde30b093b3e39ec2402b080395ec8daaa685d5251c64e2681818dd8d29389f",
+  "status": "verified",
+  "verification": {
+    "downloaded_copy": true,
+    "github_metadata": true,
+    "local_package": true,
+    "restored_editions": true
+  },
+  "verified_at": "2026-08-27T13:46:51.568047+00:00"
+}
