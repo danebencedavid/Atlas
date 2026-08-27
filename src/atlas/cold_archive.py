@@ -5,22 +5,25 @@ import hashlib
 import json
 import os
 import re
+import tempfile
 import time
 import uuid
 import zipfile
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import date, datetime, timezone
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 from urllib.parse import quote
 
 import requests
 
 from atlas.archive_bundle import validate_edition_bundle
+from atlas.archive_publish import staged_directory
 
 
 COLD_PACKAGE_SCHEMA = "atlas.cold-package/1"
 COLD_VERIFICATION_SCHEMA = "atlas.cold-release-verification/1"
+RETENTION_PLAN_SCHEMA = "atlas.archive-retention-plan/1"
 GITHUB_API_VERSION = "2026-03-10"
 MONTH_PATTERN = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
 MAX_RELEASE_ASSET_BYTES = 2_000_000_000
@@ -230,6 +233,109 @@ def load_cold_package(asset_path: Path) -> ColdPackage:
     )
 
 
+def _safe_zip_resource_path(relative: str) -> PurePosixPath:
+    path = PurePosixPath(relative)
+    if (
+        not relative
+        or "\\" in relative
+        or path.is_absolute()
+        or ".." in path.parts
+        or path.parts[0] != "reports"
+    ):
+        raise ColdArchiveError(f"Unsafe cold ZIP resource path: {relative!r}")
+    return path
+
+
+def restore_and_validate_cold_package(
+    package: ColdPackage,
+    target_dir: Path,
+    *,
+    asset_path: Path | None = None,
+) -> tuple[Path, ...]:
+    """Atomically restore a package and validate every recovered edition."""
+
+    source = asset_path or package.asset_path
+    if source.stat().st_size != package.bytes or _sha256(source) != package.sha256:
+        raise ColdArchiveError("Cold restore source does not match package metadata")
+
+    restored: list[Path] = []
+    with staged_directory(target_dir) as staging:
+        with zipfile.ZipFile(source) as archive:
+            corrupt = archive.testzip()
+            if corrupt is not None:
+                raise ColdArchiveError(
+                    f"Cold package contains a corrupt ZIP member: {corrupt}"
+                )
+            try:
+                embedded_bytes = archive.read("atlas-cold-manifest.json")
+                embedded = json.loads(embedded_bytes)
+            except (KeyError, json.JSONDecodeError) as exc:
+                raise ColdArchiveError(
+                    "Cold package has no readable embedded manifest"
+                ) from exc
+            if embedded.get("schema") != COLD_PACKAGE_SCHEMA:
+                raise ColdArchiveError(
+                    "Cold package has an unsupported embedded manifest"
+                )
+            if embedded.get("month") != package.month:
+                raise ColdArchiveError("Cold package month does not match package metadata")
+            if embedded.get("editions") != list(package.editions):
+                raise ColdArchiveError(
+                    "Cold package edition list does not match package metadata"
+                )
+
+            resources = embedded.get("files")
+            if not isinstance(resources, list):
+                raise ColdArchiveError("Cold package file list is invalid")
+            declared_names: set[str] = set()
+            for resource in resources:
+                if not isinstance(resource, dict) or not isinstance(
+                    resource.get("path"), str
+                ):
+                    raise ColdArchiveError("Cold package contains an invalid file record")
+                relative = resource["path"]
+                path = _safe_zip_resource_path(relative)
+                if relative in declared_names:
+                    raise ColdArchiveError(f"Duplicate cold ZIP resource: {relative}")
+                declared_names.add(relative)
+                try:
+                    content = archive.read(relative)
+                except KeyError as exc:
+                    raise ColdArchiveError(f"Missing cold ZIP resource: {relative}") from exc
+                if len(content) != resource.get("bytes"):
+                    raise ColdArchiveError(f"Cold ZIP size mismatch: {relative}")
+                if hashlib.sha256(content).hexdigest() != resource.get("sha256"):
+                    raise ColdArchiveError(f"Cold ZIP checksum mismatch: {relative}")
+                destination = staging.joinpath(*path.parts)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(content)
+
+            archive_member_names = archive.namelist()
+            archive_names = set(archive_member_names)
+            expected_names = {"atlas-cold-manifest.json", *declared_names}
+            if (
+                len(archive_member_names) != len(archive_names)
+                or archive_names != expected_names
+            ):
+                raise ColdArchiveError(
+                    "Cold package contains undeclared or duplicate members"
+                )
+            (staging / "atlas-cold-manifest.json").write_bytes(embedded_bytes)
+
+        for edition in package.editions:
+            collection = edition["collection"]
+            edition_id = edition["id"]
+            restored_edition = staging / "reports" / collection / edition_id
+            validation = validate_edition_bundle(restored_edition)
+            if not validation.valid:
+                raise ColdArchiveError(
+                    f"Restored edition {collection}/{edition_id} is invalid: "
+                    + "; ".join(validation.errors)
+                )
+            restored.append(target_dir / "reports" / collection / edition_id)
+    return tuple(restored)
+
+
 def _verify_asset_metadata(asset: dict[str, Any], package: ColdPackage) -> None:
     expected_digest = f"sha256:{package.sha256}"
     if asset.get("name") != package.asset_path.name:
@@ -297,10 +403,11 @@ def _release_for_year(
     return _response_json(response, "release creation")
 
 
-def _download_digest(
+def _download_asset(
     session: requests.Session,
     asset: dict[str, Any],
     token: str,
+    destination: Path,
 ) -> tuple[int, str]:
     response = session.get(
         asset["url"],
@@ -315,11 +422,13 @@ def _download_digest(
         )
     digest = hashlib.sha256()
     size = 0
-    for chunk in response.iter_content(chunk_size=1024 * 1024):
-        if not chunk:
-            continue
-        size += len(chunk)
-        digest.update(chunk)
+    with destination.open("wb") as stream:
+        for chunk in response.iter_content(chunk_size=1024 * 1024):
+            if not chunk:
+                continue
+            size += len(chunk)
+            digest.update(chunk)
+            stream.write(chunk)
     return size, digest.hexdigest()
 
 
@@ -329,6 +438,8 @@ def _write_verification_record(
     repository: str,
     release: dict[str, Any],
     asset: dict[str, Any],
+    *,
+    restore_validated: bool = False,
 ) -> Path:
     record_path = reports_dir / "cold" / f"{package.month}.json"
     stable = {
@@ -348,6 +459,7 @@ def _write_verification_record(
             "local_package": True,
             "github_metadata": True,
             "downloaded_copy": True,
+            "restored_editions": restore_validated,
         },
         "editions": list(package.editions),
     }
@@ -428,10 +540,20 @@ def upload_and_verify_cold_release(
                 )
                 asset = _response_json(response, "release-asset verification")
 
-    downloaded_bytes, downloaded_sha256 = _download_digest(session, asset, token)
-    if downloaded_bytes != package.bytes or downloaded_sha256 != package.sha256:
-        raise ColdArchiveError(
-            "Downloaded GitHub release asset does not match the local cold package"
+    with tempfile.TemporaryDirectory(prefix="atlas-cold-verify-") as temporary:
+        temporary_path = Path(temporary)
+        downloaded = temporary_path / package.asset_path.name
+        downloaded_bytes, downloaded_sha256 = _download_asset(
+            session, asset, token, downloaded
+        )
+        if downloaded_bytes != package.bytes or downloaded_sha256 != package.sha256:
+            raise ColdArchiveError(
+                "Downloaded GitHub release asset does not match the local cold package"
+            )
+        restore_and_validate_cold_package(
+            package,
+            temporary_path / "restored",
+            asset_path=downloaded,
         )
     return _write_verification_record(
         reports_dir,
@@ -439,6 +561,7 @@ def upload_and_verify_cold_release(
         repository,
         release,
         asset,
+        restore_validated=True,
     )
 
 
@@ -461,6 +584,17 @@ def require_verified_cold_release(
         ) from exc
     if record.get("schema") != COLD_VERIFICATION_SCHEMA or record.get("status") != "verified":
         raise ColdReleaseVerificationError(f"Cold release {month} is not verified")
+    verification = record.get("verification", {})
+    required_checks = (
+        "local_package",
+        "github_metadata",
+        "downloaded_copy",
+        "restored_editions",
+    )
+    if not all(verification.get(check) is True for check in required_checks):
+        raise ColdReleaseVerificationError(
+            f"Cold release {month} has not passed a complete restore drill"
+        )
     expected = {
         "collection": collection,
         "id": edition_id,
@@ -472,6 +606,140 @@ def require_verified_cold_release(
             f"Verified cold release does not match {collection}/{edition_id}"
         )
     return record_path
+
+
+def build_retention_plan(reports_dir: Path, before: date) -> dict[str, Any]:
+    """Plan only reversible hot-publication savings; never modify an edition."""
+
+    eligible: list[dict[str, Any]] = []
+    blocked: list[dict[str, Any]] = []
+    for collection in ("daily", "periods", "weeks"):
+        parent = reports_dir / collection
+        if not parent.is_dir():
+            continue
+        for edition_dir in sorted(path for path in parent.iterdir() if path.is_dir()):
+            manifest_path = edition_dir / "manifest.json"
+            if not manifest_path.is_file():
+                continue
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            try:
+                window_end = date.fromisoformat(str(manifest["window"]["end"]))
+            except (KeyError, ValueError) as exc:
+                raise ColdArchiveError(
+                    f"Edition {collection}/{edition_dir.name} has an invalid window"
+                ) from exc
+            candidates = manifest.get("legacy", {}).get("cold_candidates", [])
+            if window_end >= before or not candidates:
+                continue
+
+            validation = validate_edition_bundle(edition_dir)
+            if not validation.valid:
+                blocked.append(
+                    {
+                        "collection": collection,
+                        "id": edition_dir.name,
+                        "reason": "edition-validation-failed",
+                    }
+                )
+                continue
+            try:
+                verification_record = require_verified_cold_release(
+                    reports_dir, collection, edition_dir.name
+                )
+            except ColdReleaseVerificationError:
+                blocked.append(
+                    {
+                        "collection": collection,
+                        "id": edition_dir.name,
+                        "reason": "no-restore-verified-cold-release",
+                    }
+                )
+                continue
+
+            datasets = manifest.get("datasets", [])
+            for candidate in candidates:
+                source_path = candidate.get("path")
+                compact = next(
+                    (
+                        resource
+                        for resource in datasets
+                        if resource.get("source_path") == source_path
+                        and resource.get("compression") == "gzip"
+                        and resource.get("source_sha256") == candidate.get("sha256")
+                    ),
+                    None,
+                )
+                if compact is None:
+                    blocked.append(
+                        {
+                            "collection": collection,
+                            "id": edition_dir.name,
+                            "path": source_path,
+                            "reason": "no-matching-core-copy",
+                        }
+                    )
+                    continue
+                eligible.append(
+                    {
+                        "collection": collection,
+                        "id": edition_dir.name,
+                        "path": source_path,
+                        "bytes": candidate["bytes"],
+                        "sha256": candidate["sha256"],
+                        "core_copy": compact["path"],
+                        "cold_verification": verification_record.relative_to(
+                            reports_dir
+                        ).as_posix(),
+                    }
+                )
+
+    return {
+        "schema": RETENTION_PLAN_SCHEMA,
+        "mode": "dry-run",
+        "cutoff_exclusive": before.isoformat(),
+        "policy": {
+            "scope": "future-published-copies-only",
+            "source_editions_remain_immutable": True,
+            "minimum_capacity_level_for_execution": "watch",
+            "requires_exact_cold_release": True,
+            "requires_remote_restore_drill": True,
+            "requires_matching_compact_core_copy": True,
+        },
+        "execution": {
+            "enabled": False,
+            "reason": (
+                "Planning only: activation requires a separate reviewed publisher "
+                "change after the capacity threshold is reached. This command cannot "
+                "delete or omit files."
+            ),
+        },
+        "eligible": eligible,
+        "blocked": blocked,
+        "totals": {
+            "eligible_resources": len(eligible),
+            "eligible_bytes": sum(int(item["bytes"]) for item in eligible),
+            "blocked_editions_or_resources": len(blocked),
+        },
+    }
+
+
+def write_retention_plan(
+    reports_dir: Path,
+    before: date,
+    output_path: Path | None = None,
+) -> Path:
+    output_path = output_path or reports_dir / "cold" / "retention-plan.v1.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output_path.with_name(
+        f".{output_path.name}.staging-{uuid.uuid4().hex}"
+    )
+    try:
+        temporary.write_bytes(_json_bytes(build_retention_plan(reports_dir, before)))
+        temporary.replace(output_path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    return output_path
 
 
 def _package_from_args(args: argparse.Namespace) -> int:
@@ -496,6 +764,29 @@ def _upload_from_args(args: argparse.Namespace) -> int:
     return 0
 
 
+def _restore_from_args(args: argparse.Namespace) -> int:
+    package = load_cold_package(args.asset)
+    if args.target_dir is not None:
+        restored = restore_and_validate_cold_package(package, args.target_dir)
+    else:
+        with tempfile.TemporaryDirectory(prefix="atlas-cold-restore-") as temporary:
+            restored = restore_and_validate_cold_package(
+                package, Path(temporary) / "restored"
+            )
+    print(f"Validated {len(restored)} restored editions from {package.asset_path}")
+    return 0
+
+
+def _retention_from_args(args: argparse.Namespace) -> int:
+    try:
+        before = date.fromisoformat(args.before)
+    except ValueError as exc:
+        raise ColdArchiveError("Retention cutoff must use YYYY-MM-DD") from exc
+    output = write_retention_plan(args.reports_dir, before, args.output)
+    print(output)
+    return 0
+
+
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Package and verify immutable Atlas monthly cold archives."
@@ -512,6 +803,17 @@ def main(argv: Iterable[str] | None = None) -> int:
     upload_parser.add_argument("--repository")
     upload_parser.add_argument("--api-url")
     upload_parser.set_defaults(handler=_upload_from_args)
+    restore_parser = commands.add_parser("restore-check")
+    restore_parser.add_argument("--asset", required=True, type=Path)
+    restore_parser.add_argument("--target-dir", type=Path)
+    restore_parser.set_defaults(handler=_restore_from_args)
+    retention_parser = commands.add_parser("retention-plan")
+    retention_parser.add_argument(
+        "--before", required=True, help="Exclusive YYYY-MM-DD cutoff"
+    )
+    retention_parser.add_argument("--reports-dir", type=Path, default=Path("reports"))
+    retention_parser.add_argument("--output", type=Path)
+    retention_parser.set_defaults(handler=_retention_from_args)
     args = parser.parse_args(list(argv) if argv is not None else None)
     return args.handler(args)
 

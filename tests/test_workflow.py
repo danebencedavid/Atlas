@@ -12,3 +12,34 @@ def test_archive_step_guards_optional_status_record() -> None:
     assert "git add reports/daily reports/periods reports/status" not in workflow
     assert "if [ -f reports/status/withheld.json ]; then" in workflow
     assert "git add -u -- reports/status/withheld.json" in workflow
+
+
+def test_every_successful_refresh_persists_its_archive() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert '- cron: "17 11 * * *"' in workflow
+    assert "if: github.event_name != 'push'" not in workflow
+    assert "git add reports/daily reports/periods" in workflow
+
+
+def test_watchdog_recovers_only_missing_or_failed_authoritative_runs() -> None:
+    workflow = (
+        ROOT / ".github" / "workflows" / "archive-watchdog.yml"
+    ).read_text(encoding="utf-8")
+
+    assert '- cron: "17 13 * * *"' in workflow
+    assert "['schedule', 'workflow_dispatch', 'push'].includes(run.event)" in workflow
+    assert "activeOrSuccessful" in workflow
+    assert "createWorkflowDispatch" in workflow
+
+
+def test_cold_workflow_records_restore_checked_retention_plan() -> None:
+    workflow = (
+        ROOT / ".github" / "workflows" / "cold-archive.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "Upload and independently verify release asset" in workflow
+    assert "atlas-cold retention-plan --before" in workflow
+    assert 'git add "reports/cold/retention-plan.v1.json"' in workflow

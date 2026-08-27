@@ -1,0 +1,69 @@
+name: Recover Missing Daily Archive
+
+on:
+  schedule:
+    # The primary run is due at 11:17 UTC. Allow two hours for provider refresh,
+    # archive validation and ordinary Actions scheduling delay before intervening.
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: atlas-archive-watchdog
+  cancel-in-progress: false
+
+jobs:
+  recover-if-needed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check today's authoritative archive run
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflowId = 'pages.yml'
+            const now = new Date()
+            const windowStart = new Date(now)
+            windowStart.setUTCHours(10, 30, 0, 0)
+
+            const response = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflowId,
+              per_page: 50,
+            })
+            const authoritative = response.data.workflow_runs
+              .filter(run => ['schedule', 'workflow_dispatch', 'push'].includes(run.event))
+              .filter(run => new Date(run.created_at) >= windowStart)
+              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
+
+            const activeOrSuccessful = authoritative.find(run =>
+              ['queued', 'in_progress', 'waiting', 'pending'].includes(run.status) ||
+              (run.status === 'completed' && run.conclusion === 'success')
+            )
+            if (activeOrSuccessful) {
+              core.summary.addHeading('Daily archive is covered')
+              core.summary.addRaw(
+                `Run #${activeOrSuccessful.run_number} is ` +
+                `${activeOrSuccessful.status}/${activeOrSuccessful.conclusion || 'active'}.`,
+              )
+              await core.summary.write()
+              return
+            }
+
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflowId,
+              ref: context.payload.repository.default_branch,
+            })
+            core.summary.addHeading('Recovery build dispatched')
+            core.summary.addRaw(
+              authoritative.length
+                ? 'Today\'s authoritative run failed; a manual recovery was dispatched.'
+                : 'No authoritative run appeared today; a manual recovery was dispatched.',
+            )
+            await core.summary.write()

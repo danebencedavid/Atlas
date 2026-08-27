@@ -7,6 +7,7 @@ import pytest
 
 from atlas.archive_publish import enforce_published_archive_limits
 from atlas.archive_publish import PublishedArchiveBudgetError
+from atlas.archive_publish import PublishedArchiveCapacityWarning
 from atlas.archive_publish import PublishedArchiveLimits
 from atlas.archive_publish import staged_directory
 
@@ -53,6 +54,8 @@ def test_final_deployed_size_report_includes_itself(tmp_path: Path):
     assert report["total_bytes"] == actual
     assert report["status"] == "within"
     assert report["editions"][0]["bytes"] == 200
+    assert report["capacity"]["level"] == "normal"
+    assert report["capacity"]["remaining_bytes"] > 0
 
 
 def test_final_deployed_size_gate_rejects_oversized_edition(tmp_path: Path):
@@ -77,3 +80,55 @@ def test_final_deployed_size_gate_rejects_oversized_edition(tmp_path: Path):
         )
     )
     assert report["status"] == "exceeded"
+
+
+def test_capacity_forecast_warns_before_the_hard_gate(tmp_path: Path):
+    archive = tmp_path / "archive"
+    for day in ("2026-08-17", "2026-08-18"):
+        edition = archive / "daily" / day
+        edition.mkdir(parents=True)
+        (edition / "index.html").write_bytes(b"x" * 6_000)
+    limits = PublishedArchiveLimits(
+        total_bytes=20_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    with pytest.warns(PublishedArchiveCapacityWarning):
+        report_path = enforce_published_archive_limits(archive, limits)
+
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    capacity = report["capacity"]
+    daily = capacity["forecast"]["collections"][0]
+    assert report["status"] == "within"
+    assert capacity["level"] in {"watch", "warning", "critical"}
+    assert capacity["used_ratio"] >= 0.6
+    assert capacity["forecast"]["estimated_monthly_growth_bytes"] > 0
+    assert capacity["forecast"]["estimated_months_remaining"] is not None
+    assert daily["observed_cadence_days"] == 1.0
+    assert daily["estimated_editions_per_month"] == 30.44
+
+
+def test_growth_forecast_can_warn_while_current_usage_is_low(tmp_path: Path):
+    archive = tmp_path / "archive"
+    for day in ("2026-08-17", "2026-08-18"):
+        edition = archive / "daily" / day
+        edition.mkdir(parents=True)
+        (edition / "index.html").write_bytes(b"x" * 6_000)
+    limits = PublishedArchiveLimits(
+        total_bytes=100_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    with pytest.warns(PublishedArchiveCapacityWarning):
+        report_path = enforce_published_archive_limits(archive, limits)
+
+    capacity = json.loads(report_path.read_text(encoding="utf-8"))["capacity"]
+    assert capacity["signals"]["usage"] == "normal"
+    assert capacity["signals"]["forecast"] in {"warning", "critical"}
+    assert capacity["level"] in {"warning", "critical"}

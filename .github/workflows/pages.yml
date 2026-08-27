@@ -7,7 +7,7 @@ on:
     # The public report updates daily. Heavy 72-hour archives retain a true
     # three-day rhythm across month boundaries.
     #
-    # 11:00 UTC, not earlier. The HungaroMet 10-minute export regenerates once a
+    # 11:17 UTC, not earlier. The HungaroMet 10-minute export regenerates once a
     # day at about 09:50 UTC, and the file it publishes then covers through 23:50
     # UTC the previous day. Building at 05:15 read the *previous* day's file and so
     # always missed the final 22 hours of its own window: five consecutive editions
@@ -18,7 +18,9 @@ on:
     # freshness assertion in the pipeline, which compares the newest observation
     # actually retrieved against the window end and refuses to publish if it falls
     # short. This cron only makes that assertion likely to pass on the first try.
-    - cron: "0 11 * * *"
+    # Avoid the top-of-hour Actions scheduling surge, where delayed or dropped
+    # schedule events are substantially more common.
+    - cron: "17 11 * * *"
   workflow_dispatch:
 
 permissions:
@@ -144,7 +146,8 @@ jobs:
           key: atlas-provider-reference-v3-${{ runner.os }}-${{ steps.cache-date.outputs.year }}-${{ hashFiles('data/raw/open_meteo_era5_daily_*.json') }}
 
       - name: Commit generated rolling report archive
-        if: github.event_name != 'push'
+        # Every successful refresh is authoritative. This prevents a push build
+        # from deploying an edition that disappears from the next clean checkout.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

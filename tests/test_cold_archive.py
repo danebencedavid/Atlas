@@ -2,16 +2,19 @@ from __future__ import annotations
 
 import json
 import zipfile
+from datetime import date
 from pathlib import Path
 
 import pytest
 
 from atlas.archive_bundle import ensure_edition_bundle
 from atlas.cold_archive import build_cold_package
+from atlas.cold_archive import build_retention_plan
 from atlas.cold_archive import ColdArchiveError
 from atlas.cold_archive import ColdReleaseVerificationError
 from atlas.cold_archive import load_cold_package
 from atlas.cold_archive import require_verified_cold_release
+from atlas.cold_archive import restore_and_validate_cold_package
 from atlas.cold_archive import _write_verification_record
 from atlas.cold_archive import upload_and_verify_cold_release
 
@@ -24,15 +27,21 @@ LOCATION = {
 }
 
 
-def _edition(reports: Path, day: str = "2026-08-18") -> Path:
+def _edition(
+    reports: Path,
+    day: str = "2026-08-18",
+    *,
+    large_dataset: bool = False,
+) -> Path:
     edition = reports / "daily" / day
     (edition / "data").mkdir(parents=True)
     (edition / "index.html").write_text(
         "<html><body><main>Daily evidence</main></body></html>",
         encoding="utf-8",
     )
+    rows = "00:00,20\n" * (20_000 if large_dataset else 1)
     (edition / "data" / "daily.csv").write_text(
-        "time,temperature\n00:00,20\n", encoding="utf-8"
+        "time,temperature\n" + rows, encoding="utf-8"
     )
     ensure_edition_bundle(edition, "daily", **LOCATION)
     return edition
@@ -56,6 +65,10 @@ def test_cold_package_is_deterministic_and_self_verifying(tmp_path: Path):
         assert "reports/daily/2026-08-18/index.html" in {
             resource["path"] for resource in embedded["files"]
         }
+
+    restored = restore_and_validate_cold_package(loaded, tmp_path / "restored")
+    assert len(restored) == 1
+    assert (restored[0] / "index.html").is_file()
 
 
 def test_cold_package_refuses_invalid_or_empty_month(tmp_path: Path):
@@ -90,8 +103,23 @@ def test_pruning_guard_requires_exact_verified_release(tmp_path: Path):
         "tag_name": "atlas-archive-2026",
         "html_url": "https://github.test/releases/atlas-archive-2026",
     }
+    _write_verification_record(
+        reports,
+        package,
+        "owner/repo",
+        release,
+        asset,
+    )
+    with pytest.raises(ColdReleaseVerificationError, match="restore drill"):
+        require_verified_cold_release(reports, "daily", edition.name)
+
     record = _write_verification_record(
-        reports, package, "owner/repo", release, asset
+        reports,
+        package,
+        "owner/repo",
+        release,
+        asset,
+        restore_validated=True,
     )
 
     assert require_verified_cold_release(reports, "daily", edition.name) == record
@@ -197,4 +225,41 @@ def test_remote_round_trip_is_required_before_verification_record(tmp_path: Path
         "local_package": True,
         "github_metadata": True,
         "downloaded_copy": True,
+        "restored_editions": True,
     }
+
+
+def test_retention_plan_is_verified_and_non_destructive(tmp_path: Path):
+    reports = tmp_path / "reports"
+    edition = _edition(reports, large_dataset=True)
+    package = build_cold_package(reports, "2026-08", tmp_path / "dist")
+    asset = {
+        "id": 42,
+        "name": package.asset_path.name,
+        "state": "uploaded",
+        "size": package.bytes,
+        "digest": f"sha256:{package.sha256}",
+        "url": "https://api.github.test/assets/42",
+        "browser_download_url": "https://github.test/releases/archive.zip",
+    }
+    release = {
+        "tag_name": "atlas-archive-2026",
+        "html_url": "https://github.test/releases/atlas-archive-2026",
+    }
+    _write_verification_record(
+        reports,
+        package,
+        "owner/repo",
+        release,
+        asset,
+        restore_validated=True,
+    )
+
+    plan = build_retention_plan(reports, date(2026, 9, 1))
+
+    assert plan["mode"] == "dry-run"
+    assert plan["execution"]["enabled"] is False
+    assert plan["totals"]["eligible_resources"] == 1
+    assert plan["eligible"][0]["path"] == "data/daily.csv"
+    assert plan["eligible"][0]["core_copy"] == "bundle/data/daily.csv.gz"
+    assert (edition / "data" / "daily.csv").is_file()
