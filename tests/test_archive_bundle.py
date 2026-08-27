@@ -124,6 +124,30 @@ def test_frozen_edition_requires_explicit_migration(tmp_path: Path):
     assert validate_edition_bundle(edition).valid
 
 
+def test_bundle_integrity_is_stable_across_git_line_endings(tmp_path: Path):
+    edition = _period(tmp_path)
+    manifest_path = ensure_edition_bundle(edition, "periods", **LOCATION)
+    original = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    for path in (
+        edition / "index.html",
+        edition / "analysis" / "index.html",
+        edition / "data" / "current_hourly.csv",
+        edition / "narrative.json",
+        edition / "manifest.json",
+    ):
+        content = path.read_bytes().replace(b"\r\n", b"\n")
+        path.write_bytes(content.replace(b"\n", b"\r\n"))
+
+    ensure_edition_bundle(edition, "periods", **LOCATION)
+    validation = validate_edition_bundle(edition)
+    current = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert validation.valid, validation.errors
+    assert current["immutability"] == original["immutability"]
+    assert current["integrity"] == original["integrity"]
+
+
 def test_large_text_dataset_gets_a_deterministic_compact_resource(tmp_path: Path):
     edition = _period(tmp_path)
     source = edition / "data" / "lightning_events.csv"

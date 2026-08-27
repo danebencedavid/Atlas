@@ -18,7 +18,7 @@ EDITION_SCHEMA = "atlas.edition/2"
 NARRATIVE_SCHEMA = "atlas.narrative/1"
 CATALOG_SCHEMA = "atlas.archive-catalog/1"
 RENDERER_VERSION = "atlas-archive/v1"
-BUNDLE_GENERATOR_VERSION = "atlas.archive-bundle/3"
+BUNDLE_GENERATOR_VERSION = "atlas.archive-bundle/4"
 
 CORE_SIZE_BUDGETS = {
     "daily": 256 * 1024,
@@ -36,6 +36,7 @@ MEDIA_SUFFIXES = {".avif", ".jpeg", ".jpg", ".mp4", ".png", ".webm", ".webp"}
 GENERATED_BUNDLE_FILES = {"manifest.json", "narrative.json"}
 COMPACT_TEXT_THRESHOLD_BYTES = 128 * 1024
 COMPACT_TEXT_SUFFIXES = {".csv", ".json"}
+INTEGRITY_TEXT_SUFFIXES = {".csv", ".html", ".json"}
 
 
 @dataclass(frozen=True)
@@ -114,12 +115,13 @@ class _NarrativeParser(HTMLParser):
         return " ".join(parts).strip()
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _integrity_bytes(path: Path) -> bytes:
+    """Return bytes as Git deploys tracked text, independent of checkout OS."""
+
+    content = path.read_bytes()
+    if path.suffix.casefold() in INTEGRITY_TEXT_SUFFIXES:
+        return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
 
 
 def _json_bytes(payload: dict[str, Any]) -> bytes:
@@ -179,10 +181,11 @@ def _media_type(path: Path) -> str:
 
 
 def _resource(path: Path, root: Path) -> dict[str, Any]:
+    content = _integrity_bytes(path)
     return {
         "path": path.relative_to(root).as_posix(),
-        "bytes": path.stat().st_size,
-        "sha256": _sha256(path),
+        "bytes": len(content),
+        "sha256": hashlib.sha256(content).hexdigest(),
         "media_type": _media_type(path),
     }
 
@@ -217,8 +220,11 @@ def _source_tree_digest(paths: Iterable[Path], root: Path) -> str:
     digest = hashlib.sha256()
     for path in paths:
         relative = path.relative_to(root).as_posix()
+        content = _integrity_bytes(path)
         digest.update(
-            f"{relative}\0{path.stat().st_size}\0{_sha256(path)}\n".encode("utf-8")
+            f"{relative}\0{len(content)}\0{hashlib.sha256(content).hexdigest()}\n".encode(
+                "utf-8"
+            )
         )
     return digest.hexdigest()
 
@@ -246,7 +252,7 @@ def _dataset_resource(path: Path, root: Path) -> tuple[dict[str, Any], dict[str,
 
     relative = path.relative_to(root)
     compact_path = root / "bundle" / relative.parent / f"{relative.name}.gz"
-    _write_bytes_if_changed(compact_path, _gzip_bytes(path.read_bytes()))
+    _write_bytes_if_changed(compact_path, _gzip_bytes(_integrity_bytes(path)))
     compact = _resource(compact_path, root)
     return (
         {
@@ -373,10 +379,10 @@ def ensure_edition_bundle(
         }
         for page in pages
     ]
-    source_bytes = sum(path.stat().st_size for path in source_files)
+    source_bytes = sum(len(_integrity_bytes(path)) for path in source_files)
     data_bytes = sum(resource["bytes"] for resource in data_resources)
     media_bytes = sum(resource["bytes"] for resource in media_resources)
-    legacy_asset_bytes = sum(path.stat().st_size for path in legacy_assets)
+    legacy_asset_bytes = sum(len(_integrity_bytes(path)) for path in legacy_assets)
 
     manifest: dict[str, Any] = {
         "schema": EDITION_SCHEMA,
@@ -519,16 +525,18 @@ def validate_edition_bundle(edition_dir: Path) -> BundleValidation:
         if not path.is_file():
             errors.append(f"Missing resource: {relative}")
             continue
-        actual_bytes = path.stat().st_size
+        actual_content = _integrity_bytes(path)
+        actual_bytes = len(actual_content)
         if actual_bytes != resource.get("bytes"):
             errors.append(f"Size mismatch: {relative}")
-        if _sha256(path) != resource.get("sha256"):
+        actual_sha256 = hashlib.sha256(actual_content).hexdigest()
+        if actual_sha256 != resource.get("sha256"):
             errors.append(f"Checksum mismatch: {relative}")
         validated_resources.append(
             {
                 "path": relative,
                 "bytes": actual_bytes,
-                "sha256": _sha256(path),
+                "sha256": actual_sha256,
             }
         )
 
@@ -537,7 +545,7 @@ def validate_edition_bundle(edition_dir: Path) -> BundleValidation:
     datasets = manifest.get("datasets", [])
     figures = manifest.get("figures", [])
     core_bytes = (
-        manifest_path.stat().st_size
+        len(_integrity_bytes(manifest_path))
         + int(narrative.get("bytes", 0))
         + sum(int(resource.get("bytes", 0)) for resource in datasets)
         + sum(int(resource.get("bytes", 0)) for resource in figures)

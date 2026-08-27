@@ -22,9 +22,9 @@
       "retention": "core",
       "schema": "atlas.plotly-figure/1",
       "sha256": "92734d07379ee1ac55f346e57faac30ad544928e52b3cb4ce35aad20813a2103",
-      "source_bytes": 11218,
+      "source_bytes": 11212,
       "source_path": "assets/daily_climate_reference.html",
-      "source_sha256": "03cc7660380b74b68533ba6f5bfdca87a30def8882f288f23f665623b774a282",
+      "source_sha256": "f31418567e57c297cc629e330dc6848fd096aae8a1ed73f98de94548f5525153",
       "spec_bytes": 10070,
       "spec_sha256": "004cd1404203c2f60447ec75d29197c148148070f9f434b133756c2006416353"
     },
@@ -38,9 +38,9 @@
       "retention": "core",
       "schema": "atlas.plotly-figure/1",
       "sha256": "a07a3639b7254c4f24791ce8206c81915af80b2e3f9527878d2ec0ab63a5b6dd",
-      "source_bytes": 19360,
+      "source_bytes": 19354,
       "source_path": "assets/daily_meteogram.html",
-      "source_sha256": "e89e6c31b9a73f7e84edf20f89c6bf5811f1b66d3191978d2b2521f2ce8464ab",
+      "source_sha256": "58efaa66112956b0b54edaaf70b527c57eb1419ca84b3e42eb2a835babe184c9",
       "spec_bytes": 18212,
       "spec_sha256": "19c08120be4945e0ed8c9131b6a62ea9a2486789a2e45e322e2ecac3b6c11544"
     },
@@ -54,9 +54,9 @@
       "retention": "core",
       "schema": "atlas.plotly-figure/1",
       "sha256": "62397625d56d13b862ebe0c1dde334eadc880c9d0e9330338625472c62ae887d",
-      "source_bytes": 16294,
+      "source_bytes": 16288,
       "source_path": "assets/daily_physical_energy.html",
-      "source_sha256": "cd15041e90608b80d38f2ae7dd996434af9c3c20e5dc57cd234fa069a1461a43",
+      "source_sha256": "69f5316d46cee4165809ff3f93cc0e2661455ecab50c1ac7e8cee79c7efc9d84",
       "spec_bytes": 15146,
       "spec_sha256": "f64f76e5fc2ed14dc70c2f533ce7e7d23c446e1c9ffdbf0314ed9878ddae45a5"
     },
@@ -70,19 +70,19 @@
       "retention": "core",
       "schema": "atlas.plotly-figure/1",
       "sha256": "d4a584b2240e3d44b22a3e6687562ca8f63f10375bc3d865e1328798295d9589",
-      "source_bytes": 11837,
+      "source_bytes": 11831,
       "source_path": "assets/seven_day_context.html",
-      "source_sha256": "c4a99cea3ed281b21ceeb4e813b8e6dc2e41ba89c4731a6fe109721bb215f08f",
+      "source_sha256": "e689cb952c0a4a2007bc13a591d2e592abe3661f84b5936c5c8b20be31141acf",
       "spec_bytes": 10689,
       "spec_sha256": "dc7f4d8da1badf879795e54e00ac5679176c8dde9ab91b92836db97fa3dca211"
     }
   ],
-  "generator": "atlas.archive-bundle/3",
+  "generator": "atlas.archive-bundle/4",
   "id": "2026-08-20",
   "immutability": {
     "frozen": true,
     "source_file_count": 10,
-    "source_tree_sha256": "0bad284f3435edcd42449223da9494d3aa01cfa00fa55a9007f4eb588a2e48ae"
+    "source_tree_sha256": "04cf039d76a5b65020c3e3fc1eee3493fb2722318193f12a69660dfc1ac33a20"
   },
   "integrity": {
     "content_sha256": "1855acc161cefb762cfda9415cdede74a87dd38f634aa58004bfcec5d9765938"
@@ -90,10 +90,10 @@
   "kind": "daily",
   "legacy": {
     "cold_candidates": [],
-    "rendered_asset_bytes": 58709,
+    "rendered_asset_bytes": 58685,
     "rendered_asset_count": 4,
-    "shared_figure_source_bytes": 58709,
-    "source_tree_bytes": 437023
+    "shared_figure_source_bytes": 58685,
+    "source_tree_bytes": 425527
   },
   "location": {
     "latitude": 47.5316,

@@ -234,8 +234,8 @@ def compact_edition_figures(edition_dir: Path) -> list[dict[str, Any]]:
         assets_dir.rglob("*.html"),
         key=lambda path: path.relative_to(assets_dir).as_posix(),
     ):
-        source_bytes = source.read_bytes()
-        document = source_bytes.decode("utf-8")
+        document = source.read_text(encoding="utf-8")
+        source_bytes = document.encode("utf-8")
         try:
             extracted = extract_plotly_figure(document)
         except ValueError:
