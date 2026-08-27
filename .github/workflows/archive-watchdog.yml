@@ -36,7 +36,7 @@ jobs:
               per_page: 50,
             })
             const authoritative = response.data.workflow_runs
-              .filter(run => ['schedule', 'workflow_dispatch', 'push'].includes(run.event))
+              .filter(run => ['schedule', 'workflow_dispatch'].includes(run.event))
               .filter(run => new Date(run.created_at) >= windowStart)
               .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
 

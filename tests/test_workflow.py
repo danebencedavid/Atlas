@@ -14,13 +14,16 @@ def test_archive_step_guards_optional_status_record() -> None:
     assert "git add -u -- reports/status/withheld.json" in workflow
 
 
-def test_every_successful_refresh_persists_its_archive() -> None:
+def test_pushes_validate_without_refetching_or_deploying_weather() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(
         encoding="utf-8"
     )
 
     assert '- cron: "17 11 * * *"' in workflow
-    assert "if: github.event_name != 'push'" not in workflow
+    assert "verify-push:" in workflow
+    assert "Run tests without refreshing weather data" in workflow
+    assert "build:\n    # Pushes validate source only." in workflow
+    assert "if: github.event_name != 'push'" in workflow
     assert "git add reports/daily reports/periods" in workflow
 
 
@@ -30,7 +33,7 @@ def test_watchdog_recovers_only_missing_or_failed_authoritative_runs() -> None:
     ).read_text(encoding="utf-8")
 
     assert '- cron: "17 13 * * *"' in workflow
-    assert "['schedule', 'workflow_dispatch', 'push'].includes(run.event)" in workflow
+    assert "['schedule', 'workflow_dispatch'].includes(run.event)" in workflow
     assert "activeOrSuccessful" in workflow
     assert "createWorkflowDispatch" in workflow
 

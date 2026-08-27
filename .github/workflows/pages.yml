@@ -53,7 +53,31 @@ jobs:
             echo "archive_analysis=false" >> "$GITHUB_OUTPUT"
           fi
 
+  verify-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Atlas
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run tests without refreshing weather data
+        run: pytest
+
   build:
+    # Pushes validate source only. Refetching on the same UTC day can produce a
+    # different capture for an already-frozen edition; only authoritative
+    # scheduled/manual runs are allowed to publish weather data.
+    if: github.event_name != 'push'
     needs: cadence
     runs-on: ubuntu-latest
     timeout-minutes: 30
