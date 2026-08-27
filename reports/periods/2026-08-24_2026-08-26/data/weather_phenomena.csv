@@ -1,0 +1,7 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-08-24 00:00:00+00:00,2026-08-24 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.3 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-25 00:00:00+00:00,2026-08-25 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.1 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-08-25 11:00:00+00:00,2026-08-25 15:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 31.5 C.,0.92,HungaroMet station 64711
+2026-08-25 13:00:00+00:00,2026-08-25 18:00:00+00:00,Thunderstorm,674 LINET event(s) with radar reflectivity reaching 56.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-08-26 10:00:00+00:00,2026-08-26 16:00:00+00:00,Thunderstorm,116 LINET event(s) with radar reflectivity reaching 57.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-08-26 14:00:00+00:00,2026-08-26 15:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +0.5 hPa, temperature -2.0 C, wind shifted 16 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
