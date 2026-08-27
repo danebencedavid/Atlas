@@ -40,9 +40,10 @@ inspectable.
 ## Delivery phases
 
 - Phase 1 provides the deterministic engine, schema and tests without changing
-  any public page.
-- Phase 2 writes the result into the generated daily evidence before an edition is
-  frozen.
+  any public page. Complete.
+- Phase 2 writes the result atomically to `data/activity_lenses.json`, references
+  it from the daily evidence summary, and includes it before a new edition is
+  frozen. Complete for live and demo builds.
 - Phase 3 renders those immutable results using Atlas's existing visual language.
 
 The engine intentionally reads source evidence rather than archived HTML. Legacy

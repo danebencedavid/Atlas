@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 
 from atlas.almanac import build_almanac
+from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import write_activity_lens_evidence
 from atlas.analogs import find_historical_analogs
 from atlas.anomalies import anomalies_as_frame, period_metrics
 from atlas.climatology import (
@@ -292,6 +294,16 @@ def run_pipeline(
     }
     daily_energy = compute_energy_index(daily_metrics, daily_standard_means)
     daily_physical_energy = compute_physical_energy(config, daily_frame)
+    daily_physical_energy_evidence = {
+        "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
+        "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
+        "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
+        "wind_capacity_factor_pct": daily_physical_energy.wind_capacity_factor_pct,
+        "mean_wind_power_density_w_m2": daily_physical_energy.mean_wind_power_density_w_m2,
+        "peak_pv_time": daily_physical_energy.peak_pv_time,
+        "peak_wind_time": daily_physical_energy.peak_wind_time,
+        "notes": daily_physical_energy.notes,
+    }
 
     balance_samples = {
         days: standard_water_balance_samples(config, climate_archive, end, days)
@@ -384,6 +396,7 @@ def run_pipeline(
     daily_standard_normal_path = processed_dir / "daily_climate_standard.csv"
     daily_full_record_path = processed_dir / "daily_climate_full_record.csv"
     daily_summary_path = processed_dir / "daily_summary.json"
+    activity_lenses_path = processed_dir / "activity_lenses.json"
     satellite_manifest_path = processed_dir / "satellite_manifest.csv"
     phenomena_path = processed_dir / "weather_phenomena.csv"
     land_hourly_path = processed_dir / "land_surface_hourly.csv"
@@ -456,6 +469,13 @@ def run_pipeline(
     daily_climate_reference.full_record_table.to_csv(
         daily_full_record_path, index=False
     )
+    write_activity_lens_evidence(
+        activity_lenses_path,
+        daily_frame,
+        config.location.timezone,
+        energy=asdict(daily_energy),
+        physical_energy=daily_physical_energy_evidence,
+    )
     daily_summary_path.write_text(
         json.dumps(
             json_ready(
@@ -470,15 +490,10 @@ def run_pipeline(
                     },
                     "metrics": daily_metrics,
                     "energy": asdict(daily_energy),
-                    "physical_energy": {
-                        "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
-                        "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
-                        "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
-                        "wind_capacity_factor_pct": daily_physical_energy.wind_capacity_factor_pct,
-                        "mean_wind_power_density_w_m2": daily_physical_energy.mean_wind_power_density_w_m2,
-                        "peak_pv_time": daily_physical_energy.peak_pv_time,
-                        "peak_wind_time": daily_physical_energy.peak_wind_time,
-                        "notes": daily_physical_energy.notes,
+                    "physical_energy": daily_physical_energy_evidence,
+                    "activity_lenses": {
+                        "schema": ACTIVITY_LENS_SCHEMA,
+                        "path": activity_lenses_path.name,
                     },
                     "regime": asdict(daily_regime),
                     "climatology": {
@@ -681,6 +696,7 @@ def run_pipeline(
             "synoptic_fields": synoptic_path,
             "physical_energy": physical_energy_path,
             "daily_physical_energy": daily_physical_energy_path,
+            "activity_lenses": activity_lenses_path,
             "land_surface_hourly": land_hourly_path,
             "land_surface_daily": land_daily_path,
             "summary": summary_path,
@@ -705,6 +721,7 @@ def run_pipeline(
             daily_standard_normal_path,
             daily_full_record_path,
             daily_summary_path,
+            activity_lenses_path,
         },
     )
     if archive_analysis:

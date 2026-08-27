@@ -12,6 +12,7 @@ from atlas.activity_lenses import ActivityLensError
 from atlas.activity_lenses import available_lens_ids
 from atlas.activity_lenses import evaluate_activity_lenses
 from atlas.activity_lenses import lens_by_id
+from atlas.activity_lenses import write_activity_lens_evidence
 
 
 TIMEZONE = "Europe/Budapest"
@@ -180,3 +181,20 @@ def test_serialization_is_deterministic_and_strict_json(tmp_path: Path) -> None:
     assert first == second
     assert first.endswith(b"\n")
     assert json.loads(target.read_text(encoding="utf-8")) == document
+
+
+def test_daily_evidence_write_atomically_replaces_the_target(tmp_path: Path) -> None:
+    target = tmp_path / "activity_lenses.json"
+    target.write_text("stale edition data", encoding="utf-8")
+
+    document = write_activity_lens_evidence(
+        target,
+        _day_frame(),
+        TIMEZONE,
+        energy={"solar_index": 92.0},
+        physical_energy={"pv_yield_kwh_per_kwp": 5.1},
+    )
+
+    assert json.loads(target.read_text(encoding="utf-8")) == document
+    assert document["date"] == "2026-08-26"
+    assert list(tmp_path.iterdir()) == [target]

@@ -11,6 +11,8 @@ import pandas as pd
 from PIL import Image, ImageDraw
 
 from atlas.almanac import build_almanac
+from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import write_activity_lens_evidence
 from atlas.analogs import AnalogAnalysis, AnalogPeriod
 from atlas.anomalies import anomalies_as_frame, compute_anomalies, percentile_rank, period_metrics
 from atlas.climatology import ClimateReference
@@ -563,6 +565,16 @@ def run_demo_pipeline(
     daily_energy = compute_energy_index(daily_metrics, daily_baseline)
     physical_energy = compute_physical_energy(config, current)
     daily_physical_energy = compute_physical_energy(config, daily)
+    daily_physical_energy_evidence = {
+        "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
+        "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
+        "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
+        "wind_capacity_factor_pct": daily_physical_energy.wind_capacity_factor_pct,
+        "mean_wind_power_density_w_m2": daily_physical_energy.mean_wind_power_density_w_m2,
+        "peak_pv_time": daily_physical_energy.peak_pv_time,
+        "peak_wind_time": daily_physical_energy.peak_wind_time,
+        "notes": daily_physical_energy.notes,
+    }
     regime = classify_period(current, climate.standard_anomalies)
     daily_regime = classify_period(daily, daily_climate.standard_anomalies)
     almanac = build_almanac(_daily_climate_archive(range(1990, end.year)), config)
@@ -647,6 +659,15 @@ def run_demo_pipeline(
         air_mass_origin=air_mass_origin,
     )
 
+    activity_lenses_path = processed_dir / "activity_lenses.json"
+    write_activity_lens_evidence(
+        activity_lenses_path,
+        daily,
+        config.location.timezone,
+        energy=asdict(daily_energy),
+        physical_energy=daily_physical_energy_evidence,
+    )
+
     processed_paths: dict[str, Path] = {
         "current_hourly": _write_csv(processed_dir / "demo_current_hourly.csv", current),
         "seven_day_context_hourly": _write_csv(processed_dir / "demo_seven_day_context.csv", context),
@@ -668,6 +689,7 @@ def run_demo_pipeline(
         "historical_analogs": _write_csv(processed_dir / "demo_analogs.csv", analogs.archive),
         "physical_energy": _write_csv(processed_dir / "demo_physical_energy.csv", physical_energy.series),
         "daily_physical_energy": _write_csv(processed_dir / "demo_daily_physical_energy.csv", daily_physical_energy.series),
+        "activity_lenses": activity_lenses_path,
         "land_surface_hourly": _write_csv(processed_dir / "demo_land_hourly.csv", land.hourly),
         "land_surface_daily": _write_csv(processed_dir / "demo_land_daily.csv", land.daily),
     }
@@ -714,6 +736,10 @@ def run_demo_pipeline(
                     "period_end": end,
                     "regime": asdict(regime),
                     "electricity": asdict(electricity_summary),
+                    "activity_lenses": {
+                        "schema": ACTIVITY_LENS_SCHEMA,
+                        "path": activity_lenses_path.name,
+                    },
                 }
             ),
             indent=2,

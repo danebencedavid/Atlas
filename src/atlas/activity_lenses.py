@@ -4,7 +4,9 @@ import json
 import math
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
 from typing import Any, Mapping
+from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pandas as pd
@@ -885,6 +887,33 @@ def activity_lens_json_bytes(document: Mapping[str, Any]) -> bytes:
         )
         + "\n"
     ).encode("utf-8")
+
+
+def write_activity_lens_evidence(
+    output_path: str | Path,
+    hourly: pd.DataFrame,
+    timezone_name: str,
+    *,
+    energy: Mapping[str, Any] | None = None,
+    physical_energy: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Evaluate and atomically persist one immutable daily lens document."""
+
+    document = evaluate_activity_lenses(
+        hourly,
+        timezone_name,
+        energy=energy,
+        physical_energy=physical_energy,
+    )
+    target = Path(output_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{uuid4().hex}.tmp")
+    try:
+        temporary.write_bytes(activity_lens_json_bytes(document))
+        temporary.replace(target)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return document
 
 
 def lens_by_id(document: Mapping[str, Any], lens_id: str) -> Mapping[str, Any]:
