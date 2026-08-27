@@ -825,6 +825,53 @@ def _evaluate_lens(
     }
 
 
+def activity_lens_methodology() -> dict[str, Any]:
+    """Describe the complete scoring method in a serializable, inspectable form."""
+
+    return {
+        "base_score": 100,
+        "score_floor": 0,
+        "calculation": (
+            "Start each lens at 100, subtract the deduction from the first matching "
+            "band in every applicable rule, then clamp the result at zero."
+        ),
+        "rating_bands": [
+            {"rating": "favorable", "condition": "80-100"},
+            {"rating": "mixed", "condition": "55-79"},
+            {"rating": "difficult", "condition": "0-54"},
+        ],
+        "minimum_required_fact_coverage": MINIMUM_EVIDENCE_COVERAGE,
+        "coverage_policy": (
+            "Withhold only the affected lens when any required fact has less than "
+            "90% coverage."
+        ),
+        "lenses": [
+            {
+                "id": spec.id,
+                "label": spec.label,
+                "scope": spec.scope,
+                "rules": [
+                    {
+                        "id": rule.id,
+                        "fact": rule.fact,
+                        "bands": [
+                            {
+                                "condition": band.condition,
+                                "deduction": band.deduction,
+                                "severity": band.severity,
+                                "explanation": band.explanation,
+                            }
+                            for band in rule.bands
+                        ],
+                    }
+                    for rule in spec.rules
+                ],
+            }
+            for spec in LENS_SPECS
+        ],
+    }
+
+
 def evaluate_activity_lenses(
     hourly: pd.DataFrame,
     timezone_name: str,
@@ -870,6 +917,7 @@ def evaluate_activity_lenses(
             "minimum_lens_coverage": MINIMUM_EVIDENCE_COVERAGE,
         },
         "commute_windows": ["06:00-10:00", "15:00-19:00"],
+        "methodology": activity_lens_methodology(),
         "lenses": lenses,
     }
 

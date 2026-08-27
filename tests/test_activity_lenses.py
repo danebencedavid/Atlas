@@ -77,6 +77,22 @@ def test_mild_dry_day_produces_available_transparent_lenses() -> None:
         "coverage": 1.0,
         "sources": ["daily_energy.solar_index"],
     }
+    methodology = document["methodology"]
+    assert methodology["base_score"] == 100
+    assert methodology["score_floor"] == 0
+    assert methodology["rating_bands"] == [
+        {"rating": "favorable", "condition": "80-100"},
+        {"rating": "mixed", "condition": "55-79"},
+        {"rating": "difficult", "condition": "0-54"},
+    ]
+    cycling_method = next(
+        lens for lens in methodology["lenses"] if lens["id"] == "cycling"
+    )
+    gust_rule = next(
+        rule for rule in cycling_method["rules"] if rule["id"] == "cycling-gusts"
+    )
+    assert gust_rule["bands"][0]["condition"] == ">= 18 m/s"
+    assert gust_rule["bands"][0]["deduction"] == 40
     assert "not forecasts" in document["disclaimer"]
 
 

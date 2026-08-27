@@ -14,6 +14,8 @@ The engine emits `atlas.activity-lenses/1`. Each document records:
 - one result per lens, with its status, rating, score and evidence;
 - every triggered rule, threshold, severity, explanation and score deduction;
 - the source column or derived daily evidence behind every displayed fact.
+- the full calculation method: starting score, rating bands, coverage policy and
+  every possible penalty threshold for every lens.
 
 A lens is `insufficient-evidence` when any required fact has less than 90% hourly
 coverage. Other lenses remain available when their own inputs are complete. A
@@ -45,8 +47,10 @@ inspectable.
   it from the daily evidence summary, and includes it before a new edition is
   frozen. Complete for live and demo builds.
 - Phase 3 renders the exact saved results on the daily overview, including each
-  score, rating, limiting evidence, disclaimer and JSON download, using only
-  Atlas's existing visual components. Complete.
+  score, rating, limiting evidence, calculation method, disclaimer and JSON
+  download. A lens symbol, section frame and accessible rating-colored accents
+  distinguish the block while retaining Atlas's existing visual components.
+  Complete.
 
 The engine intentionally reads source evidence rather than archived HTML. Legacy
 editions without the required evidence remain unchanged and do not receive

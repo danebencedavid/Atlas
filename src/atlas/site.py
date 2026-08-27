@@ -1287,6 +1287,58 @@ h2 { font-size: 19px; font-weight: 620; }
 }
 .download-copy small { font-size: 11px; text-transform: none; }
 .insight p, .event-copy p { color: var(--ink-soft); font-size: 12px; }
+.activity-lenses-section {
+  margin-top: 24px;
+  padding: 22px 20px 24px;
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--blue);
+  border-radius: 5px;
+}
+.activity-lenses-section .section-heading::before { display: none; }
+.activity-lenses-symbol {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: var(--blue);
+  background: var(--blue-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+.activity-method-summary { margin: 18px 0 16px; }
+.activity-method-summary div:first-child { border-top: 2px solid var(--blue); }
+.activity-method-summary div:nth-child(2) { border-top: 2px solid var(--gold); }
+.activity-method-summary div:nth-child(3) { border-top: 2px solid var(--green); }
+.activity-method-summary div:nth-child(4) { border-top: 2px solid var(--red); }
+.activity-lens-method {
+  margin: 0 0 18px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.activity-lens-method summary {
+  padding: 12px 0;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+.activity-lens-method > p {
+  max-width: 980px;
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.activity-lens-method .table-scroll { margin-bottom: 16px; }
+.activity-lenses-grid { margin-top: 0; }
+.activity-lens-card { position: relative; }
+.activity-lens-card[data-rating="favorable"] { box-shadow: inset 3px 0 0 var(--green); }
+.activity-lens-card[data-rating="mixed"] { box-shadow: inset 3px 0 0 var(--gold); }
+.activity-lens-card[data-rating="difficult"] { box-shadow: inset 3px 0 0 var(--red); }
+.activity-lens-card[data-rating="unavailable"] { box-shadow: inset 3px 0 0 var(--muted); }
 .event-list, .analog-list { border-top-color: var(--line-strong); }
 table { font-size: 12px; }
 th, td { border-color: var(--line); }
@@ -1705,6 +1757,7 @@ footer {
   }
   .sidebar-scrim.open { display: block; }
   .page-shell { padding: 28px 20px 56px; }
+  .activity-lenses-section { padding: 18px 14px 20px; }
   .publication-state { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .publication-state > div,
   .publication-state > div:first-child,
@@ -1857,7 +1910,77 @@ def _load_activity_lenses(
         raise ValueError("Activity-lens evidence has an incomplete or unknown lens set")
     if len(lens_ids) != len(set(lens_ids)):
         raise ValueError("Activity-lens evidence contains duplicate lenses")
+    methodology = document.get("methodology")
+    if not isinstance(methodology, dict):
+        raise ValueError("Activity-lens evidence has no calculation methodology")
+    method_lenses = methodology.get("lenses")
+    if not isinstance(method_lenses, list):
+        raise ValueError("Activity-lens methodology has no lens rules")
+    method_ids = [lens.get("id") for lens in method_lenses if isinstance(lens, dict)]
+    if len(method_ids) != len(method_lenses) or set(method_ids) != set(available_lens_ids()):
+        raise ValueError("Activity-lens methodology has an incomplete or unknown lens set")
     return document
+
+
+_ACTIVITY_FACT_LABELS = {
+    "precipitation_total_mm": "Precipitation total",
+    "wet_hours": "Hours with precipitation",
+    "wind_gust_max_ms": "Peak wind gust",
+    "temperature_min_c": "Minimum temperature",
+    "temperature_max_c": "Maximum temperature",
+    "solar_index": "Normalized solar index",
+    "hot_humid_hours": "Warm and humid hours",
+    "cold_hours": "Hours below 5 C",
+}
+
+
+def _activity_lens_methodology(document: dict[str, Any]) -> str:
+    methodology = document["methodology"]
+    base_score = html.escape(str(methodology.get("base_score", 100)))
+    coverage = float(methodology.get("minimum_required_fact_coverage", 0.9)) * 100.0
+    rows: list[str] = []
+    for lens in methodology["lenses"]:
+        label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
+        scope = (
+            "06:00-10:00 and 15:00-19:00"
+            if lens.get("scope") == "commute-hours"
+            else "Full local day"
+        )
+        for rule in lens.get("rules", []):
+            fact = str(rule.get("fact", "Evidence"))
+            fact_label = html.escape(
+                _ACTIVITY_FACT_LABELS.get(fact, fact.replace("_", " ").title())
+            )
+            thresholds = "; ".join(
+                f'{html.escape(str(band.get("condition", "")))}: '
+                f'&minus;{html.escape(str(band.get("deduction", "")))}'
+                for band in rule.get("bands", [])
+                if isinstance(band, dict)
+            )
+            rows.append(
+                f"<tr><td>{label}</td><td>{html.escape(scope)}</td>"
+                f"<td>{fact_label}</td><td>{thresholds}</td></tr>"
+            )
+    calculation = html.escape(str(methodology.get("calculation", "")))
+    coverage_policy = html.escape(str(methodology.get("coverage_policy", "")))
+    return f"""
+  <div class="diagnostic-ledger activity-method-summary" aria-label="Activity lens calculation summary">
+    <div><span>Starting score</span><strong>{base_score}/100</strong><span>for every lens</span></div>
+    <div><span>Rule effect</span><strong>Subtract</strong><span>each matching penalty</span></div>
+    <div><span>Rating breaks</span><strong>80 / 55</strong><span>favorable / mixed</span></div>
+    <div><span>Evidence minimum</span><strong>{coverage:g}%</strong><span>for every required fact</span></div>
+  </div>
+  <details class="activity-lens-method">
+    <summary>Calculation method and exact penalty thresholds</summary>
+    <p>{calculation} {coverage_policy}</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Lens</th><th>Time scope</th><th>Evidence</th><th>Penalty thresholds</th></tr></thead>
+        <tbody>{''.join(rows)}</tbody>
+      </table>
+    </div>
+  </details>
+"""
 
 
 def _activity_lenses_section(
@@ -1873,7 +1996,8 @@ def _activity_lenses_section(
         label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
         status = lens.get("status")
         if status == "available":
-            rating = str(lens.get("rating", "unrated")).replace("-", " ").title()
+            rating_key = str(lens.get("rating", "unrated")).casefold()
+            rating = rating_key.replace("-", " ").title()
             score = lens.get("score")
             provenance = f"{rating} &middot; {html.escape(str(score))}/100"
             detail = html.escape(str(lens.get("summary", "")))
@@ -1893,6 +2017,7 @@ def _activity_lenses_section(
                 if explanations:
                     detail = f"{detail} {' '.join(explanations)}"
         else:
+            rating_key = "unavailable"
             provenance = "Insufficient evidence"
             missing = lens.get("missing_or_sparse_facts", [])
             missing_labels = ", ".join(
@@ -1903,7 +2028,7 @@ def _activity_lenses_section(
             if missing_labels:
                 detail += f" Missing or sparse: {missing_labels}."
         cards.append(
-            '<article class="insight">'
+            f'<article class="insight activity-lens-card" data-rating="{html.escape(rating_key)}">'
             f'<span class="provenance">{provenance}</span>'
             f"<h3>{label}</h3><p>{detail}</p></article>"
         )
@@ -1913,10 +2038,11 @@ def _activity_lenses_section(
         else ""
     )
     return f"""
-<section class="content-section" aria-labelledby="activity-lenses-heading">
-  <div class="section-heading"><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
+<section class="content-section activity-lenses-section" aria-labelledby="activity-lenses-heading">
+  <div class="section-heading"><span class="activity-lenses-symbol" aria-hidden="true">&#9673;</span><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
   <p class="public-lead">How the completed day suited six everyday activities, using fixed and inspectable convenience thresholds. Scores of 80 or more are favorable, 55-79 are mixed, and lower scores are difficult.</p>
-  <div class="insight-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
+  <div class="insight-grid activity-lenses-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
+{_activity_lens_methodology(document)}
   <p class="evidence-meta">{html.escape(str(document.get("disclaimer", "")))}{evidence_link}</p>
 </section>
 """

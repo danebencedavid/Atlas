@@ -262,8 +262,14 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "Contains modified" in report_html
     assert "Yesterday Hour By Hour" in report_html
     assert "Activity Lenses" in report_html
+    assert 'class="activity-lenses-symbol" aria-hidden="true"' in report_html
+    assert 'class="insight activity-lens-card" data-rating="favorable"' in report_html
     assert "Cycling conditions" in report_html
     assert "Favorable &middot; 100/100" in report_html
+    assert "Calculation method and exact penalty thresholds" in report_html
+    assert "Starting score" in report_html
+    assert "80 / 55" in report_html
+    assert "8-12 m/s: &minus;10" in report_html
     assert 'href="data/activity_lenses.json" download' in report_html
     assert (target.parent / "data" / "activity_lenses.json").is_file()
     summary = json.loads((target.parent / "data" / "summary.json").read_text(encoding="utf-8"))
