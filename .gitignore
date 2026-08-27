@@ -5,6 +5,7 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+dist/
 
 # Generated Atlas outputs. CI regenerates these for Pages.
 data/raw/*

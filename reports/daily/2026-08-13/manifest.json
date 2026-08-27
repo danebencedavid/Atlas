@@ -1,0 +1,142 @@
+{
+  "budget": {
+    "core_bytes": 19955,
+    "figure_bytes": 10894,
+    "limit_bytes": 262144,
+    "media_bytes": 0,
+    "status": "within"
+  },
+  "datasets": [],
+  "evidence": {
+    "dataset_count": 0,
+    "status": "legacy-rendered-only"
+  },
+  "figures": [
+    {
+      "bytes": 2440,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_climate_reference",
+      "path": "bundle/figures/daily_climate_reference.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "c162088347a87dffdf1b6c8d38ad4d27463a1ff7aad1e2a0aabd6b3ee6da57a1",
+      "source_bytes": 10831,
+      "source_path": "assets/daily_climate_reference.html",
+      "source_sha256": "0f6ef818c10a4634d8ef7d57da920bf148e3d6aaa0c8d339b2d901c5ea1c5a93",
+      "spec_bytes": 10029,
+      "spec_sha256": "462106f4669946ceae8c82fbf367a6d138421d5d5621c7027f6972c62b88ef7f"
+    },
+    {
+      "bytes": 2920,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_meteogram",
+      "path": "bundle/figures/daily_meteogram.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "882dc7b61a85805a60e56ef20a6f3c92d1aaebe68a295787951e06e6c039e14b",
+      "source_bytes": 19049,
+      "source_path": "assets/daily_meteogram.html",
+      "source_sha256": "8124114daa30de25d05d3514c6cd480066dae3e0af74de6b3d1e16e2c854a36a",
+      "spec_bytes": 18247,
+      "spec_sha256": "84ad38d0c7c2a640f60cdbe07dd92761e924c0a92ce002c03dd1f38598d8a583"
+    },
+    {
+      "bytes": 3260,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_physical_energy",
+      "path": "bundle/figures/daily_physical_energy.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "498105455d4898126193bafb16ed128ccb9839faab8ffe541671478c9bd68db2",
+      "source_bytes": 15943,
+      "source_path": "assets/daily_physical_energy.html",
+      "source_sha256": "30fcf36ed3f51a31c98f391ad481eb9f58afa79466628fcd0b28e4d1ff51cce1",
+      "spec_bytes": 15141,
+      "spec_sha256": "49cb93122d43da89432111fc0b8d3822c05078017e3d8c9115a8fc79919036af"
+    },
+    {
+      "bytes": 2274,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "seven_day_context",
+      "path": "bundle/figures/seven_day_context.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "f346daf67f592bdf460c7e38c7650cb0c4912e6a389851d851bb48af71237efe",
+      "source_bytes": 11481,
+      "source_path": "assets/seven_day_context.html",
+      "source_sha256": "5edd464597d1b00eea2fbf951d5977cd9c5308163956431433c7f351de4207fc",
+      "spec_bytes": 10679,
+      "spec_sha256": "d6f95c39b452ff7b75f917ab10a2d0442fccab6a2032f14b8119073fb4aa399c"
+    }
+  ],
+  "generator": "atlas.archive-bundle/3",
+  "id": "2026-08-13",
+  "immutability": {
+    "frozen": true,
+    "source_file_count": 10,
+    "source_tree_sha256": "1d43de4d33bdb736c6be5adc3a4a21d800f902a84be6509dcca1482d5f2326f1"
+  },
+  "integrity": {
+    "content_sha256": "d67a15e08ca95606443945498bc1c5582cb37f40edb8f7b2ff87b05495a24c6b"
+  },
+  "kind": "daily",
+  "legacy": {
+    "cold_candidates": [],
+    "rendered_asset_bytes": 57304,
+    "rendered_asset_count": 4,
+    "shared_figure_source_bytes": 57304,
+    "source_tree_bytes": 426401
+  },
+  "location": {
+    "latitude": 47.5316,
+    "longitude": 21.6273,
+    "name": "Debrecen"
+  },
+  "media": [],
+  "narrative": {
+    "bytes": 4468,
+    "path": "narrative.json",
+    "sha256": "344b1c7d49962d5024e1a3bdd60d62e10283c35dacf457561d765d8ea6b8402c"
+  },
+  "renderer": "atlas-archive/v1",
+  "routes": [
+    {
+      "path": "context.html",
+      "title": "Climate Context | Atlas"
+    },
+    {
+      "path": "energy.html",
+      "title": "Daily Energy | Atlas"
+    },
+    {
+      "path": "events.html",
+      "title": "Daily Events | Atlas"
+    },
+    {
+      "path": "index.html",
+      "title": "Daily Overview | Atlas"
+    },
+    {
+      "path": "methods.html",
+      "title": "About | Atlas"
+    },
+    {
+      "path": "weather.html",
+      "title": "Daily Weather | Atlas"
+    }
+  ],
+  "schema": "atlas.edition/2",
+  "window": {
+    "end": "2026-08-13",
+    "start": "2026-08-13",
+    "timezone": "Europe/Budapest"
+  }
+}

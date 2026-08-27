@@ -25,6 +25,7 @@ dev = ["pytest>=8.0"]
 
 [project.scripts]
 atlas = "atlas.cli:main"
+atlas-cold = "atlas.cold_archive:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

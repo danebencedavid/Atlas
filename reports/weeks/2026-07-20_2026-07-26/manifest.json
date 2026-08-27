@@ -1,0 +1,222 @@
+{
+  "budget": {
+    "core_bytes": 56478,
+    "figure_bytes": 23728,
+    "limit_bytes": 2097152,
+    "media_bytes": 0,
+    "status": "within"
+  },
+  "datasets": [
+    {
+      "bytes": 732,
+      "media_type": "application/vnd.ms-excel",
+      "path": "data/anomalies.csv",
+      "retention": "core",
+      "sha256": "7410cc34618b6eb6be5619703334d776608e2749bba2a7136698d9ee345e953f"
+    },
+    {
+      "bytes": 2132,
+      "media_type": "application/vnd.ms-excel",
+      "path": "data/baseline_metrics.csv",
+      "retention": "core",
+      "sha256": "7e032fd5b6b8f7a473072ef6bf3e4306893c859568db07f5494cc0a9e6945b57"
+    },
+    {
+      "bytes": 15642,
+      "media_type": "application/vnd.ms-excel",
+      "path": "data/current_hourly.csv",
+      "retention": "core",
+      "sha256": "2aeb909be75fa97aecd542e527a3309fea8aa5f3be2db92d2cbe087a964fc054"
+    },
+    {
+      "bytes": 3750,
+      "media_type": "application/json",
+      "path": "data/summary.json",
+      "retention": "core",
+      "sha256": "5e322250840a4e1b58b4d1dcb54fc6134785ade5a3a156534d3287a8dff3726b"
+    },
+    {
+      "bytes": 1217,
+      "media_type": "application/vnd.ms-excel",
+      "path": "data/weekly_metrics.csv",
+      "retention": "core",
+      "sha256": "e28e18520fe8b83a8ad618bbfcf525125febd5b789d2596ba76d182c9ce19666"
+    }
+  ],
+  "evidence": {
+    "dataset_count": 5,
+    "status": "self-contained"
+  },
+  "figures": [
+    {
+      "bytes": 1940,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "anomaly_bars",
+      "path": "bundle/figures/anomaly_bars.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "f297d3fe193a59930da34f001a492d99ac02e956282ed6b77daa055751830cab",
+      "source_bytes": 9386,
+      "source_path": "assets/anomaly_bars.html",
+      "source_sha256": "efe400e36c3200d1a11cec9bf25240787c267d01cea55c0a9bac28f28ef815f9",
+      "spec_bytes": 8584,
+      "spec_sha256": "734ab0231e668f6fbb7a94a6bc23a998ab6ab72fdaa01e22e8840baac212fa57"
+    },
+    {
+      "bytes": 3859,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "dewpoint_spread",
+      "path": "bundle/figures/dewpoint_spread.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "30f8d5d8010d75ecc674b35f44b740be3864a9e54ed5323e5e918f0a6469f66d",
+      "source_bytes": 28790,
+      "source_path": "assets/dewpoint_spread.html",
+      "source_sha256": "d62f2b2c17b245933bed42741ec06d75a5d40453a1b81ec93aee67627b39fd42",
+      "spec_bytes": 27988,
+      "spec_sha256": "09725bd488a578c490def737cbac5452bdf7728dfc8be1c5896a90268551618d"
+    },
+    {
+      "bytes": 1842,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "energy_quadrant",
+      "path": "bundle/figures/energy_quadrant.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "f6f3e14f75fb2c4b7accfcec8b83e983ab7c4ef0028c2fc14df19c3cc2f5bfc9",
+      "source_bytes": 9422,
+      "source_path": "assets/energy_quadrant.html",
+      "source_sha256": "5fb85aab8898f5a5751f2b87d5151b8a6c5017f93ff5e279e09d55859aca0283",
+      "spec_bytes": 8620,
+      "spec_sha256": "8006b34d780bb6144845b25104e573c5ecd94940d0f8e039098a3a1cce2ffd58"
+    },
+    {
+      "bytes": 6779,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "meteogram",
+      "path": "bundle/figures/meteogram.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "6df9cb4ffd5e5c6781a3adeac984b82e3c546e832b8bb83250598b7595fb5c0c",
+      "source_bytes": 69336,
+      "source_path": "assets/meteogram.html",
+      "source_sha256": "38aaf5583fa07cc134eb645ebc4ebd06d6f508effaf12f3473076d3a8f6a5003",
+      "spec_bytes": 68534,
+      "spec_sha256": "4ba297ba459ffea14a2544b18ce70675b678568132ed6cc98745a98aa4f8d239"
+    },
+    {
+      "bytes": 3565,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "pressure_tendency",
+      "path": "bundle/figures/pressure_tendency.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "7c489a28002031f44b360bb77a796ac616b4c0dfa2d4dc1468f4e77e8bcb41c8",
+      "source_bytes": 24286,
+      "source_path": "assets/pressure_tendency.html",
+      "source_sha256": "2b3ec31f392c727fdc4c196d95baae09b46fbf0c0fec6bf4a1ba0f3a57f502ce",
+      "spec_bytes": 23484,
+      "spec_sha256": "b472bc9bd9de89de94d2d47a7a41fc47f4a1c458a7e833f07e1ab36ef5c4dd40"
+    },
+    {
+      "bytes": 1642,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "regime_strip",
+      "path": "bundle/figures/regime_strip.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "a2f081272e0c3dcdf2ff7b5e60aaf690800c37fff95c10cbe5a2dba757e9110a",
+      "source_bytes": 9565,
+      "source_path": "assets/regime_strip.html",
+      "source_sha256": "87dd2d47ba6e5b59fe838a8d023b7114d908f77b70afc261988d9b9125747c9f",
+      "spec_bytes": 8763,
+      "spec_sha256": "400108055cb59e04f3e4275399d19e7ea1b7a74b7694736efd67425149ca14f0"
+    },
+    {
+      "bytes": 2204,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "solar_diurnal",
+      "path": "bundle/figures/solar_diurnal.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "67dbebff87490cfe463cef05f32397b6678a8461bc531564df7e996504b3ff32",
+      "source_bytes": 13087,
+      "source_path": "assets/solar_diurnal.html",
+      "source_sha256": "7dce654788c0ae492f73befb87b74c960b3cd934e4a88254d559e5e8b5694998",
+      "spec_bytes": 12285,
+      "spec_sha256": "6ec0d55ad863b6f84e1c71e12226bd5343459ba8df5a021e0741ee47a629a74f"
+    },
+    {
+      "bytes": 1897,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "wind_rose",
+      "path": "bundle/figures/wind_rose.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-3.7.0.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "032ad789745a21df1c39ef2bf4c665bfec169a7a571ab5e290ca2b2a874b6c73",
+      "source_bytes": 10658,
+      "source_path": "assets/wind_rose.html",
+      "source_sha256": "c67da4f5705d8e23639bc6ed9d0cde2b913162019839e63941fb4cb9f99814e6",
+      "spec_bytes": 9856,
+      "spec_sha256": "d08f424ae0b5d16bdca66b6af987ba7da09232554ae78df6ecae28f8af69b218"
+    }
+  ],
+  "generator": "atlas.archive-bundle/3",
+  "id": "2026-07-20_2026-07-26",
+  "immutability": {
+    "frozen": true,
+    "source_file_count": 14,
+    "source_tree_sha256": "f66e5f594c1bc8b60cf172912e5339b93e169ed704d47941d510d73710927c1e"
+  },
+  "integrity": {
+    "content_sha256": "a61dff01b3eaf76f703c8851b63f057026a011ae01c3c0f7d2833fee13db7223"
+  },
+  "kind": "weekly",
+  "legacy": {
+    "cold_candidates": [],
+    "rendered_asset_bytes": 174530,
+    "rendered_asset_count": 8,
+    "shared_figure_source_bytes": 174530,
+    "source_tree_bytes": 206141
+  },
+  "location": {
+    "latitude": 47.5316,
+    "longitude": 21.6273,
+    "name": "Debrecen"
+  },
+  "media": [],
+  "narrative": {
+    "bytes": 1211,
+    "path": "narrative.json",
+    "sha256": "85c5ae6c71421785964d12d470088707c052275087f676180ab003f46a1d5e67"
+  },
+  "renderer": "atlas-archive/v1",
+  "routes": [
+    {
+      "path": "index.html",
+      "title": "Atlas - Debrecen Weekly Weather Dashboard"
+    }
+  ],
+  "schema": "atlas.edition/2",
+  "window": {
+    "end": "2026-07-26",
+    "start": "2026-07-20",
+    "timezone": "Europe/Budapest"
+  }
+}

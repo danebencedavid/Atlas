@@ -379,6 +379,11 @@ def run_pipeline(
     synoptic_path = processed_dir / "synoptic_fields.npz"
     physical_energy_path = processed_dir / "physical_energy.csv"
     daily_physical_energy_path = processed_dir / "daily_physical_energy.csv"
+    daily_hourly_path = processed_dir / "daily_hourly.csv"
+    daily_station_path = processed_dir / "daily_station_observations.csv"
+    daily_standard_normal_path = processed_dir / "daily_climate_standard.csv"
+    daily_full_record_path = processed_dir / "daily_climate_full_record.csv"
+    daily_summary_path = processed_dir / "daily_summary.json"
     satellite_manifest_path = processed_dir / "satellite_manifest.csv"
     phenomena_path = processed_dir / "weather_phenomena.csv"
     land_hourly_path = processed_dir / "land_surface_hourly.csv"
@@ -437,6 +442,74 @@ def run_pipeline(
     )
     physical_energy.series.to_csv(physical_energy_path, index=False)
     daily_physical_energy.series.to_csv(daily_physical_energy_path, index=False)
+    daily_frame.to_csv(daily_hourly_path, index=False)
+    daily_station = station.frame.copy()
+    if not daily_station.empty and "time" in daily_station:
+        station_local_dates = pd.to_datetime(
+            daily_station["time"], utc=True
+        ).dt.tz_convert(config.location.timezone).dt.date
+        daily_station = daily_station[station_local_dates == end].copy()
+    daily_station.to_csv(daily_station_path, index=False)
+    daily_climate_reference.standard_table.to_csv(
+        daily_standard_normal_path, index=False
+    )
+    daily_climate_reference.full_record_table.to_csv(
+        daily_full_record_path, index=False
+    )
+    daily_summary_path.write_text(
+        json.dumps(
+            json_ready(
+                {
+                    "schema": "atlas.daily-evidence/1",
+                    "date": end.isoformat(),
+                    "location": {
+                        "name": config.location.name,
+                        "latitude": config.location.latitude,
+                        "longitude": config.location.longitude,
+                        "timezone": config.location.timezone,
+                    },
+                    "metrics": daily_metrics,
+                    "energy": asdict(daily_energy),
+                    "physical_energy": {
+                        "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
+                        "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
+                        "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
+                        "wind_capacity_factor_pct": daily_physical_energy.wind_capacity_factor_pct,
+                        "mean_wind_power_density_w_m2": daily_physical_energy.mean_wind_power_density_w_m2,
+                        "peak_pv_time": daily_physical_energy.peak_pv_time,
+                        "peak_wind_time": daily_physical_energy.peak_wind_time,
+                        "notes": daily_physical_energy.notes,
+                    },
+                    "regime": asdict(daily_regime),
+                    "climatology": {
+                        "standard_period": (
+                            f"{config.climatology.standard_start_year}-"
+                            f"{config.climatology.standard_end_year}"
+                        ),
+                        "standard_anomalies": [
+                            asdict(item)
+                            for item in daily_climate_reference.standard_anomalies
+                        ],
+                        "recent_anomalies": [
+                            asdict(item)
+                            for item in daily_climate_reference.recent_anomalies
+                        ],
+                        "full_record_percentiles": (
+                            daily_climate_reference.full_record_percentiles
+                        ),
+                        "notes": daily_climate_reference.notes,
+                    },
+                    "data_quality": asdict(quality),
+                    "quality_notes": quality_notes,
+                }
+            ),
+            indent=2,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     pd.DataFrame(
         [
             {"time": frame.time.isoformat(), "product": frame.product, "source_file": frame.path.name}
@@ -623,6 +696,15 @@ def run_pipeline(
             figure_paths["daily_physical_energy"].name,
             figure_paths["seven_day_context"].name,
             figure_paths["daily_climate_reference"].name,
+        },
+        {
+            daily_hourly_path,
+            daily_station_path,
+            daily_physical_energy_path,
+            context_hourly_path,
+            daily_standard_normal_path,
+            daily_full_record_path,
+            daily_summary_path,
         },
     )
     if archive_analysis:

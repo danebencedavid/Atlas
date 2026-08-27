@@ -1,0 +1,75 @@
+name: Verify Monthly Cold Archive
+
+on:
+  schedule:
+    # Package the previous UTC month after its final daily build is safely committed.
+    - cron: "30 3 2 * *"
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Month to package (YYYY-MM); blank selects the previous UTC month"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-cold-archive
+  cancel-in-progress: false
+
+jobs:
+  package-upload-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the complete archive
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Atlas
+        run: python -m pip install -e "."
+
+      - name: Select archive month
+        id: month
+        shell: bash
+        env:
+          REQUESTED_MONTH: ${{ inputs.month }}
+        run: |
+          if [[ -n "$REQUESTED_MONTH" ]]; then
+            month="$REQUESTED_MONTH"
+          else
+            month=$(date -u -d "last month" +%Y-%m)
+          fi
+          echo "month=$month" >> "$GITHUB_OUTPUT"
+
+      - name: Build deterministic cold package
+        shell: bash
+        run: atlas-cold package --month "${{ steps.month.outputs.month }}"
+
+      - name: Upload and independently verify release asset
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          atlas-cold upload \
+            --asset "dist/cold/atlas-debrecen-archive-${{ steps.month.outputs.month }}.zip"
+
+      - name: Record successful remote verification
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "reports/cold/${{ steps.month.outputs.month }}.json"
+          if ! git diff --cached --quiet; then
+            git commit -m "Verify Atlas cold archive ${{ steps.month.outputs.month }} [skip ci]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push
+          fi

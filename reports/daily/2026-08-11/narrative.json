@@ -1,0 +1,43 @@
+{
+  "edition_id": "2026-08-11",
+  "format": "plain-text-snapshot",
+  "pages": [
+    {
+      "path": "context.html",
+      "source_sha256": "340f3e5bc447a4fb3107f52f3a9478a0e41c00f168181b73b69d6edbd537f5a1",
+      "title": "Climate Context | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-08-11 Climate Context Yesterday placed within the recent week, the 1991-2020 standard normal, the recent decade and the full ERA5 record. Seven-Day Weather Diary i The highlighted final period is the active 72-hour expert analysis; the latest day is the public report. How Unusual Was Yesterday? i The upper panel compares standardized anomalies against 1991-2020 and the recent decade. The lower panel ranks yesterday across the full ERA5 record."
+    },
+    {
+      "path": "energy.html",
+      "source_sha256": "b729e1125d4199c62d7751e48fcfe18ab2cde05be7db0e1292561aa855246f36",
+      "title": "Daily Energy | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-08-11 Renewable Weather Reference-system PV and wind yield implied by yesterday's Debrecen weather. PV weather yield 6.1 kWh/kWp PV capacity factor 25.5 percent Wind full-load hours 4.8 hours Wind capacity factor 19.8 percent Daily PV And Wind Yield i PV is a fixed reference array and wind is a generic 100 m turbine; neither is a plant forecast."
+    },
+    {
+      "path": "events.html",
+      "source_sha256": "13e36ad76a1c94be43480e1eafaeac8d9af37845928ecce2158f8a9264c1ced6",
+      "title": "Daily Events | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-08-11 Weather Events Objective events detected during the last complete day, with evidence and data source shown explicitly. Daily chronology 11 Aug 04:00 - 08:00 CEST Nocturnal low-level inversion 925 hPa temperature exceeded 1000 hPa temperature by as much as 2.4 C during local night. 66% confidence | Open-Meteo historical-model pressure levels 11 Aug 13:00 - 15:00 CEST Thunderstorm 8 LINET event(s) with radar reflectivity reaching 54.0 dBZ. 96% confidence | HungaroMet LINET and composite radar"
+    },
+    {
+      "path": "index.html",
+      "source_sha256": "00ce97e8a9742300869df11a888aeec060874a9e128b810b76641bf9fef1eaa2",
+      "title": "Daily Overview | Atlas",
+      "visible_text": "Daily public report | Debrecen, Hungary - 2026-08-11 Atlas Sunny high-pressure day Sunny high-pressure day: temperature was +5.1 deg C versus normal, precipitation -1.0 mm, wind +1.7 m/s, and daily solar radiation +1221 Wh/m2. A concise account of the last complete day in Debrecen. OBS Debrecen Airport GRID Open-Meteo REMOTE Radar + lightning MODEL Renewable yield PV yield 6.1 kWh per installed kWp Wind full-load hours 4.8 generic 100 m turbine Weather score 100 balanced renewable Airport mean 20.2 C Airport precipitation 0.0 mm Peak airport gust 1.5 m/s Yesterday Hour By Hour i Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and solar radiation. Deterministic interpretation. Yesterday was classified as sunny high-pressure day. Atlas detected 2 notable weather phenomenon candidate(s), 8 lightning event(s) within 150 km, and a maximum sampled radar reflectivity of 57.0 dBZ."
+    },
+    {
+      "path": "methods.html",
+      "source_sha256": "c2e78a86c364dea5977e857f2aa147e5f3d89d0e722039c85b6e9c2d7074d59f",
+      "title": "About | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-08-11 About This Report What is observed, what is model-derived, and when the daily publication updates. Publication The public report is rebuilt daily from the last complete Europe/Budapest calendar day. It uses the same deterministic calculations as the meteorological analysis, with shorter explanations and fewer diagnostics. Evidence HungaroMet station, radar, LINET and Meteosat products are observational or remotely sensed. Open-Meteo supplies continuous gridded surface fields, model pressure levels and ERA5 climate fields. Optional-source failures are reported as unavailable, never treated as observed zeroes. Climate references \"Normal\" means the 1991-2020 ERA5 standard reference. The recent-decade comparison and full-record percentile are shown separately."
+    },
+    {
+      "path": "weather.html",
+      "source_sha256": "c810711be1a99e9d7ccae4c72077bfbea866e3341d974249f188b0c6fb635dba",
+      "title": "Daily Weather | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-08-11 Yesterday's Weather The observed day at Debrecen Airport with gridded context used where continuous station data is unavailable. Observed at the airport. Mean 20.2 C, 0.0 mm precipitation and a peak gust of 1.5 m/s. Daily Meteogram i Hover or zoom to inspect the timing of temperature, pressure, wind, rain, cloud and sunshine."
+    }
+  ],
+  "schema": "atlas.narrative/1"
+}

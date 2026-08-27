@@ -353,16 +353,20 @@ def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):
     (site_dir / "weather.html").write_text("daily weather", encoding="utf-8")
     (site_dir / "assets").mkdir()
     (site_dir / "assets" / "daily.html").write_text("plot", encoding="utf-8")
+    evidence = tmp_path / "daily_hourly.csv"
+    evidence.write_text("time,temperature\n00:00,20\n", encoding="utf-8")
 
     archived_index = archive_public_site(
         site_dir,
         tmp_path / "reports" / "daily" / "2026-08-03",
         {"daily.html"},
+        {evidence},
     )
 
     assert archived_index.read_text(encoding="utf-8") == "daily overview"
     assert (archived_index.parent / "weather.html").exists()
     assert (archived_index.parent / "assets" / "daily.html").exists()
+    assert (archived_index.parent / "data" / "daily_hourly.csv").read_bytes() == evidence.read_bytes()
     assert not (archived_index.parent / "report.html").exists()
 
 
@@ -449,6 +453,30 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     assert "periods/2026-08-01_2026-08-03/analysis/index.html" in archive_html
     assert "weeks/2026-07-20_2026-07-26/index.html" in archive_html
     assert (index.parent / "daily" / "2026-08-03" / "assets" / "daily.html").exists()
+    assert (daily / "manifest.json").is_file()
+    assert (daily / "narrative.json").is_file()
+    assert (period / "manifest.json").is_file()
+    assert (period / "narrative.json").is_file()
+    assert (index.parent / "daily" / "2026-08-03" / "manifest.json").is_file()
+    catalog = json.loads(
+        (index.parent / "data" / "catalog.v1.json").read_text(encoding="utf-8")
+    )
+    assert catalog["schema"] == "atlas.archive-catalog/1"
+    assert len(catalog["entries"]) == 3
+    size_report = json.loads(
+        (index.parent / "data" / "size-report.v1.json").read_text(encoding="utf-8")
+    )
+    assert size_report["totals"]["editions"] == 3
+    assert size_report["totals"]["over_budget"] == 0
+    published_size_report = json.loads(
+        (index.parent / "data" / "published-size-report.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert published_size_report["status"] == "within"
+    assert published_size_report["total_bytes"] == sum(
+        path.stat().st_size for path in index.parent.rglob("*") if path.is_file()
+    )
 
     published_daily = (
         index.parent / "daily" / "2026-08-03" / "index.html"

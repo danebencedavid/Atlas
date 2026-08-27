@@ -15,6 +15,16 @@ from PIL import Image, ImageDraw, ImageFont
 from atlas.almanac import Almanac, PeriodClimate, RecordEntry
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
+from atlas.archive_figures import publish_shared_figure_stubs
+from atlas.archive_figures import write_shared_figure_renderer
+from atlas.archive_bundle import archive_size_report
+from atlas.archive_bundle import build_archive_catalog
+from atlas.archive_bundle import ensure_edition_bundle
+from atlas.archive_bundle import ImmutableEditionError
+from atlas.archive_bundle import validate_edition_bundle
+from atlas.archive_styles import externalize_repeated_archive_styles
+from atlas.archive_publish import enforce_published_archive_limits
+from atlas.archive_publish import staged_directory
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
@@ -3884,29 +3894,57 @@ def build_report_archive(
     site_dir = site_dir or config.outputs.site_dir
     reports_dir = reports_dir or config.outputs.reports_dir
     archive_dir = site_dir / "archive"
-    if archive_dir.exists():
-        shutil.rmtree(archive_dir)
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    # This history now lives inside the Archive. Remove files from the earlier
-    # standalone-page implementation so a local rebuild cannot keep serving it.
+    with staged_directory(archive_dir) as staging_dir:
+        _build_report_archive_into(
+            config,
+            site_dir,
+            reports_dir,
+            updated,
+            staging_dir,
+        )
+    # This history now lives inside the Archive. Retire files from the earlier
+    # standalone implementation only after the replacement archive is live.
     for stale in (site_dir / "event-atlas.html", site_dir / "data" / "event_atlas.json"):
         if stale.is_file():
             stale.unlink()
+    return archive_dir / "index.html"
+
+
+def _build_report_archive_into(
+    config: AtlasConfig,
+    site_dir: Path,
+    reports_dir: Path,
+    updated: str | None,
+    archive_dir: Path,
+) -> Path:
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
+    saved = {
+        collection: _saved_report_directories(reports_dir / collection)
+        for collection in ("daily", "periods", "weeks")
+    }
+    for collection, edition_dirs in saved.items():
+        for edition_dir in edition_dirs:
+            ensure_edition_bundle(
+                edition_dir,
+                collection,
+                location_name=config.location.name,
+                timezone_name=config.location.timezone,
+                latitude=config.location.latitude,
+                longitude=config.location.longitude,
+            )
+            validation = validate_edition_bundle(edition_dir)
+            if not validation.valid:
+                detail = "; ".join(validation.errors)
+                raise ValueError(f"Invalid archive bundle {edition_dir.name}: {detail}")
+
+    size_payload = archive_size_report(saved)
 
     collections = {
-        "daily": [
-            _archive_entry(source, "daily")
-            for source in _saved_report_directories(reports_dir / "daily")
-        ],
-        "periods": [
-            _archive_entry(source, "periods")
-            for source in _saved_report_directories(reports_dir / "periods")
-        ],
-        "weeks": [
-            _archive_entry(source, "weeks")
-            for source in _saved_report_directories(reports_dir / "weeks")
-        ],
+        collection: [_archive_entry(source, collection) for source in sources]
+        for collection, sources in saved.items()
     }
+    archive_figure_renderer = write_shared_figure_renderer(archive_dir)
 
     for collection, entries in collections.items():
         target_parent = archive_dir / collection
@@ -3915,6 +3953,14 @@ def build_report_archive(
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(entry["source"], target)
             _rewrite_published_archive_links(target, collection)
+            manifest = json.loads(
+                (entry["source"] / "manifest.json").read_text(encoding="utf-8")
+            )
+            publish_shared_figure_stubs(
+                target,
+                manifest.get("figures", []),
+                archive_figure_renderer,
+            )
 
     # Daily editions contain no copied observation ledger, so their historic
     # coverage defect is measured from the corresponding saved 72-hour period.
@@ -3930,6 +3976,28 @@ def build_report_archive(
     archive_data_dir.mkdir(parents=True, exist_ok=True)
     (archive_data_dir / "weather_event_index.json").write_text(
         json.dumps({"events": events}, indent=2, ensure_ascii=False, allow_nan=False),
+        encoding="utf-8",
+    )
+    (archive_data_dir / "catalog.v1.json").write_text(
+        json.dumps(
+            build_archive_catalog(saved),
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (archive_data_dir / "size-report.v1.json").write_text(
+        json.dumps(
+            size_payload,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -4000,21 +4068,32 @@ def build_report_archive(
         ),
         encoding="utf-8",
     )
+    externalize_repeated_archive_styles(archive_dir)
+    enforce_published_archive_limits(archive_dir)
     return index
 
 
 def archive_site(site_dir: Path, archive_dir: Path) -> Path:
-    if archive_dir.exists():
-        shutil.rmtree(archive_dir)
-    archive_dir.mkdir(parents=True, exist_ok=True)
+    planned: dict[Path, Path] = {}
     for source in site_dir.iterdir():
         if source.name in {".gitkeep", "archive", "event-atlas.html"}:
             continue
-        target = archive_dir / source.name
         if source.is_dir():
-            ignore = shutil.ignore_patterns("event_atlas.json") if source.name == "data" else None
-            shutil.copytree(source, target, ignore=ignore)
+            for child in source.rglob("*"):
+                if not child.is_file():
+                    continue
+                relative = child.relative_to(site_dir)
+                if relative.as_posix() == "data/event_atlas.json":
+                    continue
+                planned[relative] = child
         else:
+            planned[Path(source.name)] = source
+    if _preserve_identical_frozen_edition(archive_dir, planned):
+        return archive_dir / "index.html"
+    with staged_directory(archive_dir) as staging_dir:
+        for relative, source in planned.items():
+            target = staging_dir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
     return archive_dir / "index.html"
 
@@ -4023,20 +4102,59 @@ def archive_public_site(
     site_dir: Path,
     archive_dir: Path,
     asset_names: set[str],
+    data_paths: set[Path] | None = None,
 ) -> Path:
-    if archive_dir.exists():
-        shutil.rmtree(archive_dir)
-    (archive_dir / "assets").mkdir(parents=True, exist_ok=True)
+    planned: dict[Path, Path] = {}
     for filename, _ in PUBLIC_PAGES:
         source = site_dir / filename
         if source.exists():
             target_name = "index.html" if filename == "report.html" else filename
-            shutil.copy2(source, archive_dir / target_name)
+            planned[Path(target_name)] = source
     for name in asset_names:
         source = site_dir / "assets" / name
         if source.exists():
-            shutil.copy2(source, archive_dir / "assets" / name)
+            planned[Path("assets") / name] = source
+    for source in sorted(data_paths or set(), key=lambda path: path.name):
+        if source.is_file():
+            relative = Path("data") / source.name
+            if relative in planned:
+                raise ValueError(f"Duplicate daily evidence filename: {source.name}")
+            planned[relative] = source
+    if _preserve_identical_frozen_edition(archive_dir, planned):
+        return archive_dir / "index.html"
+    with staged_directory(archive_dir) as staging_dir:
+        for relative, source in planned.items():
+            target = staging_dir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
     return archive_dir / "index.html"
+
+
+def _preserve_identical_frozen_edition(
+    archive_dir: Path,
+    planned: dict[Path, Path],
+) -> bool:
+    """Keep an existing frozen edition only when the proposed capture is exact."""
+
+    if not (archive_dir / "manifest.json").is_file():
+        return False
+    generated = {Path("manifest.json"), Path("narrative.json")}
+    existing = {
+        path.relative_to(archive_dir): path
+        for path in archive_dir.rglob("*")
+        if path.is_file()
+        and path.relative_to(archive_dir) not in generated
+        and path.relative_to(archive_dir).parts[0] != "bundle"
+    }
+    if set(existing) != set(planned) or any(
+        existing[relative].read_bytes() != source.read_bytes()
+        for relative, source in planned.items()
+    ):
+        raise ImmutableEditionError(
+            f"Frozen edition {archive_dir.name} differs from the proposed capture; "
+            "publish it under a new edition or run an explicit migration"
+        )
+    return True
 
 
 def _record_line(record: RecordEntry | None) -> str:

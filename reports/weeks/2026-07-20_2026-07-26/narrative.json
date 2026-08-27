@@ -1,0 +1,13 @@
+{
+  "edition_id": "2026-07-20_2026-07-26",
+  "format": "plain-text-snapshot",
+  "pages": [
+    {
+      "path": "index.html",
+      "source_sha256": "8c77df4bea9248376c30a11cc14cf8a6e0e31f595403921fd09ab0c5cf58efaa",
+      "title": "Atlas - Debrecen Weekly Weather Dashboard",
+      "visible_text": "Weekly Meteogram Anomaly Summary Solar-Wind Energy Quadrant Wind Rose Pressure Tendency Temperature-Dew Point Spread Solar Diurnal Curves Regime Strip Historical Percentile Ranks Metric This week Baseline mean Anomaly Percentile Temperature 21.2 23.9 -2.7 deg C 10th Precipitation 1.4 11.8 -10.4 mm 10th Wind 4.8 4.2 +0.6 m/s 70th Pressure 1014.0 1012.9 +1.2 hPa 50th Cloud 29.0 46.9 -17.9 % 20th Solar radiation 47465.0 42972.6 +4492.4 Wh/m2 80th Classification Signals above-normal radiation reduced cloudiness limited rainfall Methods And Data Hourly observations are fetched from the Open-Meteo Historical Weather API. The baseline uses the same calendar-week window over the prior 10 years and is stored in baseline_metrics.csv. Data completeness check passed with 168/168 expected local-week hours. Outputs: weekly metrics CSV , anomalies CSV , summary JSON ."
+    }
+  ],
+  "schema": "atlas.narrative/1"
+}

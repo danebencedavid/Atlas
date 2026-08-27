@@ -1,0 +1,37 @@
+{
+  "edition_id": "2026-07-27_2026-07-29",
+  "format": "plain-text-snapshot",
+  "pages": [
+    {
+      "path": "energy.html",
+      "source_sha256": "348095d30e6d099d44e4609bf13272c6a84060c25d0b42d39772bb0c10aad02b",
+      "title": "Electricity | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-07-27 to 2026-07-29 Electricity And Renewables Debrecen weather potential alongside Hungary-wide measured generation, load, residual load, and market-price context. Average load 4,469 MW Solar generation 97,823 MWh over period Wind generation 3,933 MWh over period Average day-ahead price 117 EUR/MWh Solar-Wind Energy Quadrant i Move right for stronger solar-weather potential and upward for stronger wind-weather potential. The four backgrounds distinguish balanced, solar-favored, wind-favored, and weak-renewable weather. Hungary Electricity Context i Compare total load with residual load after variable renewables, then inspect national solar, wind, interchange, and day-ahead price. These are Hungary-wide measurements, not Debrecen-only electricity data. Energy-Charts and ENTSO-E data provide national context for Debrecen's local weather. Weather-Electricity Relationships i Each point aligns an hourly Debrecen weather value with Hungary-wide electricity output. Trend lines summarize association only; they do not establish causation or represent a plant-level power model."
+    },
+    {
+      "path": "index.html",
+      "source_sha256": "7db7d81cf4bb5ffdc1a17d2031cd5ccf5f85322b0adcf98df4028597de507c20",
+      "title": "Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-07-27 to 2026-07-29 Atlas Mixed transition period Mixed transition period: temperature was +0.5 deg C versus normal, precipitation -1.7 mm, wind +0.7 m/s, and period solar radiation +3030 Wh/m2. Rolling weather anomaly atlas and renewable energy situation report Solar index 100 0.0 cloud penalty Wind index 100 0.0 calm penalty Combined score 100 balanced renewable Rolling 72-Hour Meteogram i Read downward through temperature and dew point, pressure, wind and gusts, precipitation, then cloud and radiation. Drag to zoom; double-click to reset; click legend labels to hide or restore series. Seven-Day Archive Context i The highlighted final three days are the active report. The preceding four days preserve weekly diary context, making shifts in temperature, rain, radiation, and 100 m wind easier to see. Anomaly Summary i Bars show standard deviations from the same calendar window in prior years. Positive and negative mean above and below normal, not good and bad; hover for physical units and percentile rank. Regime Strip i Each segment is one local day and uses the same transparent rule set as the report-level regime. Hover to inspect the day and its assigned dominant condition."
+    },
+    {
+      "path": "methods.html",
+      "source_sha256": "348d665835dddabad14fe11b4990c69339da2ee07e9d3197b47f0da273f9dd2a",
+      "title": "Methods | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-07-27 to 2026-07-29 Methods And Data Transparent baselines, explainable regime rules, source notes, and downloadable outputs for the current report. Historical Percentile Ranks Metric This period Baseline mean Anomaly Percentile Temperature 24.0 23.5 +0.5 deg C 60th Precipitation 3.6 5.3 -1.7 mm 60th Wind 5.1 4.4 +0.7 m/s 70th Pressure 1017.2 1012.1 +5.1 hPa 90th Cloud 24.7 50.3 -25.5 % 10th Solar radiation 20646.0 17615.5 +3030.5 Wh/m2 90th Classification Signals no single signal dominated mixed day-to-day conditions Sources And Quality Open-Meteo supplies hourly surface weather and model pressure-level fields. The baseline uses the same three-day calendar window over the prior 10 years and is stored in baseline_metrics.csv. Data completeness check passed with 72/72 expected local-period hours. Hungary-wide electricity context from Energy-Charts (primarily ENTSO-E data). Model-derived atmospheric profile near Debrecen; it is not an observed radiosonde. Dew point is calculated from model temperature and relative humidity. Downloads Current weather observations Period metrics Baseline metrics Weather anomalies Electricity time series Selected model profile Full profile time series Machine-readable summary"
+    },
+    {
+      "path": "upper-air.html",
+      "source_sha256": "0ff7ffd4098f8710fb0ceff9535dee5cb5bbe3915e8ca5f0c1cd15ee70edab0e",
+      "title": "Upper Air | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-07-27 to 2026-07-29 Upper Air Model-derived vertical structure over Debrecen: thermodynamics, wind shear, and the evolution of moisture and wind through the full 72-hour report. Model Skew-T i Temperature and dew point rise through decreasing pressure, with a separate wind profile and stability indices. Close temperature and dew-point traces mark moist layers; strong temperature change with height indicates steep lapse rates. Model-derived near Debrecen; this is not an observed radiosonde. Hodograph i The curve traces horizontal wind components with height; colors show kilometres above the lowest model level. A longer or more strongly curved path indicates greater speed shear or directional turning. Bulk-shear values summarize the 0-1, 0-3, and 0-6 km layers. Model-derived near Debrecen; this is not an observed radiosonde. Time-Pressure Curtain i Time runs left to right and pressure decreases upward. Use the plot menu to switch between relative humidity, temperature anomaly by level, and wind speed; surface pressure and precipitation remain below for timing context. A Debrecen-specific time-pressure diagnostic, adapted from a Hovmoller layout without implying spatial longitude or latitude coverage."
+    },
+    {
+      "path": "weather.html",
+      "source_sha256": "5cd8ebfcb39e7a5eafe7f90d53c8d798fab13c382e7d3043881d37fd67fdf8e8",
+      "title": "Weather | Atlas",
+      "visible_text": "Debrecen, Hungary - 2026-07-27 to 2026-07-29 Surface Weather Four focused diagnostics for wind direction, pressure evolution, near-surface moisture, and solar timing. Wind Rose i Spokes point toward the direction the wind came from. Longer spokes mean that direction occurred more often, and stacked colors divide observations into wind-speed ranges. Pressure Tendency i The line is sea-level pressure; tendency marks the six-hour change. Rapid falls often precede active systems, while sharp rises commonly follow a front or strengthening high pressure. Temperature-Dew Point Spread i A small gap between temperature and dew point indicates moist air near saturation. Shaded periods mark especially small spreads and therefore elevated fog, low-cloud, or condensation potential. Solar Diurnal Curves i Each colored line is one local day. Compare its peak, width, and interruptions with the historical median curve to separate clear, cloudy, and intermittently shaded periods."
+    }
+  ],
+  "schema": "atlas.narrative/1"
+}
