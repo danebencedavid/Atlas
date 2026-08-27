@@ -3,8 +3,10 @@ import json
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from atlas.almanac import build_almanac
+from atlas.activity_lenses import evaluate_activity_lenses
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
 from atlas.climatology import ClimateReference
@@ -23,6 +25,7 @@ from atlas.site import archive_site
 from atlas.site import build_report_archive
 from atlas.site import build_site
 from atlas.site import collect_weather_event_index
+from atlas.site import _load_activity_lenses
 from atlas.synoptic import SynopticArchive
 
 
@@ -86,6 +89,38 @@ def test_report_generation_smoke(tmp_path: Path):
         path = tmp_path / f"{name}.csv"
         path.write_text("metric,value\nx,1\n", encoding="utf-8")
         processed[name] = path
+
+    local_times = pd.date_range(
+        pd.Timestamp("2026-07-29", tz="Europe/Budapest"),
+        periods=24,
+        freq="h",
+    )
+    daylight = ((local_times.hour >= 6) & (local_times.hour < 19)).astype(float)
+    activity_lens_document = evaluate_activity_lenses(
+        pd.DataFrame(
+            {
+                "time": local_times.tz_convert("UTC"),
+                "temperature_2m": 20.0,
+                "relative_humidity_2m": 50.0,
+                "precipitation": 0.0,
+                "wind_speed_10m": 3.0,
+                "wind_gusts_10m": 5.0,
+                "cloud_cover": 20.0,
+                "shortwave_radiation": daylight * 350.0,
+                "sunshine_duration": daylight * 3600.0,
+                "et0_fao_evapotranspiration": daylight * 0.12,
+            }
+        ),
+        "Europe/Budapest",
+        energy={"solar_index": 92.0},
+        physical_energy={"pv_yield_kwh_per_kwp": 5.1},
+    )
+    activity_lenses_path = tmp_path / "activity_lenses.json"
+    activity_lenses_path.write_text(
+        json.dumps(activity_lens_document),
+        encoding="utf-8",
+    )
+    processed["activity_lenses"] = activity_lenses_path
 
     anomalies = [
         Anomaly("temperature_mean_c", "Temperature", 20, 18, 2, 1, 80, "deg C"),
@@ -226,6 +261,13 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "Hungarian Meteorological Service (HungaroMet)" in report_html
     assert "Contains modified" in report_html
     assert "Yesterday Hour By Hour" in report_html
+    assert "Activity Lenses" in report_html
+    assert "Cycling conditions" in report_html
+    assert "Favorable &middot; 100/100" in report_html
+    assert 'href="data/activity_lenses.json" download' in report_html
+    assert (target.parent / "data" / "activity_lenses.json").is_file()
+    summary = json.loads((target.parent / "data" / "summary.json").read_text(encoding="utf-8"))
+    assert summary["activity_lenses"] == activity_lens_document
     assert (target.parent / "weather.html").exists()
     assert not (target.parent / "assets" / "site").exists()
     assert (target.parent / "assets" / "satellite_media" / "frame.webp").exists()
@@ -343,6 +385,26 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "assets/share-card.png" in report_html
     assert '"kind_label": "72-hour analysis"' in analysis_page
     assert '"kind_label": "Daily report"' in report_html
+
+
+def test_activity_lens_renderer_rejects_evidence_from_another_edition(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "activity_lenses.json"
+    source.write_text(
+        json.dumps(
+            {
+                "schema": "atlas.activity-lenses/1",
+                "date": "2026-08-02",
+                "timezone": "Europe/Budapest",
+                "lenses": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="daily edition date"):
+        _load_activity_lenses(source, "2026-08-03", "Europe/Budapest")
 
 
 def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):

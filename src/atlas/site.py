@@ -12,6 +12,8 @@ from typing import Any
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 
+from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import available_lens_ids
 from atlas.almanac import Almanac, PeriodClimate, RecordEntry
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
@@ -1824,6 +1826,100 @@ def _fmt_grouped(value: float, digits: int = 0) -> str:
     if pd.isna(value):
         return "n/a"
     return f"{value:,.{digits}f}"
+
+
+def _load_activity_lenses(
+    source: Path | None,
+    expected_date: str,
+    expected_timezone: str,
+) -> dict[str, Any] | None:
+    """Load the exact saved lens evidence that the daily page will render."""
+
+    if source is None:
+        return None
+    try:
+        document = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Activity-lens evidence is unreadable: {source}") from exc
+    if not isinstance(document, dict):
+        raise ValueError("Activity-lens evidence must be a JSON object")
+    if document.get("schema") != ACTIVITY_LENS_SCHEMA:
+        raise ValueError("Activity-lens evidence uses an unsupported schema")
+    if document.get("date") != expected_date:
+        raise ValueError("Activity-lens evidence does not match the daily edition date")
+    if document.get("timezone") != expected_timezone:
+        raise ValueError("Activity-lens evidence does not match the configured timezone")
+    lenses = document.get("lenses")
+    if not isinstance(lenses, list):
+        raise ValueError("Activity-lens evidence has no lens list")
+    lens_ids = [lens.get("id") for lens in lenses if isinstance(lens, dict)]
+    if len(lens_ids) != len(lenses) or set(lens_ids) != set(available_lens_ids()):
+        raise ValueError("Activity-lens evidence has an incomplete or unknown lens set")
+    if len(lens_ids) != len(set(lens_ids)):
+        raise ValueError("Activity-lens evidence contains duplicate lenses")
+    return document
+
+
+def _activity_lenses_section(
+    document: dict[str, Any] | None,
+    data_href: str | None,
+) -> str:
+    """Render saved lens evidence with Atlas's existing content components."""
+
+    if document is None:
+        return ""
+    cards: list[str] = []
+    for lens in document["lenses"]:
+        label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
+        status = lens.get("status")
+        if status == "available":
+            rating = str(lens.get("rating", "unrated")).replace("-", " ").title()
+            score = lens.get("score")
+            provenance = f"{rating} &middot; {html.escape(str(score))}/100"
+            detail = html.escape(str(lens.get("summary", "")))
+            factors = lens.get("limiting_factors", [])
+            if isinstance(factors, list) and factors:
+                explanations = []
+                for factor in factors:
+                    if not isinstance(factor, dict):
+                        continue
+                    explanation = html.escape(str(factor.get("explanation", "Limiting condition.")))
+                    value = html.escape(str(factor.get("value", "n/a")))
+                    unit = html.escape(str(factor.get("unit", "")))
+                    deduction = html.escape(str(factor.get("deduction", "n/a")))
+                    explanations.append(
+                        f"{explanation} ({value} {unit}; &minus;{deduction} points.)"
+                    )
+                if explanations:
+                    detail = f"{detail} {' '.join(explanations)}"
+        else:
+            provenance = "Insufficient evidence"
+            missing = lens.get("missing_or_sparse_facts", [])
+            missing_labels = ", ".join(
+                html.escape(str(item).replace("_", " "))
+                for item in missing
+            )
+            detail = "This lens was withheld because its required daily evidence was incomplete."
+            if missing_labels:
+                detail += f" Missing or sparse: {missing_labels}."
+        cards.append(
+            '<article class="insight">'
+            f'<span class="provenance">{provenance}</span>'
+            f"<h3>{label}</h3><p>{detail}</p></article>"
+        )
+    evidence_link = (
+        f' <a href="{html.escape(data_href)}" download>Download the full evidence JSON</a>.'
+        if data_href
+        else ""
+    )
+    return f"""
+<section class="content-section" aria-labelledby="activity-lenses-heading">
+  <div class="section-heading"><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
+  <p class="public-lead">How the completed day suited six everyday activities, using fixed and inspectable convenience thresholds. Scores of 80 or more are favorable, 55-79 are mixed, and lower scores are difficult.</p>
+  <div class="insight-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
+  <p class="evidence-meta">{html.escape(str(document.get("disclaimer", "")))}{evidence_link}</p>
+</section>
+"""
 
 
 def _copy_assets(figure_paths: dict[str, Path], site_dir: Path) -> dict[str, str]:
@@ -4367,6 +4463,15 @@ def build_site(
         target = data_dir / source.name
         shutil.copy2(source, target)
         data_links[name] = f"../data/{target.name}"
+    activity_lens_source = processed_paths.get("activity_lenses")
+    activity_lenses = _load_activity_lenses(
+        activity_lens_source,
+        daily_date,
+        config.location.timezone,
+    )
+    activity_lens_href = (
+        f"data/{activity_lens_source.name}" if activity_lens_source is not None else None
+    )
 
     weather_story = build_weather_story(
         regime=regime,
@@ -4513,6 +4618,8 @@ def build_site(
         "anomalies": [asdict(item) for item in anomalies],
         "quality_notes": quality_notes or [],
     }
+    if activity_lenses is not None:
+        payload["activity_lenses"] = activity_lenses
     (data_dir / "summary.json").write_text(
         json.dumps(json_ready(payload), indent=2, allow_nan=False), encoding="utf-8"
     )
@@ -4688,6 +4795,10 @@ def build_site(
 </header>
 <div class="public-facts"><div><span>Airport mean</span><strong>{_fmt(daily_observed_temp)} C</strong></div><div><span>Airport precipitation</span><strong>{_fmt(daily_observed_rain)} mm</strong></div><div><span>Peak airport gust</span><strong>{_fmt(daily_observed_gust)} m/s</strong></div></div>
 """
+    public_overview += _activity_lenses_section(
+        activity_lenses,
+        activity_lens_href,
+    )
     public_overview += _plot_section(
         "Yesterday Hour By Hour",
         public_figures["daily_meteogram"],

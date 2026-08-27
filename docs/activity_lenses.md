@@ -44,7 +44,9 @@ inspectable.
 - Phase 2 writes the result atomically to `data/activity_lenses.json`, references
   it from the daily evidence summary, and includes it before a new edition is
   frozen. Complete for live and demo builds.
-- Phase 3 renders those immutable results using Atlas's existing visual language.
+- Phase 3 renders the exact saved results on the daily overview, including each
+  score, rating, limiting evidence, disclaimer and JSON download, using only
+  Atlas's existing visual components. Complete.
 
 The engine intentionally reads source evidence rather than archived HTML. Legacy
 editions without the required evidence remain unchanged and do not receive
