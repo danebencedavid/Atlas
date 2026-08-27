@@ -1296,6 +1296,7 @@ h2 { font-size: 19px; font-weight: 620; }
 }
 .activity-lenses-section .section-heading::before { display: none; }
 .activity-lenses-symbol {
+  position: relative;
   display: grid;
   flex: 0 0 28px;
   width: 28px;
@@ -1305,14 +1306,63 @@ h2 { font-size: 19px; font-weight: 620; }
   background: var(--blue-soft);
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-  font-size: 16px;
-  line-height: 1;
 }
-.activity-method-summary { margin: 18px 0 16px; }
-.activity-method-summary div:first-child { border-top: 2px solid var(--blue); }
-.activity-method-summary div:nth-child(2) { border-top: 2px solid var(--gold); }
-.activity-method-summary div:nth-child(3) { border-top: 2px solid var(--green); }
-.activity-method-summary div:nth-child(4) { border-top: 2px solid var(--red); }
+.activity-lenses-symbol::before {
+  width: 8px;
+  height: 8px;
+  background: var(--blue);
+  border-radius: 50%;
+  content: "";
+}
+.activity-lenses-symbol::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(49, 95, 141, .28);
+  border-radius: 50%;
+  content: "";
+  animation: activity-lens-ripple 3.8s ease-out infinite;
+}
+@keyframes activity-lens-ripple {
+  0%, 34% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+  42% { opacity: .28; }
+  76%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.15); }
+}
+.activity-method-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 18px 0 16px;
+  padding: 0;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  list-style: none;
+}
+.activity-method-step {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.activity-method-step:nth-child(2n) { border-right: 0; }
+.activity-method-step:nth-last-child(-n+2) { border-bottom: 0; }
+.activity-method-step > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-radius: 50%;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 650;
+}
+.activity-method-step strong { display: block; margin-bottom: 3px; font-size: 13px; }
+.activity-method-step p { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.55; }
 .activity-lens-method {
   margin: 0 0 18px;
   border-top: 1px solid var(--line-strong);
@@ -1332,7 +1382,31 @@ h2 { font-size: 19px; font-weight: 620; }
   font-size: 12px;
   line-height: 1.6;
 }
-.activity-lens-method .table-scroll { margin-bottom: 16px; }
+.activity-threshold-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.activity-threshold-group {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-top: 2px solid var(--blue);
+}
+.activity-threshold-group h3 { margin: 0; font-size: 14px; }
+.activity-threshold-scope {
+  margin: 3px 0 10px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+}
+.activity-threshold-group ul { margin: 0; padding: 0; list-style: none; }
+.activity-threshold-group li { padding: 8px 0; border-top: 1px solid var(--line); }
+.activity-threshold-group li strong,
+.activity-threshold-group li span { display: block; }
+.activity-threshold-group li strong { font-size: 12px; }
+.activity-threshold-group li span { margin-top: 2px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
 .activity-lenses-grid { margin-top: 0; }
 .activity-lens-card { position: relative; }
 .activity-lens-card[data-rating="favorable"] { box-shadow: inset 3px 0 0 var(--green); }
@@ -1758,6 +1832,12 @@ footer {
   .sidebar-scrim.open { display: block; }
   .page-shell { padding: 28px 20px 56px; }
   .activity-lenses-section { padding: 18px 14px 20px; }
+  .activity-method-steps,
+  .activity-threshold-groups { grid-template-columns: 1fr; }
+  .activity-method-step,
+  .activity-method-step:nth-child(2n),
+  .activity-method-step:nth-last-child(-n+2) { border-right: 0; border-bottom: 1px solid var(--line); }
+  .activity-method-step:last-child { border-bottom: 0; }
   .publication-state { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .publication-state > div,
   .publication-state > div:first-child,
@@ -1938,7 +2018,7 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
     methodology = document["methodology"]
     base_score = html.escape(str(methodology.get("base_score", 100)))
     coverage = float(methodology.get("minimum_required_fact_coverage", 0.9)) * 100.0
-    rows: list[str] = []
+    groups: list[str] = []
     for lens in methodology["lenses"]:
         label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
         scope = (
@@ -1946,6 +2026,7 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
             if lens.get("scope") == "commute-hours"
             else "Full local day"
         )
+        rule_items: list[str] = []
         for rule in lens.get("rules", []):
             fact = str(rule.get("fact", "Evidence"))
             fact_label = html.escape(
@@ -1957,28 +2038,28 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
                 for band in rule.get("bands", [])
                 if isinstance(band, dict)
             )
-            rows.append(
-                f"<tr><td>{label}</td><td>{html.escape(scope)}</td>"
-                f"<td>{fact_label}</td><td>{thresholds}</td></tr>"
+            rule_items.append(
+                f"<li><strong>{fact_label}</strong><span>{thresholds}</span></li>"
             )
+        groups.append(
+            '<section class="activity-threshold-group">'
+            f"<h3>{label}</h3>"
+            f'<p class="activity-threshold-scope">{html.escape(scope)}</p>'
+            f"<ul>{''.join(rule_items)}</ul></section>"
+        )
     calculation = html.escape(str(methodology.get("calculation", "")))
     coverage_policy = html.escape(str(methodology.get("coverage_policy", "")))
     return f"""
-  <div class="diagnostic-ledger activity-method-summary" aria-label="Activity lens calculation summary">
-    <div><span>Starting score</span><strong>{base_score}/100</strong><span>for every lens</span></div>
-    <div><span>Rule effect</span><strong>Subtract</strong><span>each matching penalty</span></div>
-    <div><span>Rating breaks</span><strong>80 / 55</strong><span>favorable / mixed</span></div>
-    <div><span>Evidence minimum</span><strong>{coverage:g}%</strong><span>for every required fact</span></div>
-  </div>
+  <ol class="activity-method-steps" aria-label="How activity lens scores are calculated">
+    <li class="activity-method-step"><span>1</span><div><strong>Begin at {base_score}</strong><p>Every activity lens starts with {base_score} points.</p></div></li>
+    <li class="activity-method-step"><span>2</span><div><strong>Subtract crossed thresholds</strong><p>Each weather rule can apply one stated penalty. All matching rule penalties are added together.</p></div></li>
+    <li class="activity-method-step"><span>3</span><div><strong>Translate the final score</strong><p>80-100 is favorable, 55-79 is mixed, and 0-54 is difficult.</p></div></li>
+    <li class="activity-method-step"><span>4</span><div><strong>Require complete evidence</strong><p>A lens is withheld below {coverage:g}% coverage for any required fact; the other lenses remain available.</p></div></li>
+  </ol>
   <details class="activity-lens-method">
-    <summary>Calculation method and exact penalty thresholds</summary>
+    <summary>See the exact penalty thresholds for all six lenses</summary>
     <p>{calculation} {coverage_policy}</p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Lens</th><th>Time scope</th><th>Evidence</th><th>Penalty thresholds</th></tr></thead>
-        <tbody>{''.join(rows)}</tbody>
-      </table>
-    </div>
+    <div class="activity-threshold-groups">{''.join(groups)}</div>
   </details>
 """
 
@@ -2039,7 +2120,7 @@ def _activity_lenses_section(
     )
     return f"""
 <section class="content-section activity-lenses-section" aria-labelledby="activity-lenses-heading">
-  <div class="section-heading"><span class="activity-lenses-symbol" aria-hidden="true">&#9673;</span><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
+  <div class="section-heading"><span class="activity-lenses-symbol" aria-hidden="true"></span><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
   <p class="public-lead">How the completed day suited six everyday activities, using fixed and inspectable convenience thresholds. Scores of 80 or more are favorable, 55-79 are mixed, and lower scores are difficult.</p>
   <div class="insight-grid activity-lenses-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
 {_activity_lens_methodology(document)}

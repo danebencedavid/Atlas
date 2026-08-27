@@ -263,12 +263,16 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "Yesterday Hour By Hour" in report_html
     assert "Activity Lenses" in report_html
     assert 'class="activity-lenses-symbol" aria-hidden="true"' in report_html
+    assert "&#9673;" not in report_html
+    assert "animation: activity-lens-ripple 3.8s ease-out infinite" in report_html
+    assert "activity-lenses-symbol::after" in report_html
     assert 'class="insight activity-lens-card" data-rating="favorable"' in report_html
     assert "Cycling conditions" in report_html
     assert "Favorable &middot; 100/100" in report_html
-    assert "Calculation method and exact penalty thresholds" in report_html
-    assert "Starting score" in report_html
-    assert "80 / 55" in report_html
+    assert "How activity lens scores are calculated" in report_html
+    assert "Begin at 100" in report_html
+    assert "80-100 is favorable, 55-79 is mixed" in report_html
+    assert "See the exact penalty thresholds for all six lenses" in report_html
     assert "8-12 m/s: &minus;10" in report_html
     assert 'href="data/activity_lenses.json" download' in report_html
     assert (target.parent / "data" / "activity_lenses.json").is_file()
