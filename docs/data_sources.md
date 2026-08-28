@@ -55,12 +55,27 @@ Atlas modifies the data by aggregating values, combining sources, and deriving
 diagnostics. Generated pages and figures carry the required attribution and
 licence link.
 
-HungaroMet is credited visibly as “Source: Hungarian Meteorological Service
-(HungaroMet)” on every page and embedded figure, as well as beside individual
-HungaroMet products. The English Open Data Portal terms currently state that
-changes require prior written consent. Atlas has requested that consent; until a
-written answer is received, attribution is complete but permission for the
-project's derived HungaroMet products remains an external publication risk.
+[HungaroMet Nonprofit Zrt.](https://www.met.hu/) is credited visibly as
+“Forrás: HungaroMet Nonprofit Zrt.” on every page and embedded figure, as well
+as beside individual HungaroMet products. Written consent for Atlas's use and
+processing of the ODP data was received from HungaroMet in August 2026, subject
+to the conditions published on the [Open Data Portal](https://odp.met.hu/) and
+the precise identification of the source.
+
+Atlas clearly identifies its changes to HungaroMet source data: hourly
+aggregation, source combination, calculated dew point and vector-mean wind
+direction, objective event classification, and a radar-derived precipitation-
+accumulation proxy. These modifications and interpretations are Atlas products,
+not HungaroMet products.
+
+As requested by HungaroMet, generated pages and figures carry the following
+notice:
+
+> A Felhasználó a HungaroMet által közzétett információkat kizárólag saját
+> felelősségére használja fel. A HungaroMet nem vállal felelősséget a közzétett
+> adatok, elemzések vagy előrejelzések felhasználásából, további
+> feldolgozásából, értelmezéséből származó esetlegesen előforduló hibákért,
+> károkért.
 
 ERA5-derived climate material carries the notice “Contains modified Copernicus
 Climate Change Service information 2026” and the required disclaimer that

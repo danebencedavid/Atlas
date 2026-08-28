@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import html
 import json
+import os
 import re
 import shutil
 from dataclasses import asdict
@@ -4201,6 +4203,47 @@ def _rewrite_published_archive_links(target: Path, collection: str) -> None:
             page.write_text(document, encoding="utf-8")
 
 
+def _externalize_shared_archive_artwork(edition_dir: Path, archive_dir: Path) -> None:
+    """Deduplicate immutable share artwork in the deployable archive.
+
+    Frozen source editions remain self-contained under ``reports``. The Pages
+    copy uses content-addressed shared files, so adding one portrait motif does
+    not add more than a megabyte to every daily edition or exhaust its size
+    budget. Content addressing also preserves older artwork if the design later
+    changes while keeping identical editions on one physical copy.
+    """
+
+    artwork_names = (
+        SHARE_FRONT_LANDSCAPE_ASSET,
+        SHARE_FRONT_PORTRAIT_ASSET,
+        SHARE_FLOW_LANDSCAPE_ASSET,
+        SHARE_FLOW_PORTRAIT_ASSET,
+    )
+    shared_dir = archive_dir / "assets" / "share"
+    for asset_name in artwork_names:
+        source = edition_dir / "assets" / asset_name
+        if not source.is_file():
+            continue
+        content = source.read_bytes()
+        digest = hashlib.sha256(content).hexdigest()
+        shared = shared_dir / f"{digest[:16]}-{asset_name}"
+        shared.parent.mkdir(parents=True, exist_ok=True)
+        if shared.is_file():
+            if shared.read_bytes() != content:
+                raise RuntimeError(f"Shared archive artwork collision: {shared.name}")
+        else:
+            shared.write_bytes(content)
+
+        for page in edition_dir.rglob("*.html"):
+            local_href = Path(os.path.relpath(source, start=page.parent)).as_posix()
+            shared_href = Path(os.path.relpath(shared, start=page.parent)).as_posix()
+            document = page.read_text(encoding="utf-8")
+            rewritten = document.replace(local_href, shared_href)
+            if rewritten != document:
+                page.write_text(rewritten, encoding="utf-8")
+        source.unlink()
+
+
 def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -> str:
     rows = "".join(
         f"""
@@ -4414,6 +4457,7 @@ def _build_report_archive_into(
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(entry["source"], target)
             _rewrite_published_archive_links(target, collection)
+            _externalize_shared_archive_artwork(target, archive_dir)
             manifest = json.loads(
                 (entry["source"] / "manifest.json").read_text(encoding="utf-8")
             )

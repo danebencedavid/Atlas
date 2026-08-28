@@ -12,6 +12,9 @@ def test_archive_step_guards_optional_status_record() -> None:
     assert "git add reports/daily reports/periods reports/status" not in workflow
     assert "if [ -f reports/status/withheld.json ]; then" in workflow
     assert "git add -u -- reports/status/withheld.json" in workflow
+    assert "Snapshot existing withheld notice" in workflow
+    assert 'current_sha256\" != \"${{ steps.withheld-before.outputs.sha256 }}' in workflow
+    assert "predates this run and is not its failure reason" in workflow
 
 
 def test_pushes_validate_without_refetching_or_deploying_weather() -> None:

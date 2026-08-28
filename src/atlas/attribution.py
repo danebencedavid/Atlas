@@ -7,9 +7,17 @@ OPEN_METEO_CREDIT = (
 )
 
 HUNGAROMET_CREDIT = (
-    'Source: <a href="https://odp.met.hu/ODP_General_Term_of_Use.pdf" '
-    'rel="noopener">Hungarian Meteorological Service (HungaroMet)</a>. Station, radar, '
-    "lightning and satellite products are identified beside the information that uses them."
+    'Forrás: <a href="https://www.met.hu/" rel="noopener">HungaroMet Nonprofit Zrt.</a> '
+    '(<a href="https://odp.met.hu/ODP_altalanos_felhasznalasi_feltetelek.pdf" '
+    'rel="noopener">ODP felhasználási feltételek</a>). Atlas modifies HungaroMet source '
+    "data through hourly aggregation, source combination, calculated dew point and "
+    "vector-mean wind direction, objective event classification, and a radar-derived "
+    "precipitation-accumulation proxy. These modifications and interpretations are Atlas "
+    "products, not HungaroMet products. "
+    '<span lang="hu">A Felhasználó a HungaroMet által közzétett információkat kizárólag '
+    "saját felelősségére használja fel. A HungaroMet nem vállal felelősséget a közzétett "
+    "adatok, elemzések vagy előrejelzések felhasználásából, további feldolgozásából, "
+    "értelmezéséből származó esetlegesen előforduló hibákért, károkért.</span>"
 )
 
 ENERGY_CHARTS_CREDIT = (
@@ -27,4 +35,3 @@ COPERNICUS_CREDIT = (
 SOURCE_ATTRIBUTION_HTML = " ".join(
     (OPEN_METEO_CREDIT, HUNGAROMET_CREDIT, ENERGY_CHARTS_CREDIT, COPERNICUS_CREDIT)
 )
-

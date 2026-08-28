@@ -88,7 +88,8 @@ local measurements.
 
 Its main evidence comes from:
 
-- HungaroMet station observations, radar, lightning, and Meteosat products;
+- [HungaroMet Nonprofit Zrt.](https://www.met.hu/) station observations, radar,
+  lightning, and Meteosat products;
 - Open-Meteo historical weather, land, and pressure-level datasets;
 - ERA5 climate references; and
 - Energy-Charts electricity-system data for Hungary.

@@ -157,7 +157,12 @@ def test_new_scientific_visuals_render(tmp_path: Path):
         assert 'class="atlas-figure-attribution"' in figure_html
         assert "font:11px/1.55" in figure_html
         assert "Weather data from" in figure_html
-        assert "Hungarian Meteorological Service (HungaroMet)" in figure_html
+        assert "Forrás:" in figure_html
+        assert "HungaroMet Nonprofit Zrt." in figure_html
+        assert 'href="https://www.met.hu/"' in figure_html
+        assert "Atlas modifies HungaroMet source data" in figure_html
+        assert "kizárólag saját felelősségére" in figure_html
+        assert "nem vállal felelősséget" in figure_html
         assert "Energy-Charts, Fraunhofer ISE" in figure_html
         assert (
             "Neither the European Commission nor ECMWF is responsible" in figure_html

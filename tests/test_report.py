@@ -271,7 +271,12 @@ def test_report_generation_smoke(tmp_path: Path):
     assert '<main id="main-content" tabindex="-1">' in report_html
     assert 'aria-controls="site-navigation" aria-expanded="false"' in report_html
     assert "prefers-reduced-motion: reduce" in report_html
-    assert "Hungarian Meteorological Service (HungaroMet)" in report_html
+    assert "Forrás:" in report_html
+    assert "HungaroMet Nonprofit Zrt." in report_html
+    assert 'href="https://www.met.hu/"' in report_html
+    assert "Atlas modifies HungaroMet source data" in report_html
+    assert "kizárólag saját felelősségére" in report_html
+    assert "nem vállal felelősséget" in report_html
     assert "Contains modified" in report_html
     assert "Yesterday Hour By Hour" in report_html
     assert "Activity Lenses" in report_html
@@ -511,6 +516,7 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
         '<header class="site-header"><a href="analysis/index.html">Analysis</a>'
         '<a href="archive/index.html">Archive</a></header>'
         '<main><div class="page-shell"><h1>Saved daily report</h1></div></main>'
+        '<script>const motif = "assets/share-front-portrait.png";</script>'
         '<footer>Daily footer</footer></body></html>',
         encoding="utf-8",
     )
@@ -520,6 +526,9 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
         encoding="utf-8",
     )
     (daily / "assets" / "daily.html").write_text("plot", encoding="utf-8")
+    # This mirrors the production regression: the reusable portrait artwork is
+    # larger than a daily edition's 1 MiB deployed budget by itself.
+    (daily / "assets" / "share-front-portrait.png").write_bytes(b"motif" * 250_000)
     (period / "index.html").write_text(
         '<!doctype html><html><head></head><body><header class="site-header">Old navigation</header>'
         '<main><div class="page-shell">Period public report</div></main></body></html>',
@@ -556,6 +565,14 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     assert "periods/2026-08-01_2026-08-03/analysis/index.html" in archive_html
     assert "weeks/2026-07-20_2026-07-26/index.html" in archive_html
     assert (index.parent / "daily" / "2026-08-03" / "assets" / "daily.html").exists()
+    assert not (
+        index.parent / "daily" / "2026-08-03" / "assets" / "share-front-portrait.png"
+    ).exists()
+    shared_motifs = list(
+        (index.parent / "assets" / "share").glob("*-share-front-portrait.png")
+    )
+    assert len(shared_motifs) == 1
+    assert (daily / "assets" / "share-front-portrait.png").is_file()
     assert (daily / "manifest.json").is_file()
     assert (daily / "narrative.json").is_file()
     assert (period / "manifest.json").is_file()
@@ -591,6 +608,7 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     assert "Saved daily report" in published_daily
     assert 'class="publication-state"' in published_daily
     assert "Observed, not forecast" in published_daily
+    assert f'../../assets/share/{shared_motifs[0].name}' in published_daily
     published_analysis = (
         index.parent / "periods" / "2026-08-01_2026-08-03" / "analysis" / "index.html"
     ).read_text(encoding="utf-8")

@@ -15,6 +15,7 @@ from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
 from atlas.activity_lenses import write_activity_lens_evidence
 from atlas.analogs import find_historical_analogs
 from atlas.anomalies import anomalies_as_frame, period_metrics
+from atlas.archive_publish import PublishedArchiveBudgetError
 from atlas.climatology import (
     build_climate_reference,
     fetch_climate_archive,
@@ -727,7 +728,14 @@ def run_pipeline(
     )
     if archive_analysis:
         archive_site(site_index.parent, archive_dir)
-    build_report_archive(config, site_index.parent, config.outputs.reports_dir)
+    try:
+        build_report_archive(config, site_index.parent, config.outputs.reports_dir)
+    except PublishedArchiveBudgetError as exc:
+        # Archive-capacity gates withhold an edition just as deliberately as an
+        # observation-quality gate. Record the current cause so CI never reports
+        # an older provider shortfall as the reason for this new failure.
+        record_withheld(config, start, end, str(exc))
+        raise
     # Retire the pending record only after every deployable page, archive and
     # carried notice has been built successfully.
     clear_withheld(config)
