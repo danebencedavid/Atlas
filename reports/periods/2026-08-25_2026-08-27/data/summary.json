@@ -1,0 +1,1790 @@
+{
+  "period_start": "2026-08-25",
+  "period_end": "2026-08-27",
+  "daily_date": "2026-08-27",
+  "current_metrics": {
+    "temperature_mean_c": 22.936111111111114,
+    "dew_point_mean_c": 9.76388888888889,
+    "precipitation_total_mm": 0.0,
+    "wind_speed_mean_ms": 5.781666666666666,
+    "wind_gust_max_ms": 11.2,
+    "pressure_mean_hpa": 1016.5111111111112,
+    "pressure_range_hpa": 7.600000000000023,
+    "cloud_cover_mean_pct": 38.52777777777778,
+    "shortwave_total_wh_m2": 15541.0,
+    "sunshine_total_s": 126829.37999999999,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 15.35,
+    "heating_degree_days_c": 0.5416666666666667
+  },
+  "daily_metrics": {
+    "temperature_mean_c": 22.354166666666668,
+    "dew_point_mean_c": 10.995833333333332,
+    "precipitation_total_mm": 0.0,
+    "wind_speed_mean_ms": 5.0175,
+    "wind_gust_max_ms": 8.8,
+    "pressure_mean_hpa": 1018.7875,
+    "pressure_range_hpa": 1.6000000000000227,
+    "cloud_cover_mean_pct": 12.083333333333334,
+    "shortwave_total_wh_m2": 5660.0,
+    "sunshine_total_s": 46800.0,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 4.645833333333333,
+    "heating_degree_days_c": 0.29166666666666674
+  },
+  "baseline_metrics": {
+    "temperature_mean_c": 22.62666666666667,
+    "precipitation_total_mm": 2.7600000000000002,
+    "wind_speed_mean_ms": 4.507666666666667,
+    "pressure_mean_hpa": 1015.1366666666667,
+    "cloud_cover_mean_pct": 39.10000000000001,
+    "shortwave_total_wh_m2": 15518.055556797,
+    "et0_total_mm": 13.289999999999997,
+    "water_balance_mm": -10.53
+  },
+  "energy": {
+    "solar_index": 100.0,
+    "wind_index": 100.0,
+    "combined_score": 100.0,
+    "calm_wind_penalty": 0.0,
+    "cloud_penalty": 0.0,
+    "label": "balanced renewable"
+  },
+  "daily_energy": {
+    "solar_index": 100.0,
+    "wind_index": 100.0,
+    "combined_score": 100.0,
+    "calm_wind_penalty": 0.0,
+    "cloud_penalty": 0.0,
+    "label": "balanced renewable"
+  },
+  "electricity": {
+    "available": true,
+    "average_load_mw": 4850.058680555555,
+    "peak_load_mw": 5940.1,
+    "solar_generation_mwh": 78680.775,
+    "wind_generation_mwh": 2908.5,
+    "renewable_share_mean_pct": 28.86736111111111,
+    "residual_load_mean_mw": 3716.873958333333,
+    "average_price_eur_mwh": 177.01902777777775,
+    "peak_price_eur_mwh": 259.8,
+    "net_import_mean_mw": 2124.277777777778,
+    "label": "solar-led variable renewable output"
+  },
+  "model_profile": {
+    "valid_time": "2026-08-27T12:00:00+00:00",
+    "source": "Open-Meteo Historical Forecast pressure levels",
+    "diagnostics": {
+      "k_index": 33.032789832148744,
+      "total_totals_index": 46.83278983214875,
+      "lapse_rate_850_500_c_km": 6.224946946474888,
+      "freezing_level_m_asl": 3508.4285714285716,
+      "surface_based_cape_j_kg": 0.0,
+      "surface_based_cin_j_kg": 0.0,
+      "lcl_pressure_hpa": 796.7318020279837,
+      "lcl_height_m_asl": 2093.917495712459,
+      "lfc_pressure_hpa": null,
+      "lfc_height_m_asl": null,
+      "equilibrium_level_pressure_hpa": null,
+      "equilibrium_level_height_m_asl": null,
+      "precipitable_water_mm": 31.40424292629761,
+      "wet_bulb_zero_m_asl": 3451.9118621828043,
+      "model_cape_j_kg": 10.0,
+      "model_cin_j_kg": 0.0,
+      "model_freezing_level_m_asl": 3560.0,
+      "boundary_layer_height_m": 1345.0,
+      "model_column_water_kg_m2": 30.9,
+      "wet_bulb_temperature_2m_c": 19.1,
+      "ventilation_index_m2_s": 4770.266666666667
+    },
+    "notes": [
+      "Model-derived atmospheric profile near Debrecen; it is not an observed radiosonde.",
+      "Dew point is calculated from model temperature and relative humidity."
+    ]
+  },
+  "hungaromet_station": {
+    "station_id": 64711,
+    "station_name": "Debrecen Airport",
+    "records": 432,
+    "notes": [
+      "HungaroMet station 64711 (Debrecen Airport); 10-minute observations.",
+      "Station coverage: 432/432 expected records (100%)."
+    ]
+  },
+  "radar": {
+    "frames": 53,
+    "maximum_reflectivity_dbz": 57.5,
+    "notes": [
+      "HungaroMet 1 km composite radar sampled every 30 minutes; 107/144 frames available (74%).",
+      "The browser replay uses every 60 minutes and a 3 km display grid for practical loading.",
+      "Accumulation is a reflectivity-derived Z-R estimate and should be treated as a spatial precipitation proxy."
+    ]
+  },
+  "lightning": {
+    "events": 2269,
+    "closest_event_km": 75.86605459722452,
+    "notes": [
+      "HungaroMet LINET events within 150 km of Debrecen.",
+      "Detected 2,269 lightning events in the reporting period."
+    ]
+  },
+  "satellite": {
+    "frames": 74,
+    "products": {
+      "AirmassRGB": 18,
+      "NaturalRGB": 13,
+      "NightRGB": 12,
+      "FogRGB": 13,
+      "InfraCloud": 18
+    },
+    "notes": [
+      "HungaroMet Meteosat Second Generation RGB and infrared products; frames sampled approximately every 180 minutes.",
+      "Satellite imagery is synchronized by nearest timestamp with radar and LINET timelines, not spatially overlaid."
+    ]
+  },
+  "frontal_passages": [
+    {
+      "time": "2026-08-26T14:00:00+00:00",
+      "kind": "Probable cold-front passage",
+      "confidence": 0.71,
+      "score": 3,
+      "pressure_change_3h_hpa": 0.5166666666665378,
+      "temperature_change_3h_c": -2.049999999999997,
+      "wind_shift_3h_deg": 16.16030738467566,
+      "precipitation_3h_mm": 0.0,
+      "briefing": "Probable cold-front passage: pressure changed +0.5 hPa, temperature -2.0 C, wind shifted 16 degrees, and 3-hour precipitation was 0.0 mm."
+    }
+  ],
+  "phenomena": [
+    {
+      "start_time": "2026-08-25T00:00:00+00:00",
+      "end_time": "2026-08-25T06:00:00+00:00",
+      "kind": "Nocturnal low-level inversion",
+      "evidence": "925 hPa temperature exceeded 1000 hPa temperature by as much as 2.1 C during local night.",
+      "confidence": 0.66,
+      "source": "Open-Meteo historical-model pressure levels"
+    },
+    {
+      "start_time": "2026-08-25T11:00:00+00:00",
+      "end_time": "2026-08-25T15:00:00+00:00",
+      "kind": "Heat stress",
+      "evidence": "Temperature remained at or above 30 C and peaked at 31.5 C.",
+      "confidence": 0.92,
+      "source": "HungaroMet station 64711"
+    },
+    {
+      "start_time": "2026-08-25T13:00:00+00:00",
+      "end_time": "2026-08-25T18:00:00+00:00",
+      "kind": "Thunderstorm",
+      "evidence": "674 LINET event(s) with radar reflectivity reaching 52.5 dBZ.",
+      "confidence": 0.96,
+      "source": "HungaroMet LINET and composite radar"
+    },
+    {
+      "start_time": "2026-08-26T10:00:00+00:00",
+      "end_time": "2026-08-26T16:00:00+00:00",
+      "kind": "Thunderstorm",
+      "evidence": "116 LINET event(s) with radar reflectivity reaching 57.5 dBZ.",
+      "confidence": 0.96,
+      "source": "HungaroMet LINET and composite radar"
+    },
+    {
+      "start_time": "2026-08-26T14:00:00+00:00",
+      "end_time": "2026-08-26T15:00:00+00:00",
+      "kind": "Probable cold-front passage",
+      "evidence": "Probable cold-front passage: pressure changed +0.5 hPa, temperature -2.0 C, wind shifted 16 degrees, and 3-hour precipitation was 0.0 mm.",
+      "confidence": 0.71,
+      "source": "Objective compound surface-change detector"
+    },
+    {
+      "start_time": "2026-08-27T02:00:00+00:00",
+      "end_time": "2026-08-27T04:00:00+00:00",
+      "kind": "Nocturnal low-level inversion",
+      "evidence": "925 hPa temperature exceeded 1000 hPa temperature by as much as 1.1 C during local night.",
+      "confidence": 0.66,
+      "source": "Open-Meteo historical-model pressure levels"
+    },
+    {
+      "start_time": "2026-08-27T05:00:00+00:00",
+      "end_time": "2026-08-27T12:00:00+00:00",
+      "kind": "Thunderstorm",
+      "evidence": "1478 LINET event(s) with radar reflectivity reaching 57.0 dBZ.",
+      "confidence": 0.96,
+      "source": "HungaroMet LINET and composite radar"
+    },
+    {
+      "start_time": "2026-08-27T13:00:00+00:00",
+      "end_time": "2026-08-27T14:00:00+00:00",
+      "kind": "Thunderstorm",
+      "evidence": "1 LINET event(s) with radar reflectivity reaching 46.0 dBZ.",
+      "confidence": 0.96,
+      "source": "HungaroMet LINET and composite radar"
+    }
+  ],
+  "historical_analogs": [
+    {
+      "start_date": "2013-08-20",
+      "end_date": "2013-08-22",
+      "similarity": 98.6,
+      "distance": 0.17,
+      "character": "seasonally typical mixed weather",
+      "metrics": {
+        "temperature_mean_c": 22.333333333333332,
+        "precipitation_total_mm": 1.099999999999993,
+        "wind_speed_10m_mean_ms": 3.369999999999998,
+        "shortwave_total_mj_m2": 56.84000000000002,
+        "cloud_cover_mean_pct": 47.333333333333336,
+        "pressure_mean_hpa": 1017.1
+      }
+    },
+    {
+      "start_date": "2013-08-13",
+      "end_date": "2013-08-15",
+      "similarity": 97.7,
+      "distance": 0.214,
+      "character": "dry",
+      "metrics": {
+        "temperature_mean_c": 22.400000000000002,
+        "precipitation_total_mm": 0.0999999999999929,
+        "wind_speed_10m_mean_ms": 3.106666666666665,
+        "shortwave_total_mj_m2": 59.750000000000014,
+        "cloud_cover_mean_pct": 42.666666666666664,
+        "pressure_mean_hpa": 1016.8333333333334
+      }
+    },
+    {
+      "start_date": "2017-08-27",
+      "end_date": "2017-08-29",
+      "similarity": 97.7,
+      "distance": 0.217,
+      "character": "dry, windy",
+      "metrics": {
+        "temperature_mean_c": 22.26666666666667,
+        "precipitation_total_mm": 0.4999999999999929,
+        "wind_speed_10m_mean_ms": 3.5299999999999976,
+        "shortwave_total_mj_m2": 59.920000000000044,
+        "cloud_cover_mean_pct": 30.333333333333332,
+        "pressure_mean_hpa": 1015.5666666666666
+      }
+    },
+    {
+      "start_date": "2012-08-09",
+      "end_date": "2012-08-11",
+      "similarity": 96.3,
+      "distance": 0.275,
+      "character": "seasonally typical mixed weather",
+      "metrics": {
+        "temperature_mean_c": 21.266666666666666,
+        "precipitation_total_mm": 0.9999999999999947,
+        "wind_speed_10m_mean_ms": 3.0733333333333324,
+        "shortwave_total_mj_m2": 58.760000000000005,
+        "cloud_cover_mean_pct": 41.666666666666664,
+        "pressure_mean_hpa": 1017.2333333333332
+      }
+    },
+    {
+      "start_date": "2013-07-30",
+      "end_date": "2013-08-01",
+      "similarity": 96.0,
+      "distance": 0.286,
+      "character": "warm, dry, windy",
+      "metrics": {
+        "temperature_mean_c": 23.566666666666674,
+        "precipitation_total_mm": 0.4999999999999929,
+        "wind_speed_10m_mean_ms": 3.589999999999998,
+        "shortwave_total_mj_m2": 61.460000000000015,
+        "cloud_cover_mean_pct": 47.333333333333336,
+        "pressure_mean_hpa": 1014.7666666666668
+      }
+    }
+  ],
+  "analog_notes": [
+    "Analogs are selected from 15 years of ERA5 daily data within +/-45 calendar days.",
+    "Similarity uses standardized temperature, precipitation, wind, radiation, cloud and pressure; it is descriptive rather than predictive."
+  ],
+  "synoptic": {
+    "frames": 12,
+    "notes": [
+      "Synoptic fields are model analyses from Open-Meteo Historical Forecast data.",
+      "Frames are sampled every 6 hours on a 1-degree Central European grid.",
+      "Vorticity, thermal advection and kinematic frontogenesis are finite-difference diagnostics derived on the reporting grid.",
+      "A true 2-PVU dynamical-tropopause surface is not exposed by the no-secret provider and is not approximated."
+    ]
+  },
+  "climatology": {
+    "standard_period": "1991-2020",
+    "full_record_start_year": 1990,
+    "standard_anomalies": [
+      {
+        "metric": "temperature_mean_c",
+        "label": "Temperature",
+        "value": 22.936111111111114,
+        "baseline_mean": 21.52,
+        "anomaly": 1.416111111111114,
+        "z_score": 0.4980409781149619,
+        "percentile": 73.33333333333333,
+        "unit": "deg C"
+      },
+      {
+        "metric": "precipitation_total_mm",
+        "label": "Precipitation",
+        "value": 0.0,
+        "baseline_mean": 4.426666666666666,
+        "anomaly": -4.426666666666666,
+        "z_score": -0.5357916492907733,
+        "percentile": 30.0,
+        "unit": "mm"
+      },
+      {
+        "metric": "wind_speed_mean_ms",
+        "label": "Wind",
+        "value": 5.781666666666666,
+        "baseline_mean": 4.2458888888888895,
+        "anomaly": 1.5357777777777768,
+        "z_score": 1.45569612751986,
+        "percentile": 96.66666666666667,
+        "unit": "m/s"
+      },
+      {
+        "metric": "pressure_mean_hpa",
+        "label": "Pressure",
+        "value": 1016.5111111111112,
+        "baseline_mean": 1014.25,
+        "anomaly": 2.261111111111177,
+        "z_score": 0.5371827339581783,
+        "percentile": 66.66666666666666,
+        "unit": "hPa"
+      },
+      {
+        "metric": "cloud_cover_mean_pct",
+        "label": "Cloud",
+        "value": 38.52777777777778,
+        "baseline_mean": 43.4888888888889,
+        "anomaly": -4.961111111111123,
+        "z_score": -0.21834317758499333,
+        "percentile": 46.666666666666664,
+        "unit": "%"
+      },
+      {
+        "metric": "shortwave_total_wh_m2",
+        "label": "Solar radiation",
+        "value": 15541.0,
+        "baseline_mean": 14352.037038185199,
+        "anomaly": 1188.962961814801,
+        "z_score": 0.5508630558572714,
+        "percentile": 66.66666666666666,
+        "unit": "Wh/m2"
+      }
+    ],
+    "recent_anomalies": [
+      {
+        "metric": "temperature_mean_c",
+        "label": "Temperature",
+        "value": 22.936111111111114,
+        "baseline_mean": 22.62666666666667,
+        "anomaly": 0.30944444444444485,
+        "z_score": 0.08878082500218969,
+        "percentile": 50.0,
+        "unit": "deg C"
+      },
+      {
+        "metric": "precipitation_total_mm",
+        "label": "Precipitation",
+        "value": 0.0,
+        "baseline_mean": 2.7600000000000002,
+        "anomaly": -2.7600000000000002,
+        "z_score": -0.4621203486649552,
+        "percentile": 30.0,
+        "unit": "mm"
+      },
+      {
+        "metric": "wind_speed_mean_ms",
+        "label": "Wind",
+        "value": 5.781666666666666,
+        "baseline_mean": 4.507666666666667,
+        "anomaly": 1.2739999999999991,
+        "z_score": 2.0449438202247183,
+        "percentile": 100.0,
+        "unit": "m/s"
+      },
+      {
+        "metric": "pressure_mean_hpa",
+        "label": "Pressure",
+        "value": 1016.5111111111112,
+        "baseline_mean": 1015.1366666666667,
+        "anomaly": 1.3744444444445207,
+        "z_score": 0.3866659583128886,
+        "percentile": 60.0,
+        "unit": "hPa"
+      },
+      {
+        "metric": "cloud_cover_mean_pct",
+        "label": "Cloud",
+        "value": 38.52777777777778,
+        "baseline_mean": 39.10000000000001,
+        "anomaly": -0.57222222222223,
+        "z_score": -0.024799632377406833,
+        "percentile": 50.0,
+        "unit": "%"
+      },
+      {
+        "metric": "shortwave_total_wh_m2",
+        "label": "Solar radiation",
+        "value": 15541.0,
+        "baseline_mean": 15518.055556797,
+        "anomaly": 22.944443202999537,
+        "z_score": 0.008983445350683381,
+        "percentile": 40.0,
+        "unit": "Wh/m2"
+      }
+    ],
+    "full_record_percentiles": {
+      "temperature_mean_c": 69.44444444444444,
+      "precipitation_total_mm": 33.33333333333333,
+      "wind_speed_mean_ms": 97.22222222222221,
+      "pressure_mean_hpa": 66.66666666666666,
+      "cloud_cover_mean_pct": 50.0,
+      "shortwave_total_wh_m2": 58.333333333333336
+    },
+    "notes": [
+      "Standard anomalies use 30 same-calendar ERA5 periods from 1991-2020.",
+      "Full-record percentiles use 36 same-calendar periods from 1990-2025.",
+      "The recent-climate comparison uses 10 periods and remains separate from the WMO standard-normal window."
+    ]
+  },
+  "land_surface": {
+    "metrics": {
+      "precipitation_90d_mm": 111.5,
+      "et0_90d_mm": 513.39,
+      "water_balance_7d_mm": -38.57000000000001,
+      "water_balance_30d_mm": -170.20000000000002,
+      "water_balance_90d_mm": -401.89,
+      "vpd_max_kpa": 5.69,
+      "soil_temperature_surface_c": 23.7,
+      "soil_moisture_surface": 0.091,
+      "soil_moisture_root_zone": 0.16
+    },
+    "water_balance_percentiles": {
+      "7": 3.3333333333333335,
+      "30": 0.0,
+      "90": 0.0
+    },
+    "moisture_context": "Exceptionally dry land-surface water balance",
+    "notes": [
+      "Rolling soil, VPD and ET0 fields use Open-Meteo Historical Weather best-match gridded data, not station measurements.",
+      "The 1991-2020 water-balance reference is fixed to ERA5; the rolling best-match series can use newer IFS and ERA5/ERA5-Land inputs.",
+      "Water balance is precipitation minus FAO-56 reference evapotranspiration and does not include runoff or irrigation.",
+      "Dry/wet context uses the 1991-2020 distribution of same-calendar water-balance windows."
+    ]
+  },
+  "physical_energy": {
+    "pv_yield_kwh_per_kwp": 15.65,
+    "pv_capacity_factor_pct": 21.7,
+    "wind_full_load_hours": 8.01,
+    "wind_capacity_factor_pct": 11.1,
+    "mean_wind_power_density_w_m2": 132.3,
+    "notes": [
+      "PV yield models a south-facing 35-degree fixed array per installed kWp using plane-of-array irradiance and cell-temperature derating.",
+      "Wind output uses observed/modelled 100 m wind, moist-air density correction, and a generic 3/12/25 m/s cut-in/rated/cut-out power curve.",
+      "These are reference-system weather yields, not metered production or a forecast."
+    ]
+  },
+  "weather_story": {
+    "title": "Weather Story Graph",
+    "briefing": "A deterministic chain from the large-scale regime through observed weather to land-surface and renewable-energy consequences.",
+    "nodes": [
+      {
+        "id": "regime",
+        "domain": "synoptic",
+        "domain_label": "Atmospheric setup",
+        "label": "Mixed transition period",
+        "reading": "Mixed transition period: temperature was +1.4 deg C versus normal, precipitation -4.4 mm, wind +1.5 m/s, and period solar radiation +1189 Wh/m2.",
+        "facts": [
+          {
+            "label": "Rule signals",
+            "value": "no single signal dominated, mixed day-to-day conditions"
+          },
+          {
+            "label": "Pressure",
+            "value": "1016.5 hPa"
+          },
+          {
+            "label": "Period",
+            "value": "3 local days"
+          }
+        ],
+        "source": "Atlas transparent regime rules",
+        "x": 0.06,
+        "y": 0.5
+      },
+      {
+        "id": "sky",
+        "domain": "observed",
+        "domain_label": "Surface weather",
+        "label": "Mixed sky and precipitation",
+        "reading": "Cloud, precipitation and radiation together describe how the air mass expressed itself at the surface.",
+        "facts": [
+          {
+            "label": "Mean cloud",
+            "value": "38.5 %"
+          },
+          {
+            "label": "Cloud rank",
+            "value": "50th percentile"
+          },
+          {
+            "label": "Precipitation",
+            "value": "0.0 mm"
+          }
+        ],
+        "source": "Open-Meteo surface fields and ERA5 climatology",
+        "x": 0.45,
+        "y": 0.1
+      },
+      {
+        "id": "thermal",
+        "domain": "observed",
+        "domain_label": "Thermal character",
+        "label": "Near-normal temperature",
+        "reading": "The period mean is compared with the standard-normal calendar window and the full record.",
+        "facts": [
+          {
+            "label": "Mean temperature",
+            "value": "22.9 C"
+          },
+          {
+            "label": "Standard anomaly",
+            "value": "+1.4 C"
+          },
+          {
+            "label": "Full-record rank",
+            "value": "69th percentile"
+          }
+        ],
+        "source": "Open-Meteo surface analysis and 1991-2020 ERA5 normal",
+        "x": 0.45,
+        "y": 0.37
+      },
+      {
+        "id": "events",
+        "domain": "observed",
+        "domain_label": "Observed phenomena",
+        "label": "Regional convective activity",
+        "reading": "Lightning and radar establish convection inside the study radius; local precipitation is retained separately.",
+        "facts": [
+          {
+            "label": "Ledger entries",
+            "value": "8"
+          },
+          {
+            "label": "Lightning",
+            "value": "2,269 within 150 km"
+          },
+          {
+            "label": "Radar maximum",
+            "value": "57.5 dBZ"
+          }
+        ],
+        "source": "HungaroMet LINET, composite radar and the objective phenomena ledger",
+        "x": 0.88,
+        "y": 0.68
+      },
+      {
+        "id": "front",
+        "domain": "synoptic",
+        "domain_label": "Passage diagnosis",
+        "label": "Probable cold-front passage",
+        "reading": "Probable cold-front passage: pressure changed +0.5 hPa, temperature -2.0 C, wind shifted 16 degrees, and 3-hour precipitation was 0.0 mm.",
+        "facts": [
+          {
+            "label": "Candidates",
+            "value": "1"
+          },
+          {
+            "label": "Confidence",
+            "value": "71%"
+          },
+          {
+            "label": "3 h temperature",
+            "value": "-2.0 C"
+          }
+        ],
+        "source": "Atlas compound pressure, temperature, wind and precipitation detector",
+        "x": 0.45,
+        "y": 0.91
+      },
+      {
+        "id": "pv",
+        "domain": "impact",
+        "domain_label": "Energy impact",
+        "label": "Strong PV weather yield",
+        "reading": "Plane-of-array irradiance and cell-temperature derating translate the weather into reference PV output.",
+        "facts": [
+          {
+            "label": "Reference yield",
+            "value": "15.65 kWh/kWp"
+          },
+          {
+            "label": "Capacity factor",
+            "value": "21.7 %"
+          },
+          {
+            "label": "Radiation anomaly",
+            "value": "+1189 Wh/m2"
+          }
+        ],
+        "source": "Atlas physically based fixed-array PV model",
+        "x": 0.88,
+        "y": 0.08
+      },
+      {
+        "id": "land",
+        "domain": "impact",
+        "domain_label": "Land-surface impact",
+        "label": "Persistent land-surface deficit",
+        "reading": "Exceptionally dry land-surface water balance",
+        "facts": [
+          {
+            "label": "7-day balance",
+            "value": "-38.6 mm"
+          },
+          {
+            "label": "30-day balance",
+            "value": "-170.2 mm"
+          },
+          {
+            "label": "Maximum VPD",
+            "value": "5.7 kPa"
+          }
+        ],
+        "source": "Open-Meteo land fields and FAO-56 reference evapotranspiration",
+        "x": 0.88,
+        "y": 0.34
+      },
+      {
+        "id": "boundary",
+        "domain": "observed",
+        "domain_label": "Boundary layer",
+        "label": "Nocturnal low-level inversion",
+        "reading": "Model pressure levels identified stable nocturnal layers during the period.",
+        "facts": [
+          {
+            "label": "PBL height",
+            "value": "1345 m"
+          },
+          {
+            "label": "SB CAPE",
+            "value": "0 J/kg"
+          },
+          {
+            "label": "Inversion episodes",
+            "value": "2"
+          }
+        ],
+        "source": "Open-Meteo historical-model pressure levels",
+        "x": 0.45,
+        "y": 0.64
+      },
+      {
+        "id": "wind",
+        "domain": "impact",
+        "domain_label": "Energy impact",
+        "label": "Limited wind weather yield",
+        "reading": "Density-corrected 100 m wind is translated through the generic reference-turbine power curve.",
+        "facts": [
+          {
+            "label": "Capacity factor",
+            "value": "11.1 %"
+          },
+          {
+            "label": "Full-load hours",
+            "value": "8.01 h"
+          },
+          {
+            "label": "Mean power density",
+            "value": "132 W/m2"
+          }
+        ],
+        "source": "Atlas physically based reference-turbine model",
+        "x": 0.88,
+        "y": 0.94
+      }
+    ],
+    "edges": [
+      {
+        "source": "regime",
+        "target": "sky",
+        "relationship": "organized the cloud and precipitation pattern"
+      },
+      {
+        "source": "regime",
+        "target": "thermal",
+        "relationship": "set the period-scale thermal character"
+      },
+      {
+        "source": "regime",
+        "target": "boundary",
+        "relationship": "conditioned lower-atmosphere mixing"
+      },
+      {
+        "source": "sky",
+        "target": "pv",
+        "relationship": "controlled the available irradiance"
+      },
+      {
+        "source": "sky",
+        "target": "land",
+        "relationship": "altered rainfall and surface drying"
+      },
+      {
+        "source": "thermal",
+        "target": "land",
+        "relationship": "modified atmospheric moisture demand"
+      },
+      {
+        "source": "regime",
+        "target": "front",
+        "relationship": "provided the passage-scale background"
+      },
+      {
+        "source": "front",
+        "target": "events",
+        "relationship": "was compared with the event chronology"
+      },
+      {
+        "source": "front",
+        "target": "wind",
+        "relationship": "organized the wind-energy environment"
+      }
+    ]
+  },
+  "regime": {
+    "label": "Mixed transition period",
+    "briefing": "Mixed transition period: temperature was +1.4 deg C versus normal, precipitation -4.4 mm, wind +1.5 m/s, and period solar radiation +1189 Wh/m2.",
+    "daily_labels": [
+      "mixed",
+      "sunny",
+      "sunny"
+    ],
+    "signals": [
+      "no single signal dominated",
+      "mixed day-to-day conditions"
+    ]
+  },
+  "daily_regime": {
+    "label": "Sunny high-pressure period",
+    "briefing": "Sunny high-pressure period: temperature was +1.0 deg C versus normal, precipitation -0.6 mm, wind +0.5 m/s, and period solar radiation +961 Wh/m2.",
+    "daily_labels": [
+      "sunny"
+    ],
+    "signals": [
+      "above-normal radiation",
+      "reduced cloudiness",
+      "limited rainfall"
+    ]
+  },
+  "anomalies": [
+    {
+      "metric": "temperature_mean_c",
+      "label": "Temperature",
+      "value": 22.936111111111114,
+      "baseline_mean": 21.52,
+      "anomaly": 1.416111111111114,
+      "z_score": 0.4980409781149619,
+      "percentile": 73.33333333333333,
+      "unit": "deg C"
+    },
+    {
+      "metric": "precipitation_total_mm",
+      "label": "Precipitation",
+      "value": 0.0,
+      "baseline_mean": 4.426666666666666,
+      "anomaly": -4.426666666666666,
+      "z_score": -0.5357916492907733,
+      "percentile": 30.0,
+      "unit": "mm"
+    },
+    {
+      "metric": "wind_speed_mean_ms",
+      "label": "Wind",
+      "value": 5.781666666666666,
+      "baseline_mean": 4.2458888888888895,
+      "anomaly": 1.5357777777777768,
+      "z_score": 1.45569612751986,
+      "percentile": 96.66666666666667,
+      "unit": "m/s"
+    },
+    {
+      "metric": "pressure_mean_hpa",
+      "label": "Pressure",
+      "value": 1016.5111111111112,
+      "baseline_mean": 1014.25,
+      "anomaly": 2.261111111111177,
+      "z_score": 0.5371827339581783,
+      "percentile": 66.66666666666666,
+      "unit": "hPa"
+    },
+    {
+      "metric": "cloud_cover_mean_pct",
+      "label": "Cloud",
+      "value": 38.52777777777778,
+      "baseline_mean": 43.4888888888889,
+      "anomaly": -4.961111111111123,
+      "z_score": -0.21834317758499333,
+      "percentile": 46.666666666666664,
+      "unit": "%"
+    },
+    {
+      "metric": "shortwave_total_wh_m2",
+      "label": "Solar radiation",
+      "value": 15541.0,
+      "baseline_mean": 14352.037038185199,
+      "anomaly": 1188.962961814801,
+      "z_score": 0.5508630558572714,
+      "percentile": 66.66666666666666,
+      "unit": "Wh/m2"
+    }
+  ],
+  "quality_notes": [
+    "Data completeness check passed with 72/72 expected local-period hours.",
+    "The radar archive retains about 71 hours, so the oldest 40 frame(s) of this 144-frame window are structurally unavailable rather than missing.",
+    "Radar coverage 53/104 (51%) of the reachable window is below the 90% threshold.",
+    "The radar input did not meet its completeness threshold and is reported as incomplete rather than presented as whole."
+  ],
+  "activity_lenses": {
+    "commute_windows": [
+      "06:00-10:00",
+      "15:00-19:00"
+    ],
+    "date": "2026-08-27",
+    "disclaimer": "These lenses describe completed observed conditions using transparent Atlas convenience heuristics. They are not forecasts, warnings, medical guidance, or personal safety advice.",
+    "evidence_quality": {
+      "coverage": 1.0,
+      "expected_hours": 24,
+      "minimum_lens_coverage": 0.9,
+      "observed_hours": 24
+    },
+    "lenses": [
+      {
+        "evidence": {
+          "precipitation_total_mm": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "mm",
+            "value": 0.0
+          },
+          "sunshine_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "sunshine_duration"
+            ],
+            "unit": "hours",
+            "value": 13.0
+          },
+          "temperature_max_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 28.2
+          },
+          "temperature_min_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 15.9
+          },
+          "wet_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "wind_gust_max_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_gusts_10m"
+            ],
+            "unit": "m/s",
+            "value": 8.8
+          },
+          "wind_speed_mean_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_speed_10m"
+            ],
+            "unit": "m/s",
+            "value": 2.93
+          }
+        },
+        "id": "cycling",
+        "label": "Cycling conditions",
+        "limiting_factors": [
+          {
+            "condition": "8-12 m/s",
+            "deduction": 10,
+            "explanation": "Noticeable gusts were recorded.",
+            "fact": "wind_gust_max_ms",
+            "rule": "cycling-gusts",
+            "severity": "minor",
+            "unit": "m/s",
+            "value": 8.8
+          }
+        ],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "all-day",
+        "score": 90,
+        "status": "available",
+        "summary": "1 observed condition reduced this lens's rating."
+      },
+      {
+        "evidence": {
+          "precipitation_total_mm": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "mm",
+            "value": 0.0
+          },
+          "sunshine_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "sunshine_duration"
+            ],
+            "unit": "hours",
+            "value": 13.0
+          },
+          "temperature_max_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 28.2
+          },
+          "temperature_min_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 15.9
+          },
+          "wet_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "wind_gust_max_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_gusts_10m"
+            ],
+            "unit": "m/s",
+            "value": 8.8
+          }
+        },
+        "id": "walking",
+        "label": "Walking conditions",
+        "limiting_factors": [],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "all-day",
+        "score": 100,
+        "status": "available",
+        "summary": "No limiting condition crossed this lens's convenience thresholds."
+      },
+      {
+        "evidence": {
+          "precipitation_total_mm": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "mm",
+            "value": 0.0
+          },
+          "temperature_max_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 28.2
+          },
+          "temperature_min_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 15.9
+          },
+          "wet_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "wind_gust_max_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_gusts_10m"
+            ],
+            "unit": "m/s",
+            "value": 8.8
+          },
+          "wind_speed_mean_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_speed_10m"
+            ],
+            "unit": "m/s",
+            "value": 2.824
+          }
+        },
+        "id": "outdoor_commute",
+        "label": "Outdoor commute conditions",
+        "limiting_factors": [],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "commute-hours",
+        "score": 100,
+        "status": "available",
+        "summary": "No limiting condition crossed this lens's convenience thresholds."
+      },
+      {
+        "evidence": {
+          "evapotranspiration_total_mm": {
+            "coverage": 1.0,
+            "sources": [
+              "et0_fao_evapotranspiration"
+            ],
+            "unit": "mm",
+            "value": 5.02
+          },
+          "precipitation_total_mm": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "mm",
+            "value": 0.0
+          },
+          "sunshine_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "sunshine_duration"
+            ],
+            "unit": "hours",
+            "value": 13.0
+          },
+          "temperature_max_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 28.2
+          },
+          "temperature_min_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 15.9
+          },
+          "wet_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "precipitation"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "wind_gust_max_ms": {
+            "coverage": 1.0,
+            "sources": [
+              "wind_gusts_10m"
+            ],
+            "unit": "m/s",
+            "value": 8.8
+          }
+        },
+        "id": "gardening",
+        "label": "Hands-on gardening conditions",
+        "limiting_factors": [],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "all-day",
+        "score": 100,
+        "status": "available",
+        "summary": "No limiting condition crossed this lens's convenience thresholds."
+      },
+      {
+        "evidence": {
+          "cloud_cover_mean_pct": {
+            "coverage": 1.0,
+            "sources": [
+              "cloud_cover"
+            ],
+            "unit": "%",
+            "value": 12.083
+          },
+          "pv_yield_kwh_per_kwp": {
+            "coverage": 1.0,
+            "sources": [
+              "daily_physical_energy.pv_yield_kwh_per_kwp"
+            ],
+            "unit": "kWh/kWp",
+            "value": 5.72
+          },
+          "shortwave_total_wh_m2": {
+            "coverage": 1.0,
+            "sources": [
+              "shortwave_radiation"
+            ],
+            "unit": "Wh/m2",
+            "value": 5660.0
+          },
+          "solar_index": {
+            "coverage": 1.0,
+            "sources": [
+              "daily_energy.solar_index"
+            ],
+            "unit": "index",
+            "value": 100.0
+          }
+        },
+        "id": "solar_energy",
+        "label": "Solar-energy conditions",
+        "limiting_factors": [],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "all-day",
+        "score": 100,
+        "status": "available",
+        "summary": "No limiting condition crossed this lens's convenience thresholds."
+      },
+      {
+        "evidence": {
+          "cold_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "hot_humid_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m",
+              "relative_humidity_2m"
+            ],
+            "unit": "hours",
+            "value": 0.0
+          },
+          "relative_humidity_mean_pct": {
+            "coverage": 1.0,
+            "sources": [
+              "relative_humidity_2m"
+            ],
+            "unit": "%",
+            "value": 50.875
+          },
+          "sunshine_hours": {
+            "coverage": 1.0,
+            "sources": [
+              "sunshine_duration"
+            ],
+            "unit": "hours",
+            "value": 13.0
+          },
+          "temperature_max_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 28.2
+          },
+          "temperature_min_c": {
+            "coverage": 1.0,
+            "sources": [
+              "temperature_2m"
+            ],
+            "unit": "C",
+            "value": 15.9
+          }
+        },
+        "id": "outdoor_comfort",
+        "label": "Outdoor temperature comfort",
+        "limiting_factors": [],
+        "missing_or_sparse_facts": [],
+        "rating": "favorable",
+        "scope": "all-day",
+        "score": 100,
+        "status": "available",
+        "summary": "No limiting condition crossed this lens's convenience thresholds."
+      }
+    ],
+    "methodology": {
+      "base_score": 100,
+      "calculation": "Start each lens at 100, subtract the deduction from the first matching band in every applicable rule, then clamp the result at zero.",
+      "coverage_policy": "Withhold only the affected lens when any required fact has less than 90% coverage.",
+      "lenses": [
+        {
+          "id": "cycling",
+          "label": "Cycling conditions",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": ">= 10 mm",
+                  "deduction": 35,
+                  "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-10 mm",
+                  "deduction": 20,
+                  "explanation": "Measurable accumulated precipitation reduced convenience.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "0.2-2 mm",
+                  "deduction": 8,
+                  "explanation": "Some precipitation was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "precipitation_total_mm",
+              "id": "cycling-rain"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 6 wet hours",
+                  "deduction": 20,
+                  "explanation": "Wet conditions persisted through a substantial part of the day.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-6 wet hours",
+                  "deduction": 10,
+                  "explanation": "Several hours recorded precipitation.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "1 wet hour",
+                  "deduction": 5,
+                  "explanation": "One wet hour was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "wet_hours",
+              "id": "cycling-wet-duration"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 18 m/s",
+                  "deduction": 40,
+                  "explanation": "Strong recorded gusts substantially reduced cycling convenience.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "12-18 m/s",
+                  "deduction": 24,
+                  "explanation": "Recorded gusts made cycling more demanding.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "8-12 m/s",
+                  "deduction": 10,
+                  "explanation": "Noticeable gusts were recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "wind_gust_max_ms",
+              "id": "cycling-gusts"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 35 C",
+                  "deduction": 30,
+                  "explanation": "Very high temperature reduced outdoor exertion comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "30-35 C",
+                  "deduction": 15,
+                  "explanation": "High temperature reduced outdoor exertion comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_max_c",
+              "id": "cycling-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": "< 0 C",
+                  "deduction": 25,
+                  "explanation": "Freezing temperature reduced cycling comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "0-5 C",
+                  "deduction": 12,
+                  "explanation": "Low temperature reduced cycling comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_min_c",
+              "id": "cycling-cold"
+            }
+          ],
+          "scope": "all-day"
+        },
+        {
+          "id": "walking",
+          "label": "Walking conditions",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": ">= 10 mm",
+                  "deduction": 35,
+                  "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-10 mm",
+                  "deduction": 20,
+                  "explanation": "Measurable accumulated precipitation reduced convenience.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "0.2-2 mm",
+                  "deduction": 8,
+                  "explanation": "Some precipitation was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "precipitation_total_mm",
+              "id": "walking-rain"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 6 wet hours",
+                  "deduction": 20,
+                  "explanation": "Wet conditions persisted through a substantial part of the day.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-6 wet hours",
+                  "deduction": 10,
+                  "explanation": "Several hours recorded precipitation.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "1 wet hour",
+                  "deduction": 5,
+                  "explanation": "One wet hour was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "wet_hours",
+              "id": "walking-wet-duration"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 20 m/s",
+                  "deduction": 30,
+                  "explanation": "Very strong gusts reduced walking comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "14-20 m/s",
+                  "deduction": 15,
+                  "explanation": "Strong gusts reduced walking comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "wind_gust_max_ms",
+              "id": "walking-gusts"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 35 C",
+                  "deduction": 30,
+                  "explanation": "Very high temperature reduced walking comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "31-35 C",
+                  "deduction": 15,
+                  "explanation": "High temperature reduced walking comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_max_c",
+              "id": "walking-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": "< -5 C",
+                  "deduction": 25,
+                  "explanation": "Very low temperature reduced walking comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "-5 to 2 C",
+                  "deduction": 10,
+                  "explanation": "Low temperature reduced walking comfort.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "temperature_min_c",
+              "id": "walking-cold"
+            }
+          ],
+          "scope": "all-day"
+        },
+        {
+          "id": "outdoor_commute",
+          "label": "Outdoor commute conditions",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": ">= 10 mm",
+                  "deduction": 35,
+                  "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-10 mm",
+                  "deduction": 20,
+                  "explanation": "Measurable accumulated precipitation reduced convenience.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "0.2-2 mm",
+                  "deduction": 8,
+                  "explanation": "Some precipitation was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "precipitation_total_mm",
+              "id": "commute-rain"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 6 wet hours",
+                  "deduction": 20,
+                  "explanation": "Wet conditions persisted through a substantial part of the day.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-6 wet hours",
+                  "deduction": 10,
+                  "explanation": "Several hours recorded precipitation.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "1 wet hour",
+                  "deduction": 5,
+                  "explanation": "One wet hour was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "wet_hours",
+              "id": "commute-wet-duration"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 16 m/s",
+                  "deduction": 30,
+                  "explanation": "Strong gusts affected the morning or afternoon commute window.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "10-16 m/s",
+                  "deduction": 14,
+                  "explanation": "Noticeable gusts affected a commute window.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "wind_gust_max_ms",
+              "id": "commute-gusts"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 32 C",
+                  "deduction": 20,
+                  "explanation": "A commute window was very warm.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_max_c",
+              "id": "commute-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": "< 0 C",
+                  "deduction": 18,
+                  "explanation": "A commute window was below freezing.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_min_c",
+              "id": "commute-cold"
+            }
+          ],
+          "scope": "commute-hours"
+        },
+        {
+          "id": "gardening",
+          "label": "Hands-on gardening conditions",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": ">= 10 mm",
+                  "deduction": 35,
+                  "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-10 mm",
+                  "deduction": 20,
+                  "explanation": "Measurable accumulated precipitation reduced convenience.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "0.2-2 mm",
+                  "deduction": 8,
+                  "explanation": "Some precipitation was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "precipitation_total_mm",
+              "id": "gardening-rain"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 6 wet hours",
+                  "deduction": 20,
+                  "explanation": "Wet conditions persisted through a substantial part of the day.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-6 wet hours",
+                  "deduction": 10,
+                  "explanation": "Several hours recorded precipitation.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "1 wet hour",
+                  "deduction": 5,
+                  "explanation": "One wet hour was recorded.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "wet_hours",
+              "id": "gardening-wet-duration"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 16 m/s",
+                  "deduction": 30,
+                  "explanation": "Strong gusts made hands-on garden work difficult.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "10-16 m/s",
+                  "deduction": 15,
+                  "explanation": "Gusty conditions reduced gardening convenience.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "wind_gust_max_ms",
+              "id": "gardening-gusts"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 33 C",
+                  "deduction": 25,
+                  "explanation": "Very warm conditions reduced gardening comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "29-33 C",
+                  "deduction": 12,
+                  "explanation": "Warm conditions reduced gardening comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_max_c",
+              "id": "gardening-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": "< 0 C",
+                  "deduction": 25,
+                  "explanation": "Freezing temperature constrained garden work and plant handling.",
+                  "severity": "major"
+                }
+              ],
+              "fact": "temperature_min_c",
+              "id": "gardening-frost"
+            }
+          ],
+          "scope": "all-day"
+        },
+        {
+          "id": "solar_energy",
+          "label": "Solar-energy conditions",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": "< 30",
+                  "deduction": 55,
+                  "explanation": "Weather-normalized solar potential was low.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "30-60",
+                  "deduction": 30,
+                  "explanation": "Weather-normalized solar potential was below typical levels.",
+                  "severity": "moderate"
+                },
+                {
+                  "condition": "60-80",
+                  "deduction": 12,
+                  "explanation": "Weather-normalized solar potential was somewhat reduced.",
+                  "severity": "minor"
+                }
+              ],
+              "fact": "solar_index",
+              "id": "solar-index"
+            }
+          ],
+          "scope": "all-day"
+        },
+        {
+          "id": "outdoor_comfort",
+          "label": "Outdoor temperature comfort",
+          "rules": [
+            {
+              "bands": [
+                {
+                  "condition": ">= 35 C",
+                  "deduction": 45,
+                  "explanation": "Very high observed temperature reduced outdoor comfort.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "30-35 C",
+                  "deduction": 25,
+                  "explanation": "High observed temperature reduced outdoor comfort.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "temperature_max_c",
+              "id": "comfort-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 6 hours at >= 28 C and >= 60% RH",
+                  "deduction": 25,
+                  "explanation": "Warm and humid conditions persisted for several hours.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-6 hours at >= 28 C and >= 60% RH",
+                  "deduction": 12,
+                  "explanation": "Warm and humid conditions occurred for part of the day.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "hot_humid_hours",
+              "id": "comfort-humid-heat"
+            },
+            {
+              "bands": [
+                {
+                  "condition": ">= 8 hours below 5 C",
+                  "deduction": 30,
+                  "explanation": "Low temperatures persisted through much of the day.",
+                  "severity": "major"
+                },
+                {
+                  "condition": "2-8 hours below 5 C",
+                  "deduction": 15,
+                  "explanation": "Low temperatures occurred for part of the day.",
+                  "severity": "moderate"
+                }
+              ],
+              "fact": "cold_hours",
+              "id": "comfort-cold"
+            }
+          ],
+          "scope": "all-day"
+        }
+      ],
+      "minimum_required_fact_coverage": 0.9,
+      "rating_bands": [
+        {
+          "condition": "80-100",
+          "rating": "favorable"
+        },
+        {
+          "condition": "55-79",
+          "rating": "mixed"
+        },
+        {
+          "condition": "0-54",
+          "rating": "difficult"
+        }
+      ],
+      "score_floor": 0
+    },
+    "schema": "atlas.activity-lenses/1",
+    "scope": "completed-observed-day",
+    "timezone": "Europe/Budapest"
+  }
+}
