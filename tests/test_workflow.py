@@ -46,3 +46,19 @@ def test_cold_workflow_records_restore_checked_retention_plan() -> None:
     assert "Upload and independently verify release asset" in workflow
     assert "atlas-cold retention-plan --before" in workflow
     assert 'git add "reports/cold/retention-plan.v1.json"' in workflow
+
+
+def test_cold_watchdog_recovers_oldest_missing_verified_month() -> None:
+    workflow = (
+        ROOT / ".github" / "workflows" / "cold-archive-watchdog.yml"
+    ).read_text(encoding="utf-8")
+
+    assert '- cron: "30 5 * * *"' in workflow
+    assert "for (const collection of ['daily', 'periods', 'weeks'])" in workflow
+    assert "atlas.cold-release-verification/1" in workflow
+    assert "checks.restored_editions === true" in workflow
+    assert "now.getUTCDate() < 2" in workflow
+    assert ".sort()" in workflow
+    assert "activeRun" in workflow
+    assert "createWorkflowDispatch" in workflow
+    assert "inputs: { month: targetMonth }" in workflow

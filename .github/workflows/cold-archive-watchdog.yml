@@ -1,0 +1,159 @@
+name: Recover Missing Monthly Cold Archive
+
+on:
+  schedule:
+    # The primary monthly archive starts on day 2 at 03:30 UTC. Check two hours
+    # later and then daily, so a failed month remains eligible after later months
+    # become current instead of being silently skipped.
+    - cron: "30 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: atlas-cold-archive-watchdog
+  cancel-in-progress: false
+
+jobs:
+  recover-oldest-missing-month:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch the oldest closed month without a verified cold copy
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const coldWorkflowId = 'cold-archive.yml'
+            const activeStatuses = new Set([
+              'queued',
+              'in_progress',
+              'waiting',
+              'pending',
+              'requested',
+            ])
+            const now = new Date()
+            const currentMonth = now.toISOString().slice(0, 7)
+            const previousMonth = new Date(
+              Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
+            ).toISOString().slice(0, 7)
+
+            const repository = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            const defaultBranch = repository.data.default_branch
+            const branch = await github.rest.repos.getBranch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: defaultBranch,
+            })
+
+            const getTree = async tree_sha => {
+              const response = await github.rest.git.getTree({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tree_sha,
+              })
+              if (response.data.truncated) {
+                throw new Error(`Git tree ${tree_sha} was truncated`)
+              }
+              return response.data.tree
+            }
+            const childTree = async (tree, name) => {
+              const entry = tree.find(item => item.path === name && item.type === 'tree')
+              return entry ? getTree(entry.sha) : []
+            }
+
+            const rootTree = await getTree(branch.data.commit.commit.tree.sha)
+            const reportsTree = await childTree(rootTree, 'reports')
+            const editionMonths = new Set()
+            for (const collection of ['daily', 'periods', 'weeks']) {
+              const collectionTree = await childTree(reportsTree, collection)
+              for (const entry of collectionTree) {
+                if (entry.type !== 'tree') continue
+                const match = entry.path.match(/(\d{4}-\d{2})-\d{2}$/)
+                if (match && match[1] < currentMonth) editionMonths.add(match[1])
+              }
+            }
+
+            const verifiedMonths = new Set()
+            const coldTree = await childTree(reportsTree, 'cold')
+            for (const entry of coldTree) {
+              const match = entry.path.match(/^(\d{4}-\d{2})\.json$/)
+              if (!match || entry.type !== 'blob') continue
+              try {
+                const response = await github.rest.git.getBlob({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  file_sha: entry.sha,
+                })
+                const payload = JSON.parse(
+                  Buffer.from(response.data.content, response.data.encoding).toString('utf8'),
+                )
+                const checks = payload.verification || {}
+                if (
+                  payload.schema === 'atlas.cold-release-verification/1' &&
+                  payload.status === 'verified' &&
+                  checks.local_package === true &&
+                  checks.github_metadata === true &&
+                  checks.downloaded_copy === true &&
+                  checks.restored_editions === true
+                ) {
+                  verifiedMonths.add(match[1])
+                }
+              } catch (error) {
+                core.warning(`Cold verification ${entry.path} is unreadable: ${error.message}`)
+              }
+            }
+
+            const targetMonth = [...editionMonths]
+              .sort()
+              .find(month => {
+                // Do not package the just-ended month on day 1: its final daily
+                // edition is not authoritative until the normal publication run.
+                if (month === previousMonth && now.getUTCDate() < 2) return false
+                return !verifiedMonths.has(month)
+              })
+
+            if (!targetMonth) {
+              core.summary.addHeading('Monthly cold archive is complete')
+              core.summary.addRaw('Every eligible closed month has a restore-verified record.')
+              await core.summary.write()
+              return
+            }
+
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: coldWorkflowId,
+              branch: defaultBranch,
+              per_page: 100,
+            })
+            const activeRun = runs.data.workflow_runs.find(run =>
+              activeStatuses.has(run.status),
+            )
+            if (activeRun) {
+              core.summary.addHeading('Cold archive recovery is already covered')
+              core.summary.addRaw(
+                `Run #${activeRun.run_number} is ${activeRun.status}; ` +
+                `${targetMonth} remains first in the recovery queue.`,
+              )
+              await core.summary.write()
+              return
+            }
+
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: coldWorkflowId,
+              ref: defaultBranch,
+              inputs: { month: targetMonth },
+            })
+            core.summary.addHeading('Cold archive recovery dispatched')
+            core.summary.addRaw(
+              `Started a restore-verified cold archive run for the oldest ` +
+              `missing closed month: ${targetMonth}.`,
+            )
+            await core.summary.write()
