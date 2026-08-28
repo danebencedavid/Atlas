@@ -723,6 +723,7 @@ def run_pipeline(
             daily_summary_path,
             activity_lenses_path,
         },
+        share_regime_label=daily_regime.label,
     )
     if archive_analysis:
         archive_site(site_index.parent, archive_dir)

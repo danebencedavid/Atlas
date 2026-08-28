@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
 from atlas.activity_lenses import available_lens_ids
@@ -2158,6 +2158,11 @@ def _site_origin(config: AtlasConfig) -> str:
 
 SHARE_CARD_ASSET = "share-card.png"
 ANALYSIS_SHARE_CARD_ASSET = "share-card-analysis.png"
+SHARE_FRONT_LANDSCAPE_ASSET = "share-front-landscape.png"
+SHARE_FRONT_PORTRAIT_ASSET = "share-front-portrait.png"
+SHARE_FLOW_LANDSCAPE_ASSET = "share-flow-landscape.png"
+SHARE_FLOW_PORTRAIT_ASSET = "share-flow-portrait.png"
+SHARE_ARTWORK_DIR = Path(__file__).with_name("assets")
 
 
 def _share_card_asset(family: str) -> str:
@@ -2179,6 +2184,14 @@ _FONT_CANDIDATES = {
         "C:/Windows/Fonts/arial.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
+    ),
+    # The selected share-card direction uses an editorial display serif for its
+    # human-readable weather story. Georgia is the closest local match to the
+    # Playfair reference; DejaVu keeps CI output deterministic.
+    "serif": (
+        "C:/Windows/Fonts/georgia.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "/System/Library/Fonts/Supplemental/Georgia.ttf",
     ),
     # The site sets eyebrows and small labels in a monospace face.
     "mono": (
@@ -2229,6 +2242,30 @@ def _wrap_lines(
     return lines
 
 
+def _tracked_text_width(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    tracking: float,
+) -> float:
+    glyphs = str(text)
+    return sum(draw.textlength(glyph, font=font) for glyph in glyphs) + max(0, len(glyphs) - 1) * tracking
+
+
+def _draw_tracked_text(
+    draw: ImageDraw.ImageDraw,
+    position: tuple[float, float],
+    text: str,
+    font: ImageFont.ImageFont,
+    fill: str,
+    tracking: float,
+) -> None:
+    x, y = position
+    for glyph in str(text):
+        draw.text((x, y), glyph, font=font, fill=fill)
+        x += draw.textlength(glyph, font=font) + tracking
+
+
 def _share_number(value: Any, digits: int, suffix: str) -> str:
     if value is None:
         return "\u2014"
@@ -2239,6 +2276,103 @@ def _share_number(value: Any, digits: int, suffix: str) -> str:
     if pd.isna(number):
         return "\u2014"
     return f"{number:.{digits}f}{suffix}"
+
+
+def _share_signed_number(value: Any, digits: int, suffix: str) -> str:
+    if value is None:
+        return "\u2014"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "\u2014"
+    if pd.isna(number):
+        return "\u2014"
+    return f"{number:+.{digits}f}{suffix}"
+
+
+def _share_date_label(value: Any) -> str:
+    """Turn payload ISO dates into the compact editorial date used on the cards."""
+    dates = []
+    for raw in re.findall(r"\d{4}-\d{2}-\d{2}", str(value or ""))[:2]:
+        try:
+            dates.append(datetime.strptime(raw, "%Y-%m-%d"))
+        except ValueError:
+            continue
+    if not dates:
+        return str(value or "").upper()
+    if len(dates) == 1:
+        date = dates[0]
+        return f"{date.day} {date:%b %Y}".upper()
+    start, end = dates
+    if (start.year, start.month) == (end.year, end.month):
+        return f"{start.day}\u2013{end.day} {end:%b %Y}".upper()
+    if start.year == end.year:
+        return f"{start.day} {start:%b}\u2013{end.day} {end:%b %Y}".upper()
+    return f"{start.day} {start:%b %Y}\u2013{end.day} {end:%b %Y}".upper()
+
+
+def _share_story_headline(
+    kind_label: str,
+    regime_label: str,
+    temperature_anomaly_c: Any,
+    precipitation_anomaly_mm: Any,
+    wind_anomaly_ms: Any,
+) -> str:
+    """Describe the period in plain language instead of leading with a bare value."""
+
+    def numeric(value: Any) -> float | None:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        return None if pd.isna(number) else number
+
+    temperature = numeric(temperature_anomaly_c)
+    precipitation = numeric(precipitation_anomaly_mm)
+    wind = numeric(wind_anomaly_ms)
+    descriptors: list[str] = []
+    if precipitation is not None and abs(precipitation) >= 1.0:
+        descriptors.append("wetter" if precipitation > 0 else "drier")
+    if wind is not None and abs(wind) >= 1.0:
+        descriptors.append("windier" if wind > 0 else "calmer")
+    if temperature is not None and abs(temperature) >= 1.0:
+        descriptors.append("warmer" if temperature > 0 else "cooler")
+
+    span = "day" if "daily" in kind_label.lower() else "72 hours"
+    if descriptors:
+        return f"A {', '.join(descriptors[:2])} {span}"
+    regime = re.sub(r"\s+period$", "", str(regime_label or "").strip(), flags=re.IGNORECASE)
+    return f"{regime.capitalize()} conditions" if regime else f"The latest {span}"
+
+
+def _share_motif_asset(regime_label: Any, portrait: bool = False) -> str:
+    frontal = "front" in str(regime_label or "").lower()
+    if portrait:
+        return SHARE_FRONT_PORTRAIT_ASSET if frontal else SHARE_FLOW_PORTRAIT_ASSET
+    return SHARE_FRONT_LANDSCAPE_ASSET if frontal else SHARE_FLOW_LANDSCAPE_ASSET
+
+
+def _copy_share_card_artwork(site_dir: Path) -> None:
+    assets_dir = site_dir / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    for asset_name in (
+        SHARE_FRONT_LANDSCAPE_ASSET,
+        SHARE_FRONT_PORTRAIT_ASSET,
+        SHARE_FLOW_LANDSCAPE_ASSET,
+        SHARE_FLOW_PORTRAIT_ASSET,
+    ):
+        source = SHARE_ARTWORK_DIR / asset_name
+        if source.is_file():
+            shutil.copy2(source, assets_dir / asset_name)
+
+
+def _share_card_background(width: int, height: int, regime_label: Any) -> Image.Image:
+    source = SHARE_ARTWORK_DIR / _share_motif_asset(regime_label)
+    if not source.is_file():
+        return Image.new("RGB", (width, height), "#ffffff")
+    with Image.open(source) as artwork:
+        resampling = getattr(Image, "Resampling", Image)
+        return ImageOps.fit(artwork.convert("RGB"), (width, height), method=resampling.LANCZOS)
 
 
 def write_share_card(
@@ -2255,63 +2389,65 @@ def write_share_card(
     if not share:
         return None
     width, height = 1200, 630
-    pad = 84
-    # Same treatment as the in-page card: paper, ink, hairline rules and one muted
-    # blue accent, so a shared link previews as the site rather than against it.
-    ink = "#232323"
-    ink_soft = "#50504d"
-    muted = "#7b7a77"
-    line = "#e7e7e3"
-    blue = "#3f72a4"
+    pad = 56
+    ink = "#050505"
+    muted = "#666666"
+    line = "#d9d9d6"
+    blue = "#356b9e"
 
-    image = Image.new("RGB", (width, height), "#ffffff")
+    image = _share_card_background(width, height, share.get("regime_label"))
     draw = ImageDraw.Draw(image)
-    draw.rectangle([18, 18, width - 19, height - 19], outline=line, width=2)
-    draw.rectangle([pad, 92, pad + 84, 97], fill=blue)
+    draw.rectangle([0, 0, width - 1, height - 1], outline=line, width=1)
+    draw.rectangle([pad, 57, pad + 68, 61], fill=blue)
 
     location = str(share.get("location") or f"{config.location.name}, {config.location.region}")
-    eyebrow = location
-    if share.get("kind_label"):
-        eyebrow = f"{location} · {share['kind_label']}"
-    draw.text((pad, 128), eyebrow.upper(), font=_load_font(22, "mono"), fill=muted)
+    date_label = str(share.get("date_label") or _share_date_label(share.get("date")))
+    _draw_tracked_text(draw, (pad, 92), "ATLAS WEATHER NOTE", _load_font(18, "mono"), blue, 2.2)
+    draw.text((pad, 126), f"{location.upper()}  ·  {date_label}", font=_load_font(16, "mono"), fill=muted)
 
+    story = str(share.get("story_headline") or share.get("regime_label") or "Weather summary")
+    story_font = _load_font(84, "serif")
+    if ", " in story:
+        first, second = story.split(", ", 1)
+        story_lines = [f"{first},", second]
+    else:
+        story_lines = _wrap_lines(draw, story, story_font, 715, 2)
+    story_y = 178
+    for line_text in story_lines:
+        draw.text((pad, story_y), line_text, font=story_font, fill=ink)
+        story_y += 88
+
+    regime = str(share.get("regime_label") or "Weather summary").upper()
+    badge_font = _load_font(17, "mono")
+    badge_width = int(_tracked_text_width(draw, regime, badge_font, 3.5)) + 36
+    draw.rectangle([pad, 373, pad + badge_width, 412], fill=blue)
+    _draw_tracked_text(draw, (pad + 18, 382), regime, badge_font, "#ffffff", 3.5)
+
+    summary_x = 840
+    draw.line([(804, 385), (804, 591)], fill="#bcbcb8", width=2)
+    draw.text((summary_x, 389), "PRECIPITATION VS NORMAL", font=_load_font(15, "mono"), fill=muted)
     draw.text(
-        (pad, 178),
-        _share_number(share.get("temperature_c"), 0, "\u00b0"),
-        font=_load_font(140, "bold"),
+        (summary_x, 427),
+        _share_signed_number(share.get("precipitation_anomaly_mm"), 1, " mm"),
+        font=_load_font(70, "bold"),
         fill=ink,
     )
-
-    label_font = _load_font(42, "bold")
-    label_lines = _wrap_lines(draw, share.get("regime_label") or "Weather summary", label_font, width - pad * 2, 1)
-    draw.text((pad, 356), label_lines[0] if label_lines else "", font=label_font, fill=ink)
-
-    body_font = _load_font(25)
-    body_y = 424
-    for body_line in _wrap_lines(draw, share.get("regime_briefing") or "", body_font, width - pad * 2, 2):
-        draw.text((pad, body_y), body_line, font=body_font, fill=ink_soft)
-        body_y += 34
-
-    draw.line([(pad, height - 138), (width - pad, height - 138)], fill=line, width=2)
-
-    stats = [
-        ("PRECIP", _share_number(share.get("precipitation_mm"), 1, " mm")),
-        ("WIND", _share_number(share.get("wind_ms"), 1, " m/s")),
-        ("CLOUD", _share_number(share.get("cloud_pct"), 0, "%")),
-    ]
-    label_font = _load_font(20, "mono")
-    value_font = _load_font(28, "bold")
-    column = pad
-    for stat_label, stat_value in stats:
-        draw.text((column, height - 112), stat_label, font=label_font, fill=muted)
-        draw.text((column, height - 84), stat_value, font=value_font, fill=ink)
-        column += 240
-
-    draw.text(
-        (pad, height - 44),
-        f"{config.project.name} · {share.get('date') or ''}".upper(),
-        font=_load_font(19, "mono"),
-        fill=muted,
+    draw.rectangle([summary_x, 514, summary_x + 45, 518], fill=blue)
+    supporting = " · ".join(
+        (
+            f"{_share_number(share.get('precipitation_mm'), 1, ' mm')} total",
+            f"{_share_number(share.get('wind_ms'), 1, ' m/s')} wind",
+            _share_number(share.get("temperature_c"), 0, "\u00b0C"),
+        )
+    )
+    draw.text((summary_x, 540), supporting, font=_load_font(15, "bold"), fill=ink)
+    _draw_tracked_text(
+        draw,
+        (summary_x, 584),
+        str(share.get("kind_label") or "Weather report").upper(),
+        _load_font(14, "mono"),
+        blue,
+        1.2,
     )
 
     assets_dir = site_dir / "assets"
@@ -2600,6 +2736,10 @@ SHARE_SCRIPT = r"""<script>
       value === null || value === undefined || Number.isNaN(value)
         ? '—'
         : `${Number(value).toFixed(digits)}${suffix}`;
+    const signedNumberOrDash = (value, digits, suffix) =>
+      value === null || value === undefined || Number.isNaN(value)
+        ? '—'
+        : `${Number(value) >= 0 ? '+' : ''}${Number(value).toFixed(digits)}${suffix}`;
 
     const wrapText = (ctx, text, x, y, maxWidth, lineHeight, maxLines) => {
       const words = String(text || '').split(' ');
@@ -2622,21 +2762,42 @@ SHARE_SCRIPT = r"""<script>
       return cursorY;
     };
 
+    const trackedWidth = (ctx, text, tracking) => {
+      const glyphs = Array.from(String(text));
+      return glyphs.reduce((width, glyph) => width + ctx.measureText(glyph).width, 0) + Math.max(0, glyphs.length - 1) * tracking;
+    };
+
+    const drawTrackedText = (ctx, text, x, y, tracking) => {
+      for (const glyph of String(text)) {
+        ctx.fillText(glyph, x, y);
+        x += ctx.measureText(glyph).width + tracking;
+      }
+    };
+
     // 1080x1350 is Instagram's tallest feed frame and crops cleanly on Facebook.
-    // Styled as the site is: paper, ink, hairline rules and one muted blue accent,
-    // rather than the saturated gradient it used to carry.
-    const INK = '#232323';
-    const INK_SOFT = '#50504d';
-    const MUTED = '#7b7a77';
-    const LINE = '#e7e7e3';
-    const BLUE = '#3f72a4';
+    // Option 3 keeps report values live while adaptive atmospheric artwork carries
+    // the story across both daily and 72-hour cards.
+    const INK = '#050505';
+    const MUTED = '#666666';
+    const LINE = '#d9d9d6';
+    const BLUE = '#356b9e';
     const MONO = 'ui-monospace, SFMono-Regular, Consolas, monospace';
     const SANS = 'Inter, Segoe UI, Arial, sans-serif';
+    const SERIF = 'Georgia, Times New Roman, serif';
 
-    const buildCard = () => {
+    const loadImage = src =>
+      new Promise(resolve => {
+        if (!src) return resolve(null);
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
+      });
+
+    const buildCard = async () => {
       const W = 1080;
       const H = 1350;
-      const PAD = 96;
+      const PAD = 80;
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
@@ -2644,69 +2805,64 @@ SHARE_SCRIPT = r"""<script>
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, W, H);
+      const motif = await loadImage(share.motif_url);
+      if (motif) ctx.drawImage(motif, 0, 0, W, H);
       ctx.strokeStyle = LINE;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(30, 30, W - 60, H - 60);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
 
-      // The blue rule echoes the accent on the site's navigation cards.
       ctx.fillStyle = BLUE;
-      ctx.fillRect(PAD, 150, 96, 6);
+      ctx.fillRect(PAD, 90, 78, 5);
+      ctx.font = `700 24px ${MONO}`;
+      drawTrackedText(ctx, 'ATLAS WEATHER NOTE', PAD, 150, 2.8);
 
       const location = String(share.location || 'Debrecen, Hungary');
-      const eyebrow = share.kind_label ? `${location} · ${share.kind_label}` : location;
       ctx.fillStyle = MUTED;
-      ctx.font = `600 26px ${MONO}`;
-      ctx.fillText(eyebrow.toUpperCase(), PAD, 224);
+      ctx.font = `400 22px ${MONO}`;
+      ctx.fillText(`${location.toUpperCase()}  ·  ${String(share.date_label || share.date || '').toUpperCase()}`, PAD, 198);
 
       ctx.fillStyle = INK;
-      ctx.font = `800 240px ${SANS}`;
-      ctx.fillText(numberOrDash(share.temperature_c, 0, '°'), PAD, 476);
-
-      ctx.font = `700 58px ${SANS}`;
-      wrapText(ctx, share.regime_label || 'Weather summary', PAD, 574, W - PAD * 2, 70, 2);
-
-      ctx.fillStyle = INK_SOFT;
-      ctx.font = `400 32px ${SANS}`;
-      wrapText(ctx, share.regime_briefing || '', PAD, 690, W - PAD * 2, 46, 4);
-
-      const rows = [
-        ['Precipitation', numberOrDash(share.precipitation_mm, 1, ' mm')],
-        ['Wind', numberOrDash(share.wind_ms, 1, ' m/s')],
-        ['Cloud cover', numberOrDash(share.cloud_pct, 0, '%')],
-      ];
-      if (share.energy_label) rows.push(['Energy', String(share.energy_label)]);
-
-      let rowY = 902;
-      for (const [label, value] of rows) {
-        ctx.strokeStyle = LINE;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(PAD, rowY - 34);
-        ctx.lineTo(W - PAD, rowY - 34);
-        ctx.stroke();
-
-        ctx.fillStyle = MUTED;
-        ctx.font = `500 24px ${MONO}`;
-        ctx.textAlign = 'left';
-        ctx.fillText(label.toUpperCase(), PAD, rowY);
-        ctx.fillStyle = INK;
-        ctx.font = `700 34px ${SANS}`;
-        ctx.textAlign = 'right';
-        ctx.fillText(value, W - PAD, rowY);
-        ctx.textAlign = 'left';
-        rowY += 78;
+      ctx.font = `500 88px ${SERIF}`;
+      const story = String(share.story_headline || share.regime_label || 'Weather summary');
+      if (story.includes(', ')) {
+        const splitAt = story.indexOf(', ');
+        ctx.fillText(story.slice(0, splitAt + 1), PAD, 340);
+        ctx.fillText(story.slice(splitAt + 2), PAD, 442);
+      } else {
+        wrapText(ctx, story, PAD, 340, W - PAD * 2, 102, 3);
       }
 
-      ctx.strokeStyle = LINE;
+      const regime = String(share.regime_label || 'Weather summary').toUpperCase();
+      ctx.font = `400 24px ${MONO}`;
+      const badgeWidth = Math.min(W - PAD * 2, trackedWidth(ctx, regime, 4.5) + 42);
+      ctx.fillStyle = BLUE;
+      ctx.fillRect(PAD, 548, badgeWidth, 54);
+      ctx.fillStyle = '#ffffff';
+      drawTrackedText(ctx, regime, PAD + 21, 584, 4.5);
+
+      const summaryX = 550;
+      ctx.strokeStyle = '#bcbcb8';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(PAD, H - 168);
-      ctx.lineTo(W - PAD, H - 168);
+      ctx.moveTo(summaryX - 48, 926);
+      ctx.lineTo(summaryX - 48, 1274);
       ctx.stroke();
 
       ctx.fillStyle = MUTED;
-      ctx.font = `500 24px ${MONO}`;
-      ctx.fillText(`ATLAS · ${String(share.date || '').toUpperCase()}`, PAD, H - 122);
-      ctx.fillText(String(pageUrl).replace(/^https?:\/\//, ''), PAD, H - 82);
+      ctx.font = `400 22px ${MONO}`;
+      ctx.fillText('PRECIPITATION VS NORMAL', summaryX, 966);
+      ctx.fillStyle = INK;
+      ctx.font = `700 92px ${SANS}`;
+      ctx.fillText(signedNumberOrDash(share.precipitation_anomaly_mm, 1, ' mm'), summaryX, 1082);
+      ctx.fillStyle = BLUE;
+      ctx.fillRect(summaryX, 1122, 54, 5);
+      ctx.fillStyle = INK;
+      ctx.font = `600 24px ${SANS}`;
+      const supporting = `${numberOrDash(share.precipitation_mm, 1, ' mm')} total · ${numberOrDash(share.wind_ms, 1, ' m/s')} wind · ${numberOrDash(share.temperature_c, 0, '°C')}`;
+      wrapText(ctx, supporting, summaryX, 1174, W - summaryX - PAD, 34, 2);
+      ctx.fillStyle = BLUE;
+      ctx.font = `400 22px ${MONO}`;
+      drawTrackedText(ctx, String(share.kind_label || 'Weather report').toUpperCase(), summaryX, 1282, 1.8);
 
       return canvas;
     };
@@ -2714,10 +2870,12 @@ SHARE_SCRIPT = r"""<script>
     // Period cards carry a date range, so the raw value is not filename-safe.
     const slug = value => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const fileName = `debrecen-${slug(share.kind_label || 'report')}-${slug(share.date || 'latest')}.png`;
-    const shareText = `${share.regime_label || 'Debrecen weather'} — ${numberOrDash(share.temperature_c, 0, '°C')} in ${share.location || 'Debrecen'} on ${share.date || ''}`;
+    const shareText = `${share.story_headline || share.regime_label || 'Debrecen weather'} — ${numberOrDash(share.temperature_c, 0, '°C')} in ${share.location || 'Debrecen'} on ${share.date || ''}`;
 
-    const toBlob = () =>
-      new Promise(resolve => buildCard().toBlob(blob => resolve(blob), 'image/png'));
+    const toBlob = async () => {
+      const canvas = await buildCard();
+      return new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png'));
+    };
 
     const setMenu = open => {
       menu.hidden = !open;
@@ -4406,6 +4564,7 @@ def archive_public_site(
     archive_dir: Path,
     asset_names: set[str],
     data_paths: set[Path] | None = None,
+    share_regime_label: str | None = None,
 ) -> Path:
     planned: dict[Path, Path] = {}
     for filename, _ in PUBLIC_PAGES:
@@ -4413,7 +4572,12 @@ def archive_public_site(
         if source.exists():
             target_name = "index.html" if filename == "report.html" else filename
             planned[Path(target_name)] = source
-    for name in asset_names:
+    archived_assets = set(asset_names)
+    if share_regime_label:
+        # The frozen report still builds its downloadable portrait card in the
+        # browser, so preserve the one atmospheric plate referenced by its payload.
+        archived_assets.add(_share_motif_asset(share_regime_label, portrait=True))
+    for name in archived_assets:
         source = site_dir / "assets" / name
         if source.exists():
             planned[Path("assets") / name] = source
@@ -4714,16 +4878,36 @@ def build_site(
         data_links["air_mass_origin"] = "../data/air_mass_origin.json"
 
     location_label = f"{config.location.name}, {config.location.region}"
+    daily_standard = {item.metric: item.anomaly for item in daily_climate_reference.standard_anomalies}
+    analysis_standard = {item.metric: item.anomaly for item in climate_reference.standard_anomalies}
+    daily_temperature_anomaly = daily_standard.get("temperature_mean_c")
+    daily_precipitation_anomaly = daily_standard.get("precipitation_total_mm")
+    daily_wind_anomaly = daily_standard.get("wind_speed_mean_ms")
+    analysis_temperature_anomaly = analysis_standard.get("temperature_mean_c")
+    analysis_precipitation_anomaly = analysis_standard.get("precipitation_total_mm")
+    analysis_wind_anomaly = analysis_standard.get("wind_speed_mean_ms")
     share_payload = {
         "date": daily_date,
+        "date_label": _share_date_label(daily_date),
         "page_url": _report_url(config),
+        "motif_url": f"assets/{_share_motif_asset(daily_regime.label, portrait=True)}",
         "location": location_label,
         "kind_label": "Daily report",
         "regime_label": daily_regime.label,
         "regime_briefing": daily_regime.briefing,
+        "story_headline": _share_story_headline(
+            "Daily report",
+            daily_regime.label,
+            daily_temperature_anomaly,
+            daily_precipitation_anomaly,
+            daily_wind_anomaly,
+        ),
         "temperature_c": daily_metrics.get("temperature_mean_c"),
+        "temperature_anomaly_c": daily_temperature_anomaly,
         "precipitation_mm": daily_metrics.get("precipitation_total_mm"),
+        "precipitation_anomaly_mm": daily_precipitation_anomaly,
         "wind_ms": daily_metrics.get("wind_speed_mean_ms"),
+        "wind_anomaly_ms": daily_wind_anomaly,
         "cloud_pct": daily_metrics.get("cloud_cover_mean_pct"),
         "energy_label": daily_energy.label,
     }
@@ -4731,18 +4915,31 @@ def build_site(
     # rather than reusing the single-day one.
     analysis_share_payload = {
         "date": f"{period_start} – {period_end}",
+        "date_label": _share_date_label(f"{period_start} – {period_end}"),
         "page_url": _analysis_url(config),
+        "motif_url": f"../assets/{_share_motif_asset(regime.label, portrait=True)}",
         "location": location_label,
         "kind_label": "72-hour analysis",
         "regime_label": regime.label,
         "regime_briefing": regime.briefing,
+        "story_headline": _share_story_headline(
+            "72-hour analysis",
+            regime.label,
+            analysis_temperature_anomaly,
+            analysis_precipitation_anomaly,
+            analysis_wind_anomaly,
+        ),
         "temperature_c": current_metrics.get("temperature_mean_c"),
+        "temperature_anomaly_c": analysis_temperature_anomaly,
         "precipitation_mm": current_metrics.get("precipitation_total_mm"),
+        "precipitation_anomaly_mm": analysis_precipitation_anomaly,
         "wind_ms": current_metrics.get("wind_speed_mean_ms"),
+        "wind_anomaly_ms": analysis_wind_anomaly,
         "cloud_pct": current_metrics.get("cloud_cover_mean_pct"),
         "energy_label": energy.label,
     }
     # After _copy_assets, which clears the assets directory before repopulating it.
+    _copy_share_card_artwork(site_dir)
     write_share_card(config, share_payload, site_dir)
     write_share_card(config, analysis_share_payload, site_dir, ANALYSIS_SHARE_CARD_ASSET)
 

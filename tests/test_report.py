@@ -26,7 +26,20 @@ from atlas.site import build_report_archive
 from atlas.site import build_site
 from atlas.site import collect_weather_event_index
 from atlas.site import _load_activity_lenses
+from atlas.site import _share_date_label
+from atlas.site import _share_story_headline
 from atlas.synoptic import SynopticArchive
+
+
+def test_share_card_story_and_date_labels_are_feed_ready():
+    assert _share_date_label("2026-08-26") == "26 AUG 2026"
+    assert _share_date_label("2026-08-24 – 2026-08-26") == "24–26 AUG 2026"
+    assert _share_story_headline("72-hour analysis", "Wet frontal period", 0.0, 6.3, 2.1) == (
+        "A wetter, windier 72 hours"
+    )
+    assert _share_story_headline("Daily report", "Sunny high-pressure period", -2.1, -2.6, 0.7) == (
+        "A drier, cooler day"
+    )
 
 
 def test_report_generation_smoke(tmp_path: Path):
@@ -389,12 +402,25 @@ def test_report_generation_smoke(tmp_path: Path):
     assert daily_card.is_file()
     assert analysis_card.is_file()
     assert daily_card.read_bytes() != analysis_card.read_bytes()
+    for artwork in (
+        "share-front-landscape.png",
+        "share-front-portrait.png",
+        "share-flow-landscape.png",
+        "share-flow-portrait.png",
+    ):
+        assert (site_root / "assets" / artwork).is_file()
 
     assert "assets/share-card-analysis.png" in analysis_page
     assert "assets/share-card-analysis.png" not in report_html
     assert "assets/share-card.png" in report_html
     assert '"kind_label": "72-hour analysis"' in analysis_page
     assert '"kind_label": "Daily report"' in report_html
+    assert '"story_headline":' in analysis_page
+    assert '"story_headline":' in report_html
+    assert '"precipitation_anomaly_mm":' in analysis_page
+    assert '"precipitation_anomaly_mm":' in report_html
+    assert '"motif_url":' in analysis_page
+    assert '"motif_url":' in report_html
 
 
 def test_activity_lens_renderer_rejects_evidence_from_another_edition(
@@ -425,6 +451,7 @@ def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):
     (site_dir / "weather.html").write_text("daily weather", encoding="utf-8")
     (site_dir / "assets").mkdir()
     (site_dir / "assets" / "daily.html").write_text("plot", encoding="utf-8")
+    (site_dir / "assets" / "share-front-portrait.png").write_bytes(b"portrait artwork")
     evidence = tmp_path / "daily_hourly.csv"
     evidence.write_text("time,temperature\n00:00,20\n", encoding="utf-8")
 
@@ -433,11 +460,15 @@ def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):
         tmp_path / "reports" / "daily" / "2026-08-03",
         {"daily.html"},
         {evidence},
+        share_regime_label="Wet frontal period",
     )
 
     assert archived_index.read_text(encoding="utf-8") == "daily overview"
     assert (archived_index.parent / "weather.html").exists()
     assert (archived_index.parent / "assets" / "daily.html").exists()
+    assert (
+        archived_index.parent / "assets" / "share-front-portrait.png"
+    ).read_bytes() == b"portrait artwork"
     assert (archived_index.parent / "data" / "daily_hourly.csv").read_bytes() == evidence.read_bytes()
     assert not (archived_index.parent / "report.html").exists()
 
