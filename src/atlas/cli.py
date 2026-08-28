@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from dataclasses import asdict
 from datetime import date
 from datetime import timedelta
@@ -21,7 +22,10 @@ from atlas.climatology import (
     fetch_climate_archive,
     standard_water_balance_samples,
 )
-from atlas.build_status import clear_withheld, read_withheld, record_withheld
+from atlas.build_status import prepare_recoveries
+from atlas.build_status import read_withheld
+from atlas.build_status import record_recovered
+from atlas.build_status import record_withheld
 from atlas.config import load_config
 from atlas.dates import last_complete_period
 from atlas.electricity import fetch_energy_charts, summarize_electricity
@@ -70,6 +74,15 @@ def parse_date(value: str | None) -> date | None:
     return date.fromisoformat(value)
 
 
+def _workflow_run_url() -> str | None:
+    server = os.environ.get("GITHUB_SERVER_URL")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if not all((server, repository, run_id)):
+        return None
+    return f"{server.rstrip('/')}/{repository}/actions/runs/{run_id}"
+
+
 def run_pipeline(
     config_path: str | Path = "configs/atlas.yml",
     period_start: date | None = None,
@@ -80,7 +93,7 @@ def run_pipeline(
     config = load_config(config_path)
     # Read this before fetching or rendering anything. A corrupt status record is
     # an unknown publication state, never evidence that nothing was withheld.
-    withheld_notices = [item.describe() for item in read_withheld(config)]
+    pending_withheld = read_withheld(config)
     quality_notes: list[str] = []
     if period_start is None:
         start, end = last_complete_period(
@@ -225,6 +238,28 @@ def run_pipeline(
         )
         record_withheld(config, start, end, str(exc), shortfall_hours=shortfall)
         raise
+
+    station_coverage = next(
+        coverage for coverage in observational_coverage if coverage.name == "station"
+    )
+    final_day = station_coverage.per_day[
+        station_coverage.per_day["local_day"] == end
+    ]
+    if final_day.empty:
+        recovery_observed = station_coverage.observed
+        recovery_expected = station_coverage.expected
+    else:
+        recovery_observed = int(final_day.iloc[0]["observed"])
+        recovery_expected = int(final_day.iloc[0]["expected"])
+    recovery_records = prepare_recoveries(
+        pending_withheld,
+        start,
+        end,
+        station_observed=recovery_observed,
+        station_expected=recovery_expected,
+        site_url=config.project.site_url,
+        workflow_url=_workflow_run_url(),
+    )
 
     frontal_source = station_hourly(station) if not station.frame.empty else current
     fronts = detect_fronts(frontal_source)
@@ -671,7 +706,7 @@ def run_pipeline(
         air_mass_origin=air_mass_origin,
         radar_cells=radar_cells,
         observational_coverage=observational_coverage,
-        withheld_notices=withheld_notices,
+        recovery_notices=recovery_records,
         figure_paths=figure_paths,
         processed_paths={
             "period_metrics": period_metrics_path,
@@ -736,9 +771,9 @@ def run_pipeline(
         # an older provider shortfall as the reason for this new failure.
         record_withheld(config, start, end, str(exc))
         raise
-    # Retire the pending record only after every deployable page, archive and
-    # carried notice has been built successfully.
-    clear_withheld(config)
+    # Move only this window's attempts into durable recovery history, and only
+    # after every deployable page and archive has built successfully.
+    record_recovered(config, recovery_records)
     return site_index
 
 

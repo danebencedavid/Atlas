@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from dataclasses import asdict
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,7 @@ from atlas.almanac import build_almanac
 from atlas.activity_lenses import evaluate_activity_lenses
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
+from atlas.build_status import RecoveredBuild
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig, OutputConfig
 from atlas.electricity import ElectricitySummary
@@ -195,6 +197,23 @@ def test_report_generation_smoke(tmp_path: Path):
         config,
     )
 
+    recovery = RecoveredBuild(
+        attempted_at="2026-08-28T08:37:17+00:00",
+        period_start="2026-07-27",
+        period_end="2026-07-29",
+        reason="Station observations were incomplete.",
+        recovered_at="2026-07-30T12:00:00+00:00",
+        station_observed=144,
+        station_expected=144,
+        report_url="https://example.test/Atlas/archive/daily/2026-07-29/",
+        data_url=(
+            "https://example.test/Atlas/archive/daily/2026-07-29/data/"
+            "daily_station_observations.csv"
+        ),
+        workflow_url="https://github.com/example/Atlas/actions/runs/123",
+        shortfall_hours=22.17,
+    )
+
     target = build_site(
         config=config,
         period_start="2026-07-27",
@@ -245,6 +264,7 @@ def test_report_generation_smoke(tmp_path: Path):
         figure_paths=figure_paths,
         processed_paths=processed,
         edition_notice="Demonstration edition: synthetic data.",
+        recovery_notices=[recovery],
     )
 
     assert target.exists()
@@ -278,6 +298,14 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "kizárólag saját felelősségére" in report_html
     assert "nem vállal felelősséget" in report_html
     assert "Contains modified" in report_html
+    assert "Recovered publication." in report_html
+    assert "An earlier publication attempt" in report_html
+    assert "subsequently recovered" in report_html
+    assert "144/144 station observations" in report_html
+    assert recovery.report_url in report_html
+    assert recovery.data_url in report_html
+    assert recovery.workflow_url in report_html
+    assert "The edition for 2026-07-27 to 2026-07-29 was withheld" not in report_html
     assert "Yesterday Hour By Hour" in report_html
     assert "Activity Lenses" in report_html
     assert 'class="activity-lenses-symbol" aria-hidden="true"' in report_html
@@ -552,6 +580,27 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
             reports_dir=reports_dir,
         )
     )
+    recovered = RecoveredBuild(
+        attempted_at="2026-08-04T08:00:00+00:00",
+        period_start="2026-08-01",
+        period_end="2026-08-03",
+        reason="Station observations were incomplete.",
+        recovered_at="2026-08-04T12:00:00+00:00",
+        station_observed=144,
+        station_expected=144,
+        report_url="https://example.test/Atlas/archive/daily/2026-08-03/",
+        data_url=(
+            "https://example.test/Atlas/archive/daily/2026-08-03/data/"
+            "daily_station_observations.csv"
+        ),
+        workflow_url="https://github.com/example/Atlas/actions/runs/456",
+    )
+    status_dir = reports_dir / "status"
+    status_dir.mkdir()
+    (status_dir / "withheld.json").write_text(
+        json.dumps({"withheld": [], "recovered": [asdict(recovered)]}),
+        encoding="utf-8",
+    )
     index = build_report_archive(config, updated="2026-08-04 12:00 UTC")
 
     archive_html = index.read_text(encoding="utf-8")
@@ -609,6 +658,9 @@ def test_build_report_archive_publishes_saved_editions(tmp_path: Path):
     assert 'class="publication-state"' in published_daily
     assert "Observed, not forecast" in published_daily
     assert f'../../assets/share/{shared_motifs[0].name}' in published_daily
+    assert "Recovered publication." in published_daily
+    assert recovered.report_url in published_daily
+    assert recovered.data_url in published_daily
     published_analysis = (
         index.parent / "periods" / "2026-08-01_2026-08-03" / "analysis" / "index.html"
     ).read_text(encoding="utf-8")

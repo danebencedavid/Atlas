@@ -29,6 +29,8 @@ from atlas.archive_bundle import validate_edition_bundle
 from atlas.archive_styles import externalize_repeated_archive_styles
 from atlas.archive_publish import enforce_published_archive_limits
 from atlas.archive_publish import staged_directory
+from atlas.build_status import read_recovered
+from atlas.build_status import RecoveredBuild
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
 from atlas.electricity import ElectricitySummary
@@ -940,6 +942,8 @@ a { color: inherit; }
   font-size: 11px;
   font-weight: 550;
 }
+.recovery-notice p { margin: 0; }
+.recovery-notice a { font-weight: 700; }
 .page-shell {
   width: min(100%, 1320px);
   margin: 0 auto;
@@ -3058,6 +3062,31 @@ FIGURE_RESIZE_SCRIPT = r"""<script data-atlas-figure-resize>
 </script>"""
 
 
+def _recovery_notice_html(recoveries: list[RecoveredBuild] | None) -> str:
+    if not recoveries:
+        return ""
+    items: list[str] = []
+    for recovery in recoveries:
+        workflow = (
+            f' <a href="{html.escape(recovery.workflow_url, quote=True)}" '
+            'rel="noopener">View successful workflow</a>.'
+            if recovery.workflow_url
+            else ""
+        )
+        items.append(
+            f'<p><strong>Recovered publication.</strong> {html.escape(recovery.describe())} '
+            f'<a href="{html.escape(recovery.report_url, quote=True)}">Open archived report</a> '
+            f'&middot; <a href="{html.escape(recovery.data_url, quote=True)}" download>'
+            f'Download station observations</a>.{workflow}</p>'
+        )
+    return (
+        '  <div class="edition-notice recovery-notice" role="note" '
+        'data-atlas-recovery="true">'
+        + "".join(items)
+        + "</div>\n"
+    )
+
+
 def _page_document(
     config: AtlasConfig,
     active: str,
@@ -3070,6 +3099,7 @@ def _page_document(
     share: dict[str, Any] | None = None,
     publication_period: str | None = None,
     publication_complete: bool | None = None,
+    recovery_notices: list[RecoveredBuild] | None = None,
 ) -> str:
     # Generated tables use column headers throughout. Adding scope centrally keeps
     # screen-reader associations intact as new scientific panels are introduced.
@@ -3083,6 +3113,7 @@ def _page_document(
         if edition_notice
         else ""
     )
+    notice_line += _recovery_notice_html(recovery_notices)
     report_family = {
         "home": "Project",
         "public": "Daily report",
@@ -4244,6 +4275,40 @@ def _externalize_shared_archive_artwork(edition_dir: Path, archive_dir: Path) ->
         source.unlink()
 
 
+def _overlay_archived_recovery(
+    edition_dir: Path,
+    collection: str,
+    recoveries: list[RecoveredBuild],
+) -> None:
+    if collection == "daily":
+        matches = [item for item in recoveries if item.period_end == edition_dir.name]
+    elif collection == "periods":
+        matches = [
+            item
+            for item in recoveries
+            if f"{item.period_start}_{item.period_end}" == edition_dir.name
+        ]
+    else:
+        matches = []
+    if not matches:
+        return
+
+    recovery_html = _recovery_notice_html(matches)
+    old_notice = re.compile(
+        r'\s*<div class="edition-notice" role="note">.*?</div>\s*',
+        flags=re.DOTALL,
+    )
+    for page in edition_dir.rglob("*.html"):
+        document = page.read_text(encoding="utf-8")
+        if 'data-atlas-recovery="true"' in document:
+            continue
+        if old_notice.search(document):
+            document = old_notice.sub(f"\n{recovery_html}", document, count=1)
+        elif "<main" in document:
+            document = document.replace("<main", f"{recovery_html}<main", 1)
+        page.write_text(document, encoding="utf-8")
+
+
 def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -> str:
     rows = "".join(
         f"""
@@ -4448,6 +4513,7 @@ def _build_report_archive_into(
         collection: [_archive_entry(source, collection) for source in sources]
         for collection, sources in saved.items()
     }
+    recovered_publications = read_recovered(config)
     archive_figure_renderer = write_shared_figure_renderer(archive_dir)
 
     for collection, entries in collections.items():
@@ -4457,6 +4523,11 @@ def _build_report_archive_into(
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(entry["source"], target)
             _rewrite_published_archive_links(target, collection)
+            _overlay_archived_recovery(
+                target,
+                collection,
+                recovered_publications,
+            )
             _externalize_shared_archive_artwork(target, archive_dir)
             manifest = json.loads(
                 (entry["source"] / "manifest.json").read_text(encoding="utf-8")
@@ -4845,19 +4916,11 @@ def build_site(
     air_mass_origin: AirMassOrigin | None = None,
     radar_cells: RadarCellAnalysis | None = None,
     observational_coverage: list[InputCoverage] | None = None,
-    withheld_notices: list[str] | None = None,
+    recovery_notices: list[RecoveredBuild] | None = None,
 ) -> Path:
     site_dir = site_dir or config.outputs.site_dir
     site_dir.mkdir(parents=True, exist_ok=True)
 
-    # A withheld build leaves the previous edition serving with nothing to say a
-    # newer one was attempted and rejected. The first edition that does publish
-    # carries that history, so the gap in the record is legible on the page.
-    if withheld_notices:
-        withheld_text = " ".join(withheld_notices)
-        edition_notice = (
-            f"{edition_notice} {withheld_text}" if edition_notice else withheld_text
-        )
     analysis_dir = site_dir / "analysis"
     if analysis_dir.exists():
         shutil.rmtree(analysis_dir)
@@ -5550,6 +5613,7 @@ def build_site(
             "home",
             edition_notice,
             None,
+            recovery_notices=recovery_notices,
         ),
         encoding="utf-8",
     )
@@ -5577,6 +5641,7 @@ def build_site(
                 share_payload,
                 daily_date,
                 publication_complete,
+                recovery_notices,
             ),
             encoding="utf-8",
         )
@@ -5606,6 +5671,7 @@ def build_site(
                 analysis_share_payload,
                 f"{period_start} to {period_end}",
                 publication_complete,
+                recovery_notices,
             ),
             encoding="utf-8",
         )
@@ -5622,6 +5688,7 @@ def build_site(
             "summary",
             edition_notice,
             None,
+            recovery_notices=recovery_notices,
         ),
         encoding="utf-8",
     )
@@ -5636,6 +5703,7 @@ def build_site(
             "records",
             edition_notice,
             None,
+            recovery_notices=recovery_notices,
         ),
         encoding="utf-8",
     )
