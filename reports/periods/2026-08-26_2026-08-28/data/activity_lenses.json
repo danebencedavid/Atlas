@@ -1,0 +1,968 @@
+{
+  "commute_windows": [
+    "06:00-10:00",
+    "15:00-19:00"
+  ],
+  "date": "2026-08-28",
+  "disclaimer": "These lenses describe completed observed conditions using transparent Atlas convenience heuristics. They are not forecasts, warnings, medical guidance, or personal safety advice.",
+  "evidence_quality": {
+    "coverage": 1.0,
+    "expected_hours": 24,
+    "minimum_lens_coverage": 0.9,
+    "observed_hours": 24
+  },
+  "lenses": [
+    {
+      "evidence": {
+        "precipitation_total_mm": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "mm",
+          "value": 0.0
+        },
+        "sunshine_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "sunshine_duration"
+          ],
+          "unit": "hours",
+          "value": 13.0
+        },
+        "temperature_max_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 29.7
+        },
+        "temperature_min_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 15.8
+        },
+        "wet_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "wind_gust_max_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_gusts_10m"
+          ],
+          "unit": "m/s",
+          "value": 10.9
+        },
+        "wind_speed_mean_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_speed_10m"
+          ],
+          "unit": "m/s",
+          "value": 4.136
+        }
+      },
+      "id": "cycling",
+      "label": "Cycling conditions",
+      "limiting_factors": [
+        {
+          "condition": "8-12 m/s",
+          "deduction": 10,
+          "explanation": "Noticeable gusts were recorded.",
+          "fact": "wind_gust_max_ms",
+          "rule": "cycling-gusts",
+          "severity": "minor",
+          "unit": "m/s",
+          "value": 10.9
+        }
+      ],
+      "missing_or_sparse_facts": [],
+      "rating": "favorable",
+      "scope": "all-day",
+      "score": 90,
+      "status": "available",
+      "summary": "1 observed condition reduced this lens's rating."
+    },
+    {
+      "evidence": {
+        "precipitation_total_mm": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "mm",
+          "value": 0.0
+        },
+        "sunshine_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "sunshine_duration"
+          ],
+          "unit": "hours",
+          "value": 13.0
+        },
+        "temperature_max_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 29.7
+        },
+        "temperature_min_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 15.8
+        },
+        "wet_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "wind_gust_max_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_gusts_10m"
+          ],
+          "unit": "m/s",
+          "value": 10.9
+        }
+      },
+      "id": "walking",
+      "label": "Walking conditions",
+      "limiting_factors": [],
+      "missing_or_sparse_facts": [],
+      "rating": "favorable",
+      "scope": "all-day",
+      "score": 100,
+      "status": "available",
+      "summary": "No limiting condition crossed this lens's convenience thresholds."
+    },
+    {
+      "evidence": {
+        "precipitation_total_mm": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "mm",
+          "value": 0.0
+        },
+        "temperature_max_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 29.7
+        },
+        "temperature_min_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 15.8
+        },
+        "wet_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "wind_gust_max_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_gusts_10m"
+          ],
+          "unit": "m/s",
+          "value": 10.2
+        },
+        "wind_speed_mean_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_speed_10m"
+          ],
+          "unit": "m/s",
+          "value": 3.846
+        }
+      },
+      "id": "outdoor_commute",
+      "label": "Outdoor commute conditions",
+      "limiting_factors": [
+        {
+          "condition": "10-16 m/s",
+          "deduction": 14,
+          "explanation": "Noticeable gusts affected a commute window.",
+          "fact": "wind_gust_max_ms",
+          "rule": "commute-gusts",
+          "severity": "moderate",
+          "unit": "m/s",
+          "value": 10.2
+        }
+      ],
+      "missing_or_sparse_facts": [],
+      "rating": "favorable",
+      "scope": "commute-hours",
+      "score": 86,
+      "status": "available",
+      "summary": "1 observed condition reduced this lens's rating."
+    },
+    {
+      "evidence": {
+        "evapotranspiration_total_mm": {
+          "coverage": 1.0,
+          "sources": [
+            "et0_fao_evapotranspiration"
+          ],
+          "unit": "mm",
+          "value": 6.22
+        },
+        "precipitation_total_mm": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "mm",
+          "value": 0.0
+        },
+        "sunshine_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "sunshine_duration"
+          ],
+          "unit": "hours",
+          "value": 13.0
+        },
+        "temperature_max_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 29.7
+        },
+        "temperature_min_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 15.8
+        },
+        "wet_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "precipitation"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "wind_gust_max_ms": {
+          "coverage": 1.0,
+          "sources": [
+            "wind_gusts_10m"
+          ],
+          "unit": "m/s",
+          "value": 10.9
+        }
+      },
+      "id": "gardening",
+      "label": "Hands-on gardening conditions",
+      "limiting_factors": [
+        {
+          "condition": "10-16 m/s",
+          "deduction": 15,
+          "explanation": "Gusty conditions reduced gardening convenience.",
+          "fact": "wind_gust_max_ms",
+          "rule": "gardening-gusts",
+          "severity": "moderate",
+          "unit": "m/s",
+          "value": 10.9
+        },
+        {
+          "condition": "29-33 C",
+          "deduction": 12,
+          "explanation": "Warm conditions reduced gardening comfort.",
+          "fact": "temperature_max_c",
+          "rule": "gardening-heat",
+          "severity": "moderate",
+          "unit": "C",
+          "value": 29.7
+        }
+      ],
+      "missing_or_sparse_facts": [],
+      "rating": "mixed",
+      "scope": "all-day",
+      "score": 73,
+      "status": "available",
+      "summary": "2 observed conditions reduced this lens's rating."
+    },
+    {
+      "evidence": {
+        "cloud_cover_mean_pct": {
+          "coverage": 1.0,
+          "sources": [
+            "cloud_cover"
+          ],
+          "unit": "%",
+          "value": 40.333
+        },
+        "pv_yield_kwh_per_kwp": {
+          "coverage": 1.0,
+          "sources": [
+            "daily_physical_energy.pv_yield_kwh_per_kwp"
+          ],
+          "unit": "kWh/kWp",
+          "value": 6.44
+        },
+        "shortwave_total_wh_m2": {
+          "coverage": 1.0,
+          "sources": [
+            "shortwave_radiation"
+          ],
+          "unit": "Wh/m2",
+          "value": 6239.0
+        },
+        "solar_index": {
+          "coverage": 1.0,
+          "sources": [
+            "daily_energy.solar_index"
+          ],
+          "unit": "index",
+          "value": 100.0
+        }
+      },
+      "id": "solar_energy",
+      "label": "Solar-energy conditions",
+      "limiting_factors": [],
+      "missing_or_sparse_facts": [],
+      "rating": "favorable",
+      "scope": "all-day",
+      "score": 100,
+      "status": "available",
+      "summary": "No limiting condition crossed this lens's convenience thresholds."
+    },
+    {
+      "evidence": {
+        "cold_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "hot_humid_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m",
+            "relative_humidity_2m"
+          ],
+          "unit": "hours",
+          "value": 0.0
+        },
+        "relative_humidity_mean_pct": {
+          "coverage": 1.0,
+          "sources": [
+            "relative_humidity_2m"
+          ],
+          "unit": "%",
+          "value": 44.25
+        },
+        "sunshine_hours": {
+          "coverage": 1.0,
+          "sources": [
+            "sunshine_duration"
+          ],
+          "unit": "hours",
+          "value": 13.0
+        },
+        "temperature_max_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 29.7
+        },
+        "temperature_min_c": {
+          "coverage": 1.0,
+          "sources": [
+            "temperature_2m"
+          ],
+          "unit": "C",
+          "value": 15.8
+        }
+      },
+      "id": "outdoor_comfort",
+      "label": "Outdoor temperature comfort",
+      "limiting_factors": [],
+      "missing_or_sparse_facts": [],
+      "rating": "favorable",
+      "scope": "all-day",
+      "score": 100,
+      "status": "available",
+      "summary": "No limiting condition crossed this lens's convenience thresholds."
+    }
+  ],
+  "methodology": {
+    "base_score": 100,
+    "calculation": "Start each lens at 100, subtract the deduction from the first matching band in every applicable rule, then clamp the result at zero.",
+    "coverage_policy": "Withhold only the affected lens when any required fact has less than 90% coverage.",
+    "lenses": [
+      {
+        "id": "cycling",
+        "label": "Cycling conditions",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": ">= 10 mm",
+                "deduction": 35,
+                "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-10 mm",
+                "deduction": 20,
+                "explanation": "Measurable accumulated precipitation reduced convenience.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "0.2-2 mm",
+                "deduction": 8,
+                "explanation": "Some precipitation was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "precipitation_total_mm",
+            "id": "cycling-rain"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 6 wet hours",
+                "deduction": 20,
+                "explanation": "Wet conditions persisted through a substantial part of the day.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-6 wet hours",
+                "deduction": 10,
+                "explanation": "Several hours recorded precipitation.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "1 wet hour",
+                "deduction": 5,
+                "explanation": "One wet hour was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "wet_hours",
+            "id": "cycling-wet-duration"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 18 m/s",
+                "deduction": 40,
+                "explanation": "Strong recorded gusts substantially reduced cycling convenience.",
+                "severity": "major"
+              },
+              {
+                "condition": "12-18 m/s",
+                "deduction": 24,
+                "explanation": "Recorded gusts made cycling more demanding.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "8-12 m/s",
+                "deduction": 10,
+                "explanation": "Noticeable gusts were recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "wind_gust_max_ms",
+            "id": "cycling-gusts"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 35 C",
+                "deduction": 30,
+                "explanation": "Very high temperature reduced outdoor exertion comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "30-35 C",
+                "deduction": 15,
+                "explanation": "High temperature reduced outdoor exertion comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_max_c",
+            "id": "cycling-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": "< 0 C",
+                "deduction": 25,
+                "explanation": "Freezing temperature reduced cycling comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "0-5 C",
+                "deduction": 12,
+                "explanation": "Low temperature reduced cycling comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_min_c",
+            "id": "cycling-cold"
+          }
+        ],
+        "scope": "all-day"
+      },
+      {
+        "id": "walking",
+        "label": "Walking conditions",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": ">= 10 mm",
+                "deduction": 35,
+                "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-10 mm",
+                "deduction": 20,
+                "explanation": "Measurable accumulated precipitation reduced convenience.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "0.2-2 mm",
+                "deduction": 8,
+                "explanation": "Some precipitation was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "precipitation_total_mm",
+            "id": "walking-rain"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 6 wet hours",
+                "deduction": 20,
+                "explanation": "Wet conditions persisted through a substantial part of the day.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-6 wet hours",
+                "deduction": 10,
+                "explanation": "Several hours recorded precipitation.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "1 wet hour",
+                "deduction": 5,
+                "explanation": "One wet hour was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "wet_hours",
+            "id": "walking-wet-duration"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 20 m/s",
+                "deduction": 30,
+                "explanation": "Very strong gusts reduced walking comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "14-20 m/s",
+                "deduction": 15,
+                "explanation": "Strong gusts reduced walking comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "wind_gust_max_ms",
+            "id": "walking-gusts"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 35 C",
+                "deduction": 30,
+                "explanation": "Very high temperature reduced walking comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "31-35 C",
+                "deduction": 15,
+                "explanation": "High temperature reduced walking comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_max_c",
+            "id": "walking-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": "< -5 C",
+                "deduction": 25,
+                "explanation": "Very low temperature reduced walking comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "-5 to 2 C",
+                "deduction": 10,
+                "explanation": "Low temperature reduced walking comfort.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "temperature_min_c",
+            "id": "walking-cold"
+          }
+        ],
+        "scope": "all-day"
+      },
+      {
+        "id": "outdoor_commute",
+        "label": "Outdoor commute conditions",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": ">= 10 mm",
+                "deduction": 35,
+                "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-10 mm",
+                "deduction": 20,
+                "explanation": "Measurable accumulated precipitation reduced convenience.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "0.2-2 mm",
+                "deduction": 8,
+                "explanation": "Some precipitation was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "precipitation_total_mm",
+            "id": "commute-rain"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 6 wet hours",
+                "deduction": 20,
+                "explanation": "Wet conditions persisted through a substantial part of the day.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-6 wet hours",
+                "deduction": 10,
+                "explanation": "Several hours recorded precipitation.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "1 wet hour",
+                "deduction": 5,
+                "explanation": "One wet hour was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "wet_hours",
+            "id": "commute-wet-duration"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 16 m/s",
+                "deduction": 30,
+                "explanation": "Strong gusts affected the morning or afternoon commute window.",
+                "severity": "major"
+              },
+              {
+                "condition": "10-16 m/s",
+                "deduction": 14,
+                "explanation": "Noticeable gusts affected a commute window.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "wind_gust_max_ms",
+            "id": "commute-gusts"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 32 C",
+                "deduction": 20,
+                "explanation": "A commute window was very warm.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_max_c",
+            "id": "commute-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": "< 0 C",
+                "deduction": 18,
+                "explanation": "A commute window was below freezing.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_min_c",
+            "id": "commute-cold"
+          }
+        ],
+        "scope": "commute-hours"
+      },
+      {
+        "id": "gardening",
+        "label": "Hands-on gardening conditions",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": ">= 10 mm",
+                "deduction": 35,
+                "explanation": "Substantial accumulated precipitation made outdoor conditions wet.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-10 mm",
+                "deduction": 20,
+                "explanation": "Measurable accumulated precipitation reduced convenience.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "0.2-2 mm",
+                "deduction": 8,
+                "explanation": "Some precipitation was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "precipitation_total_mm",
+            "id": "gardening-rain"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 6 wet hours",
+                "deduction": 20,
+                "explanation": "Wet conditions persisted through a substantial part of the day.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-6 wet hours",
+                "deduction": 10,
+                "explanation": "Several hours recorded precipitation.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "1 wet hour",
+                "deduction": 5,
+                "explanation": "One wet hour was recorded.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "wet_hours",
+            "id": "gardening-wet-duration"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 16 m/s",
+                "deduction": 30,
+                "explanation": "Strong gusts made hands-on garden work difficult.",
+                "severity": "major"
+              },
+              {
+                "condition": "10-16 m/s",
+                "deduction": 15,
+                "explanation": "Gusty conditions reduced gardening convenience.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "wind_gust_max_ms",
+            "id": "gardening-gusts"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 33 C",
+                "deduction": 25,
+                "explanation": "Very warm conditions reduced gardening comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "29-33 C",
+                "deduction": 12,
+                "explanation": "Warm conditions reduced gardening comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_max_c",
+            "id": "gardening-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": "< 0 C",
+                "deduction": 25,
+                "explanation": "Freezing temperature constrained garden work and plant handling.",
+                "severity": "major"
+              }
+            ],
+            "fact": "temperature_min_c",
+            "id": "gardening-frost"
+          }
+        ],
+        "scope": "all-day"
+      },
+      {
+        "id": "solar_energy",
+        "label": "Solar-energy conditions",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": "< 30",
+                "deduction": 55,
+                "explanation": "Weather-normalized solar potential was low.",
+                "severity": "major"
+              },
+              {
+                "condition": "30-60",
+                "deduction": 30,
+                "explanation": "Weather-normalized solar potential was below typical levels.",
+                "severity": "moderate"
+              },
+              {
+                "condition": "60-80",
+                "deduction": 12,
+                "explanation": "Weather-normalized solar potential was somewhat reduced.",
+                "severity": "minor"
+              }
+            ],
+            "fact": "solar_index",
+            "id": "solar-index"
+          }
+        ],
+        "scope": "all-day"
+      },
+      {
+        "id": "outdoor_comfort",
+        "label": "Outdoor temperature comfort",
+        "rules": [
+          {
+            "bands": [
+              {
+                "condition": ">= 35 C",
+                "deduction": 45,
+                "explanation": "Very high observed temperature reduced outdoor comfort.",
+                "severity": "major"
+              },
+              {
+                "condition": "30-35 C",
+                "deduction": 25,
+                "explanation": "High observed temperature reduced outdoor comfort.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "temperature_max_c",
+            "id": "comfort-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 6 hours at >= 28 C and >= 60% RH",
+                "deduction": 25,
+                "explanation": "Warm and humid conditions persisted for several hours.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-6 hours at >= 28 C and >= 60% RH",
+                "deduction": 12,
+                "explanation": "Warm and humid conditions occurred for part of the day.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "hot_humid_hours",
+            "id": "comfort-humid-heat"
+          },
+          {
+            "bands": [
+              {
+                "condition": ">= 8 hours below 5 C",
+                "deduction": 30,
+                "explanation": "Low temperatures persisted through much of the day.",
+                "severity": "major"
+              },
+              {
+                "condition": "2-8 hours below 5 C",
+                "deduction": 15,
+                "explanation": "Low temperatures occurred for part of the day.",
+                "severity": "moderate"
+              }
+            ],
+            "fact": "cold_hours",
+            "id": "comfort-cold"
+          }
+        ],
+        "scope": "all-day"
+      }
+    ],
+    "minimum_required_fact_coverage": 0.9,
+    "rating_bands": [
+      {
+        "condition": "80-100",
+        "rating": "favorable"
+      },
+      {
+        "condition": "55-79",
+        "rating": "mixed"
+      },
+      {
+        "condition": "0-54",
+        "rating": "difficult"
+      }
+    ],
+    "score_floor": 0
+  },
+  "schema": "atlas.activity-lenses/1",
+  "scope": "completed-observed-day",
+  "timezone": "Europe/Budapest"
+}
