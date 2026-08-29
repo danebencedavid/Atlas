@@ -4649,7 +4649,14 @@ def _build_report_archive_into(
     return index
 
 
-def archive_site(site_dir: Path, archive_dir: Path) -> Path:
+def archive_site(
+    site_dir: Path,
+    archive_dir: Path,
+    *,
+    preserve_existing: bool = False,
+) -> Path:
+    if preserve_existing and _preserve_valid_frozen_edition(archive_dir):
+        return archive_dir / "index.html"
     planned: dict[Path, Path] = {}
     for source in site_dir.iterdir():
         if source.name in {".gitkeep", "archive", "event-atlas.html"}:
@@ -4680,7 +4687,11 @@ def archive_public_site(
     asset_names: set[str],
     data_paths: set[Path] | None = None,
     share_regime_label: str | None = None,
+    *,
+    preserve_existing: bool = False,
 ) -> Path:
+    if preserve_existing and _preserve_valid_frozen_edition(archive_dir):
+        return archive_dir / "index.html"
     planned: dict[Path, Path] = {}
     for filename, _ in PUBLIC_PAGES:
         source = site_dir / filename
@@ -4710,6 +4721,18 @@ def archive_public_site(
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
     return archive_dir / "index.html"
+
+
+def _preserve_valid_frozen_edition(archive_dir: Path) -> bool:
+    """Validate and retain a source edition that was already published."""
+
+    if not (archive_dir / "manifest.json").is_file():
+        return False
+    validation = validate_edition_bundle(archive_dir)
+    if not validation.valid:
+        details = "; ".join(validation.errors)
+        raise ValueError(f"Invalid frozen edition {archive_dir.name}: {details}")
+    return True
 
 
 def _preserve_identical_frozen_edition(

@@ -760,9 +760,10 @@ def run_pipeline(
             activity_lenses_path,
         },
         share_regime_label=daily_regime.label,
+        preserve_existing=True,
     )
     if archive_analysis:
-        archive_site(site_index.parent, archive_dir)
+        archive_site(site_index.parent, archive_dir, preserve_existing=True)
     try:
         build_report_archive(config, site_index.parent, config.outputs.reports_dir)
     except PublishedArchiveBudgetError as exc:

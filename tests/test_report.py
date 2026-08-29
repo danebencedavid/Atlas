@@ -10,6 +10,9 @@ from atlas.almanac import build_almanac
 from atlas.activity_lenses import evaluate_activity_lenses
 from atlas.analogs import AnalogAnalysis
 from atlas.anomalies import Anomaly
+from atlas.archive_bundle import ensure_edition_bundle
+from atlas.archive_bundle import ImmutableEditionError
+from atlas.archive_bundle import validate_edition_bundle
 from atlas.build_status import RecoveredBuild
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig, OutputConfig
@@ -504,6 +507,79 @@ def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):
     ).read_bytes() == b"portrait artwork"
     assert (archived_index.parent / "data" / "daily_hourly.csv").read_bytes() == evidence.read_bytes()
     assert not (archived_index.parent / "report.html").exists()
+
+
+def test_archive_public_site_preserves_a_valid_frozen_edition_on_rerun(tmp_path: Path):
+    site_dir = tmp_path / "site"
+    site_dir.mkdir()
+    (site_dir / "report.html").write_text("updated daily overview", encoding="utf-8")
+    archive_dir = tmp_path / "reports" / "daily" / "2026-08-03"
+    archive_dir.mkdir(parents=True)
+    (archive_dir / "index.html").write_text("original daily overview", encoding="utf-8")
+    ensure_edition_bundle(
+        archive_dir,
+        "daily",
+        location_name="Debrecen",
+        timezone_name="Europe/Budapest",
+        latitude=47.5316,
+        longitude=21.6273,
+    )
+
+    archived_index = archive_public_site(
+        site_dir,
+        archive_dir,
+        set(),
+        preserve_existing=True,
+    )
+
+    assert archived_index.read_text(encoding="utf-8") == "original daily overview"
+    assert validate_edition_bundle(archive_dir).valid
+
+
+def test_archive_public_site_rejects_an_implicit_frozen_edition_change(tmp_path: Path):
+    site_dir = tmp_path / "site"
+    site_dir.mkdir()
+    (site_dir / "report.html").write_text("updated daily overview", encoding="utf-8")
+    archive_dir = tmp_path / "reports" / "daily" / "2026-08-03"
+    archive_dir.mkdir(parents=True)
+    (archive_dir / "index.html").write_text("original daily overview", encoding="utf-8")
+    ensure_edition_bundle(
+        archive_dir,
+        "daily",
+        location_name="Debrecen",
+        timezone_name="Europe/Budapest",
+        latitude=47.5316,
+        longitude=21.6273,
+    )
+
+    with pytest.raises(ImmutableEditionError, match="differs from the proposed capture"):
+        archive_public_site(site_dir, archive_dir, set())
+
+
+def test_archive_public_site_rejects_a_corrupt_frozen_edition_on_rerun(tmp_path: Path):
+    site_dir = tmp_path / "site"
+    site_dir.mkdir()
+    (site_dir / "report.html").write_text("updated daily overview", encoding="utf-8")
+    archive_dir = tmp_path / "reports" / "daily" / "2026-08-03"
+    archive_dir.mkdir(parents=True)
+    (archive_dir / "index.html").write_text("original daily overview", encoding="utf-8")
+    ensure_edition_bundle(
+        archive_dir,
+        "daily",
+        location_name="Debrecen",
+        timezone_name="Europe/Budapest",
+        latitude=47.5316,
+        longitude=21.6273,
+    )
+    (archive_dir / "index.html").write_text("corrupt daily overview", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Invalid frozen edition"):
+        archive_public_site(
+            site_dir,
+            archive_dir,
+            set(),
+            preserve_existing=True,
+        )
 
 
 def test_archive_site_copies_latest_dashboard_assets_and_data(tmp_path: Path):
