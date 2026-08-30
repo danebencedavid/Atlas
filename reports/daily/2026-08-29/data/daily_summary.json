@@ -1,0 +1,219 @@
+{
+  "schema": "atlas.daily-evidence/1",
+  "date": "2026-08-29",
+  "location": {
+    "name": "Debrecen",
+    "latitude": 47.5316,
+    "longitude": 21.6273,
+    "timezone": "Europe/Budapest"
+  },
+  "metrics": {
+    "temperature_mean_c": 23.808333333333334,
+    "dew_point_mean_c": 12.887500000000001,
+    "precipitation_total_mm": 0.4,
+    "wind_speed_mean_ms": 5.309583333333333,
+    "wind_gust_max_ms": 12.6,
+    "pressure_mean_hpa": 1014.6958333333333,
+    "pressure_range_hpa": 1.7000000000000455,
+    "cloud_cover_mean_pct": 58.041666666666664,
+    "shortwave_total_wh_m2": 4765.0,
+    "sunshine_total_s": 43200.0,
+    "frost_hours": 0.0,
+    "cooling_degree_days_c": 5.808333333333333,
+    "heating_degree_days_c": 0.0
+  },
+  "energy": {
+    "solar_index": 97.6,
+    "wind_index": 100.0,
+    "combined_score": 98.8,
+    "calm_wind_penalty": 0.0,
+    "cloud_penalty": 2.4,
+    "label": "balanced renewable"
+  },
+  "physical_energy": {
+    "pv_yield_kwh_per_kwp": 4.79,
+    "pv_capacity_factor_pct": 20.0,
+    "wind_full_load_hours": 2.15,
+    "wind_capacity_factor_pct": 8.9,
+    "mean_wind_power_density_w_m2": 109.1,
+    "peak_pv_time": "2026-08-29T10:00:00+00:00",
+    "peak_wind_time": "2026-08-29T09:00:00+00:00",
+    "notes": [
+      "PV yield models a south-facing 35-degree fixed array per installed kWp using plane-of-array irradiance and cell-temperature derating.",
+      "Wind output uses observed/modelled 100 m wind, moist-air density correction, and a generic 3/12/25 m/s cut-in/rated/cut-out power curve.",
+      "These are reference-system weather yields, not metered production or a forecast."
+    ]
+  },
+  "activity_lenses": {
+    "schema": "atlas.activity-lenses/1",
+    "path": "activity_lenses.json"
+  },
+  "regime": {
+    "label": "Mixed transition period",
+    "briefing": "Mixed transition period: temperature was +3.1 deg C versus normal, precipitation -1.5 mm, wind +1.1 m/s, and period solar radiation +126 Wh/m2.",
+    "daily_labels": [
+      "mixed"
+    ],
+    "signals": [
+      "no single signal dominated",
+      "mixed day-to-day conditions"
+    ]
+  },
+  "climatology": {
+    "standard_period": "1991-2020",
+    "standard_anomalies": [
+      {
+        "metric": "temperature_mean_c",
+        "label": "Temperature",
+        "value": 23.808333333333334,
+        "baseline_mean": 20.700000000000003,
+        "anomaly": 3.1083333333333307,
+        "z_score": 0.7956670008100085,
+        "percentile": 80.0,
+        "unit": "deg C"
+      },
+      {
+        "metric": "precipitation_total_mm",
+        "label": "Precipitation",
+        "value": 0.4,
+        "baseline_mean": 1.9133333333333336,
+        "anomaly": -1.5133333333333336,
+        "z_score": -0.42703739314532607,
+        "percentile": 63.33333333333333,
+        "unit": "mm"
+      },
+      {
+        "metric": "wind_speed_mean_ms",
+        "label": "Wind",
+        "value": 5.309583333333333,
+        "baseline_mean": 4.258333333333334,
+        "anomaly": 1.0512499999999996,
+        "z_score": 0.5607100853064338,
+        "percentile": 70.0,
+        "unit": "m/s"
+      },
+      {
+        "metric": "pressure_mean_hpa",
+        "label": "Pressure",
+        "value": 1014.6958333333333,
+        "baseline_mean": 1014.2566666666668,
+        "anomaly": 0.43916666666655146,
+        "z_score": 0.09300193343050883,
+        "percentile": 50.0,
+        "unit": "hPa"
+      },
+      {
+        "metric": "cloud_cover_mean_pct",
+        "label": "Cloud",
+        "value": 58.041666666666664,
+        "baseline_mean": 51.13333333333333,
+        "anomaly": 6.908333333333331,
+        "z_score": 0.2420999485791277,
+        "percentile": 46.666666666666664,
+        "unit": "%"
+      },
+      {
+        "metric": "shortwave_total_wh_m2",
+        "label": "Solar radiation",
+        "value": 4765.0,
+        "baseline_mean": 4639.166667037801,
+        "anomaly": 125.83333296219917,
+        "z_score": 0.13029755393692619,
+        "percentile": 43.333333333333336,
+        "unit": "Wh/m2"
+      }
+    ],
+    "recent_anomalies": [
+      {
+        "metric": "temperature_mean_c",
+        "label": "Temperature",
+        "value": 23.808333333333334,
+        "baseline_mean": 23.04,
+        "anomaly": 0.7683333333333344,
+        "z_score": 0.2684053048697274,
+        "percentile": 50.0,
+        "unit": "deg C"
+      },
+      {
+        "metric": "precipitation_total_mm",
+        "label": "Precipitation",
+        "value": 0.4,
+        "baseline_mean": 1.8400000000000003,
+        "anomaly": -1.4400000000000004,
+        "z_score": -0.44703254259247716,
+        "percentile": 70.0,
+        "unit": "mm"
+      },
+      {
+        "metric": "wind_speed_mean_ms",
+        "label": "Wind",
+        "value": 5.309583333333333,
+        "baseline_mean": 3.8800000000000003,
+        "anomaly": 1.429583333333333,
+        "z_score": 0.9188988299472448,
+        "percentile": 70.0,
+        "unit": "m/s"
+      },
+      {
+        "metric": "pressure_mean_hpa",
+        "label": "Pressure",
+        "value": 1014.6958333333333,
+        "baseline_mean": 1013.32,
+        "anomaly": 1.3758333333332757,
+        "z_score": 0.2886586678231646,
+        "percentile": 40.0,
+        "unit": "hPa"
+      },
+      {
+        "metric": "cloud_cover_mean_pct",
+        "label": "Cloud",
+        "value": 58.041666666666664,
+        "baseline_mean": 36.8,
+        "anomaly": 21.241666666666667,
+        "z_score": 0.6808506272442624,
+        "percentile": 70.0,
+        "unit": "%"
+      },
+      {
+        "metric": "shortwave_total_wh_m2",
+        "label": "Solar radiation",
+        "value": 4765.0,
+        "baseline_mean": 5171.6666670804,
+        "anomaly": -406.66666708039975,
+        "z_score": -0.5664684573673376,
+        "percentile": 20.0,
+        "unit": "Wh/m2"
+      }
+    ],
+    "full_record_percentiles": {
+      "temperature_mean_c": 75.0,
+      "precipitation_total_mm": 61.111111111111114,
+      "wind_speed_mean_ms": 72.22222222222221,
+      "pressure_mean_hpa": 50.0,
+      "cloud_cover_mean_pct": 47.22222222222222,
+      "shortwave_total_wh_m2": 41.66666666666667
+    },
+    "notes": [
+      "Standard anomalies use 30 same-calendar ERA5 periods from 1991-2020.",
+      "Full-record percentiles use 36 same-calendar periods from 1990-2025.",
+      "The recent-climate comparison uses 10 periods and remains separate from the WMO standard-normal window."
+    ]
+  },
+  "data_quality": {
+    "ok": true,
+    "expected_hours": 72,
+    "observed_hours": 72,
+    "coverage": 1.0,
+    "missing_columns": [],
+    "sparse_columns": [],
+    "notes": [
+      "Data completeness check passed with 72/72 expected local-period hours."
+    ]
+  },
+  "quality_notes": [
+    "Data completeness check passed with 72/72 expected local-period hours.",
+    "The radar archive retains about 71 hours, so the oldest 37 frame(s) of this 144-frame window are structurally unavailable rather than missing.",
+    "Radar coverage 54/107 (50%) of the reachable window is below the 90% threshold.",
+    "The radar input did not meet its completeness threshold and is reported as incomplete rather than presented as whole."
+  ]
+}
