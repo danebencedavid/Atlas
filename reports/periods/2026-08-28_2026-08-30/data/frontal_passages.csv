@@ -1,0 +1,2 @@
+time,kind,confidence,score,pressure_change_3h_hpa,temperature_change_3h_c,wind_shift_3h_deg,precipitation_3h_mm,briefing
+2026-08-29T09:00:00+00:00,Probable warm-front passage,0.79,4,-0.283333333333303,5.150000000000002,75.17620095150508,0.0,"Probable warm-front passage: pressure changed -0.3 hPa, temperature +5.2 C, wind shifted 75 degrees, and 3-hour precipitation was 0.0 mm."
