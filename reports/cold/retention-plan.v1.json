@@ -1,7 +1,143 @@
 {
   "blocked": [],
-  "cutoff_exclusive": "2026-08-01",
-  "eligible": [],
+  "cutoff_exclusive": "2026-09-01",
+  "eligible": [
+    {
+      "bytes": 398409,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-07-30_2026-08-01",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "6c51be4f375ed6c3cc92e1f1da10defc9b2fdfd0227d8047427a2f6f1e1cf4e4"
+    },
+    {
+      "bytes": 398476,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-02_2026-08-04",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "c70656d4e672f931763c5dbd6ce23a4c3498359b07a5870008036ebf0a1a44a7"
+    },
+    {
+      "bytes": 398437,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-05_2026-08-07",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "d1829359d7853d9cc7303fbbcca72aa001f502eeaf4639eb5320065651c8a3b0"
+    },
+    {
+      "bytes": 1223228,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/lightning_events.csv.gz",
+      "id": "2026-08-05_2026-08-07",
+      "path": "data/lightning_events.csv",
+      "sha256": "617f33b6f8c99382265ae017446de5773c6dcff427108acb6803f8d0fe393275"
+    },
+    {
+      "bytes": 398316,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-08_2026-08-10",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "764d6bbdf46979ee329354b69f9d0e6c388365b3dff7e1f949a175f327e9193d"
+    },
+    {
+      "bytes": 398397,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-11_2026-08-13",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "efe4cb69ff7c5cec15654f026b7c69d2ec0a9285d36e9a6a72bee2133e97d598"
+    },
+    {
+      "bytes": 398342,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-14_2026-08-16",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "0081b33d42551ec3d5e6285f83be8d175b40e549eca7b0174390d69a5a129bf7"
+    },
+    {
+      "bytes": 398424,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-16_2026-08-18",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "0e60c4046ec482ed7767dae1e59fe93ae41959668a1d295402d153452d189725"
+    },
+    {
+      "bytes": 398853,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-24_2026-08-26",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "40d269a6ecbcd088816759d37ab7ff47420f9e6339522725230de47a8d9aaad7"
+    },
+    {
+      "bytes": 398846,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-25_2026-08-27",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "e4aab024597dae5e5c47ed33723ee2f4c5fca7b446d22bbf86b1f8ad7a552451"
+    },
+    {
+      "bytes": 197210,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/lightning_events.csv.gz",
+      "id": "2026-08-25_2026-08-27",
+      "path": "data/lightning_events.csv",
+      "sha256": "bb9e437330b5d2ae13ba72920628fc0935d32c8d2b5ceaf22315e7c517b44a55"
+    },
+    {
+      "bytes": 398856,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-26_2026-08-28",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "b8394d7620e0bcc322cd4fa6070b50d6c23c7b90b7ce2849cc61d07680734678"
+    },
+    {
+      "bytes": 138703,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/lightning_events.csv.gz",
+      "id": "2026-08-26_2026-08-28",
+      "path": "data/lightning_events.csv",
+      "sha256": "70446188eb3a73033d42f39980174e87fec40bf238bc2f0958c2dc2bfd95db1c"
+    },
+    {
+      "bytes": 398724,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-28_2026-08-30",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "586c3eb47ad517abc165fcc74aa56955b11b8dd2792c4f881c94ef44afbb5eaf"
+    },
+    {
+      "bytes": 398677,
+      "cold_verification": "cold/2026-08.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-08-29_2026-08-31",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "1087689c6f5187da451ce6ac97608057098e9fd1485d187976aebb18409e175e"
+    }
+  ],
   "execution": {
     "enabled": false,
     "reason": "Planning only: activation requires a separate reviewed publisher change after the capacity threshold is reached. This command cannot delete or omit files."
@@ -18,7 +154,7 @@
   "schema": "atlas.archive-retention-plan/1",
   "totals": {
     "blocked_editions_or_resources": 0,
-    "eligible_bytes": 0,
-    "eligible_resources": 0
+    "eligible_bytes": 6341898,
+    "eligible_resources": 15
   }
 }
