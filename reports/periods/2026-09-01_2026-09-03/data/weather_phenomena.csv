@@ -1,0 +1,9 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-01 00:00:00+00:00,2026-09-01 05:00:00+00:00,Thunderstorm,9571 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-09-01 01:00:00+00:00,2026-09-01 02:00:00+00:00,Strong gusts,Peak gust 18.1 m/s.,0.92,HungaroMet station 64711
+2026-09-01 02:00:00+00:00,2026-09-01 03:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed +4.4 hPa, temperature -1.8 C, wind shifted 108 degrees, and 3-hour precipitation was 7.3 mm.",0.88,Objective compound surface-change detector
+2026-09-01 14:00:00+00:00,2026-09-01 15:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed -1.3 hPa, temperature +2.2 C, wind shifted 9 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-09-03 05:00:00+00:00,2026-09-03 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.4 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-09-03 05:00:00+00:00,2026-09-03 07:00:00+00:00,Thunderstorm,23 LINET event(s) with radar reflectivity reaching 49.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-03 16:00:00+00:00,2026-09-03 17:00:00+00:00,Thunderstorm,1 LINET event(s) with radar reflectivity reaching 43.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-03 18:00:00+00:00,2026-09-03 19:00:00+00:00,Thunderstorm,2 LINET event(s) with radar reflectivity reaching 48.5 dBZ.,0.96,HungaroMet LINET and composite radar
