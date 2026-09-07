@@ -1,0 +1,8 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-04 11:00:00+00:00,2026-09-04 12:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed -0.7 hPa, temperature +1.7 C, wind shifted 55 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-09-04 12:00:00+00:00,2026-09-04 13:00:00+00:00,Thunderstorm,1 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-09-05 02:00:00+00:00,2026-09-05 04:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.0 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-09-05 07:00:00+00:00,2026-09-05 09:00:00+00:00,Thunderstorm,13 LINET event(s) with radar reflectivity reaching 44.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-05 10:00:00+00:00,2026-09-05 11:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed +2.6 hPa, temperature -0.3 C, wind shifted 151 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-09-05 13:00:00+00:00,2026-09-05 15:00:00+00:00,Thunderstorm,54 LINET event(s) with radar reflectivity reaching 53.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-05 16:00:00+00:00,2026-09-05 17:00:00+00:00,Thunderstorm,24 LINET event(s) with radar reflectivity reaching 55.5 dBZ.,0.96,HungaroMet LINET and composite radar
