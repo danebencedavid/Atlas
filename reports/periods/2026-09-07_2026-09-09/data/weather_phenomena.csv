@@ -1,0 +1,4 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-08 05:00:00+00:00,2026-09-08 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.7 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-09-09 10:00:00+00:00,2026-09-09 17:00:00+00:00,Heat stress,Temperature remained at or above 30 C and peaked at 32.0 C.,0.92,HungaroMet station 64711
+2026-09-09 21:00:00+00:00,2026-09-09 22:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +0.3 hPa, temperature -2.2 C, wind shifted 86 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
