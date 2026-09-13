@@ -1,0 +1,5 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-10 11:00:00+00:00,2026-09-10 12:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +0.8 hPa, temperature +4.6 C, wind shifted 27 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-09-11 04:00:00+00:00,2026-09-11 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.8 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-09-11 15:00:00+00:00,2026-09-11 17:00:00+00:00,Thunderstorm,23 LINET event(s) with radar reflectivity reaching 53.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-11 18:00:00+00:00,2026-09-11 19:00:00+00:00,Thunderstorm,10 LINET event(s) with radar reflectivity reaching 51.0 dBZ.,0.96,HungaroMet LINET and composite radar
