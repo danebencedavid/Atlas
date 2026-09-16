@@ -4355,7 +4355,7 @@ def collect_weather_event_index(
             continue
         try:
             frame = pd.read_csv(ledger)
-        except (OSError, pd.errors.ParserError):
+        except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError):
             continue
         if not required.issubset(frame.columns):
             continue
