@@ -1,0 +1,2 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-16 05:00:00+00:00,2026-09-16 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.4 C during local night.,0.66,Open-Meteo historical-model pressure levels
