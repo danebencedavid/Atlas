@@ -1,0 +1,9 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-19 00:00:00+00:00,2026-09-19 01:00:00+00:00,Low visibility,Minimum visibility 2263 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-09-19 01:00:00+00:00,2026-09-19 07:00:00+00:00,Fog,Minimum visibility 83 m with maximum relative humidity 97%.,0.92,HungaroMet station 64711
+2026-09-19 01:00:00+00:00,2026-09-19 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 3.7 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-09-19 07:00:00+00:00,2026-09-19 08:00:00+00:00,Low visibility,Minimum visibility 2477 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-09-21 06:00:00+00:00,2026-09-21 07:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +3.3 hPa, temperature -4.2 C, wind shifted 107 degrees, and 3-hour precipitation was 0.0 mm.",0.79,Objective compound surface-change detector
+2026-09-21 10:00:00+00:00,2026-09-21 17:00:00+00:00,Thunderstorm,1437 LINET event(s) with radar reflectivity reaching 62.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-09-21 14:00:00+00:00,2026-09-21 15:00:00+00:00,Strong gusts,Peak gust 15.9 m/s.,0.92,HungaroMet station 64711
+2026-09-21 17:00:00+00:00,2026-09-21 18:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +3.0 hPa, temperature -8.9 C, wind shifted 49 degrees, and 3-hour precipitation was 0.0 mm.",0.79,Objective compound surface-change detector
