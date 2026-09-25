@@ -1,0 +1,7 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-09-22 07:00:00+00:00,2026-09-22 08:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +0.8 hPa, temperature +4.2 C, wind shifted 80 degrees, and 3-hour precipitation was 0.9 mm.",0.71,Objective compound surface-change detector
+2026-09-22 10:00:00+00:00,2026-09-22 16:00:00+00:00,Thunderstorm,76 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-09-22 16:00:00+00:00,2026-09-22 17:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +0.6 hPa, temperature -4.0 C, wind shifted 81 degrees, and 3-hour precipitation was 3.6 mm.",0.79,Objective compound surface-change detector
+2026-09-22 21:00:00+00:00,2026-09-22 22:00:00+00:00,Fog,Minimum visibility 905 m with maximum relative humidity 96%.,0.92,HungaroMet station 64711
+2026-09-23 09:00:00+00:00,2026-09-23 10:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +0.1 hPa, temperature +3.9 C, wind shifted 85 degrees, and 3-hour precipitation was 0.0 mm.",0.79,Objective compound surface-change detector
+2026-09-24 19:00:00+00:00,2026-09-24 20:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed +0.6 hPa, temperature -3.3 C, wind shifted 66 degrees, and 3-hour precipitation was 2.2 mm.",0.79,Objective compound surface-change detector
