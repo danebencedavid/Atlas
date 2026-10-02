@@ -1,6 +1,6 @@
 {
   "blocked": [],
-  "cutoff_exclusive": "2026-09-01",
+  "cutoff_exclusive": "2026-10-01",
   "eligible": [
     {
       "bytes": 398409,
@@ -136,6 +136,114 @@
       "id": "2026-08-29_2026-08-31",
       "path": "data/land_surface_hourly.csv",
       "sha256": "1087689c6f5187da451ce6ac97608057098e9fd1485d187976aebb18409e175e"
+    },
+    {
+      "bytes": 398603,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-01_2026-09-03",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "e4375682c642e85b2c58b17ada8d964a90498a4d9bde6106f465dbfe613211b4"
+    },
+    {
+      "bytes": 830226,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/lightning_events.csv.gz",
+      "id": "2026-09-01_2026-09-03",
+      "path": "data/lightning_events.csv",
+      "sha256": "6d74d69ac6986e0a1a267b90624ede0e107778d80548e90f58d7cb7904d2623c"
+    },
+    {
+      "bytes": 398537,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-04_2026-09-06",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "f6bbe5aac9c83a99ff2eb967e4754d4eeab4d6ebccc26c6dae26e66c5a18428e"
+    },
+    {
+      "bytes": 398262,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-07_2026-09-09",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "bdf5d136afc43b489ce0a3781e405a2081c2a570c13a621ebc88cbb231793a7e"
+    },
+    {
+      "bytes": 398049,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-10_2026-09-12",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "fc303cebcd5d98bf0a781adb69c1ebba056142e70e72377d7ec56f37628fd5a6"
+    },
+    {
+      "bytes": 397819,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-13_2026-09-15",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "79a067f72ffad6d773839675b48acd7592447208f51cb792672bb4537c59b574"
+    },
+    {
+      "bytes": 397681,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-16_2026-09-18",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "6595a7eea55cb8428e4ee560ce6d4bce3b9f0a55b18e817b433f7aed3df54b9e"
+    },
+    {
+      "bytes": 397529,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-19_2026-09-21",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "7d990c7acb4d410ec34606ca7556e50bafdeb1994ca30e219833b6f1b59cf9b2"
+    },
+    {
+      "bytes": 397528,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-20_2026-09-22",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "617dada39626d817ef0798e1456986626039c26dda0bd7daf7059ef1dcee3e2c"
+    },
+    {
+      "bytes": 397560,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-22_2026-09-24",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "793f6f3585c1597f382e806132b4b8f0e8f166ae15f8156222cbe960a6b25c1e"
+    },
+    {
+      "bytes": 397399,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-25_2026-09-27",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "89f5e117d5d6f27ffbf6375739ac5706759419596719a1bec25fc2b3b3474b29"
+    },
+    {
+      "bytes": 397188,
+      "cold_verification": "cold/2026-09.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-09-28_2026-09-30",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "e60bbc252029e02fb80f2ee6a3ad1fd862808ae52220bcf37d3499c67eefef2a"
     }
   ],
   "execution": {
@@ -154,7 +262,7 @@
   "schema": "atlas.archive-retention-plan/1",
   "totals": {
     "blocked_editions_or_resources": 0,
-    "eligible_bytes": 6341898,
-    "eligible_resources": 15
+    "eligible_bytes": 11548279,
+    "eligible_resources": 27
   }
 }
