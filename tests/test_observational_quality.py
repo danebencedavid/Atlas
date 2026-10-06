@@ -12,8 +12,11 @@ from datetime import date
 import pandas as pd
 import pytest
 
+from atlas.config import AtlasConfig, OutputConfig
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
+from atlas.hungaromet import _parse_lightning
 from atlas.quality import (
+    REQUIRED_HOURLY_COLUMNS,
     ObservationFreshnessError,
     PublicationIntegrityError,
     assert_required_input_coverage,
@@ -171,6 +174,65 @@ def test_partial_lightning_days_are_disclosed_even_when_available():
     coverage = validate_lightning_period(partial, START, END, TZ)
     assert coverage.ok
     assert any("2 daily lightning file" in note for note in coverage.notes)
+
+
+def test_empty_lightning_file_is_a_valid_quiet_observation():
+    assert list(_parse_lightning("").columns) == [
+        "time",
+        "latitude",
+        "longitude",
+        "height_km",
+        "event_type",
+        "peak_current_ka",
+        "location_error",
+    ]
+
+
+def test_pipeline_lags_to_the_latest_complete_station_day(tmp_path, monkeypatch):
+    from atlas import cli
+    from atlas.dates import local_period_to_utc_bounds
+
+    config = AtlasConfig(
+        outputs=OutputConfig(
+            data_dir=tmp_path / "data",
+            reports_dir=tmp_path / "reports",
+            site_dir=tmp_path / "site",
+        )
+    )
+
+    def complete_hourly(_config, start, end, refresh=False):
+        utc_start, utc_end = local_period_to_utc_bounds(start, end, TZ)
+        frame = pd.DataFrame({"time": pd.date_range(utc_start, utc_end, freq="h", inclusive="left")})
+        for column in REQUIRED_HOURLY_COLUMNS:
+            frame[column] = 1.0
+        return frame
+
+    station_ends = []
+
+    def station_for(_config, start, end, refresh=False):
+        station_ends.append(end)
+        utc_start, utc_end = local_period_to_utc_bounds(start, end, TZ)
+        times = pd.date_range(utc_start, utc_end, freq="10min", inclusive="left")
+        if end == date(2026, 10, 5):
+            times = times[times < utc_end - pd.Timedelta(hours=22)]
+        return StationObservations(pd.DataFrame({"time": times}), 64711, "Debrecen Airport", [])
+
+    class SelectedPeriod(Exception):
+        pass
+
+    def stop_after_selection(_config, start, refresh=False):
+        raise SelectedPeriod(start)
+
+    monkeypatch.setattr(cli, "load_config", lambda _path: config)
+    monkeypatch.setattr(cli, "fetch_open_meteo_period", complete_hourly)
+    monkeypatch.setattr(cli, "fetch_station_observations", station_for)
+    monkeypatch.setattr(cli, "fetch_climate_archive", stop_after_selection)
+
+    with pytest.raises(SelectedPeriod) as selected:
+        cli.run_pipeline(today=date(2026, 10, 6), refresh=True)
+
+    assert selected.value.args[0] == date(2026, 10, 2)
+    assert station_ends == [date(2026, 10, 5), date(2026, 10, 4)]
 
 
 def test_freshness_check_names_the_shortfall():

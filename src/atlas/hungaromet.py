@@ -353,6 +353,15 @@ def _haversine_km(lat: np.ndarray, lon: np.ndarray, target_lat: float, target_lo
 
 
 def _parse_lightning(text: str) -> pd.DataFrame:
+    columns = [
+        "time",
+        "latitude",
+        "longitude",
+        "height_km",
+        "event_type",
+        "peak_current_ka",
+        "location_error",
+    ]
     rows = []
     for line in text.splitlines():
         fields = line.split()
@@ -369,7 +378,7 @@ def _parse_lightning(text: str) -> pd.DataFrame:
                 "location_error": float(fields[7]),
             }
         )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=columns)
 
 
 def fetch_lightning_archive(

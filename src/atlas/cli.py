@@ -95,6 +95,9 @@ def run_pipeline(
     # an unknown publication state, never evidence that nothing was withheld.
     pending_withheld = read_withheld(config)
     quality_notes: list[str] = []
+    station = None
+    station_coverage = None
+    station_failure_recorded = False
     if period_start is None:
         start, end = last_complete_period(
             today=today,
@@ -118,18 +121,73 @@ def run_pipeline(
             except Exception as exc:
                 quality_notes.append(f"{candidate_start.isoformat()} to {candidate_end.isoformat()} was unavailable: {exc}")
                 continue
-            if candidate_quality.ok:
-                start, end = candidate_start, candidate_end
-                current = candidate
-                quality = candidate_quality
-                if lag:
-                    quality_notes.append(
-                        f"Archive lag fallback used: selected {start.isoformat()} to {end.isoformat()} "
-                        f"after the most recent rolling period was incomplete."
+            if not candidate_quality.ok:
+                quality_notes.extend(f"{candidate_start.isoformat()} to {candidate_end.isoformat()}: {note}" for note in candidate_quality.notes)
+                continue
+            candidate_station = fetch_station_observations(
+                config,
+                candidate_start,
+                candidate_end,
+                refresh=refresh and not station_failure_recorded,
+            )
+            candidate_station_coverage = validate_station_period(
+                candidate_station,
+                candidate_start,
+                candidate_end,
+                config.location.timezone,
+                config.operations.minimum_station_coverage,
+            )
+            latest_candidate_station = (
+                candidate_station.frame["time"].max()
+                if not candidate_station.frame.empty and "time" in candidate_station.frame
+                else None
+            )
+            try:
+                assert_required_input_coverage([candidate_station_coverage])
+                assert_observations_fresh(
+                    latest_candidate_station,
+                    candidate_start,
+                    candidate_end,
+                    config.location.timezone,
+                    label="station",
+                    tolerance_hours=config.operations.maximum_observation_shortfall_hours,
+                )
+            except (PublicationIntegrityError, ObservationFreshnessError) as exc:
+                if not station_failure_recorded:
+                    shortfall = (
+                        observation_shortfall_hours(
+                            latest_candidate_station,
+                            candidate_start,
+                            candidate_end,
+                            config.location.timezone,
+                        )
+                        if latest_candidate_station is not None and not pd.isna(latest_candidate_station)
+                        else None
                     )
-                quality_notes.extend(candidate_quality.notes)
-                break
-            quality_notes.extend(f"{candidate_start.isoformat()} to {candidate_end.isoformat()}: {note}" for note in candidate_quality.notes)
+                    record_withheld(
+                        config,
+                        candidate_start,
+                        candidate_end,
+                        str(exc),
+                        shortfall_hours=shortfall,
+                    )
+                    station_failure_recorded = True
+                quality_notes.append(
+                    f"{candidate_start.isoformat()} to {candidate_end.isoformat()}: {exc}"
+                )
+                continue
+            start, end = candidate_start, candidate_end
+            current = candidate
+            quality = candidate_quality
+            station = candidate_station
+            station_coverage = candidate_station_coverage
+            if lag:
+                quality_notes.append(
+                    f"Archive lag fallback used: selected {start.isoformat()} to {end.isoformat()} "
+                    f"after the most recent rolling period was incomplete."
+                )
+            quality_notes.extend(candidate_quality.notes)
+            break
         if current is None or quality is None:
             raise RuntimeError(
                 f"No complete weather archive found within {config.operations.max_period_lag_days} days. "
@@ -175,7 +233,8 @@ def run_pipeline(
 
     climate_archive = fetch_climate_archive(config, start, refresh=refresh)
     almanac = build_almanac(climate_archive, config)
-    station = fetch_station_observations(config, start, end, refresh=refresh)
+    if station is None:
+        station = fetch_station_observations(config, start, end, refresh=refresh)
     verification = verify_against_station(current, station)
     radar = fetch_radar_archive(config, start, end, refresh=refresh)
     radar_cells = analyse_radar_cells(radar, config)
@@ -186,7 +245,8 @@ def run_pipeline(
     # only thing checked, so a station record missing its entire final day passed
     # silently and was published five times.
     observational_coverage = [
-        validate_station_period(
+        station_coverage
+        or validate_station_period(
             station, start, end, config.location.timezone, config.operations.minimum_station_coverage
         ),
         validate_radar_period(
