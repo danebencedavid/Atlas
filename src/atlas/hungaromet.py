@@ -378,7 +378,15 @@ def _parse_lightning(text: str) -> pd.DataFrame:
                 "location_error": float(fields[7]),
             }
         )
-    return pd.DataFrame(rows, columns=columns)
+    return pd.DataFrame(rows, columns=columns).astype({
+        "time": "datetime64[ns, UTC]",
+        "latitude": "float64",
+        "longitude": "float64",
+        "height_km": "float64",
+        "event_type": "int64",
+        "peak_current_ka": "float64",
+        "location_error": "float64",
+    })
 
 
 def fetch_lightning_archive(

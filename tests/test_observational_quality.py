@@ -15,6 +15,7 @@ import pytest
 from atlas.config import AtlasConfig, OutputConfig
 from atlas.hungaromet import LightningArchive, RadarArchive, StationObservations
 from atlas.hungaromet import _parse_lightning
+from atlas.hungaromet import fetch_lightning_archive
 from atlas.quality import (
     REQUIRED_HOURLY_COLUMNS,
     ObservationFreshnessError,
@@ -176,16 +177,32 @@ def test_partial_lightning_days_are_disclosed_even_when_available():
     assert any("2 daily lightning file" in note for note in coverage.notes)
 
 
-def test_empty_lightning_file_is_a_valid_quiet_observation():
-    assert list(_parse_lightning("").columns) == [
-        "time",
-        "latitude",
-        "longitude",
-        "height_km",
-        "event_type",
-        "peak_current_ka",
-        "location_error",
-    ]
+@pytest.mark.parametrize("has_events", [False, True])
+def test_lightning_fetch_handles_empty_daily_files(tmp_path, monkeypatch, has_events):
+    config = AtlasConfig(outputs=OutputConfig(data_dir=tmp_path))
+    event = "2026-10-04 12:00:00 47.5316 21.6273 0 1 -12.5 0.2"
+
+    def daily_file(url, _path, _refresh):
+        return event if has_events and "20261004" in url else ""
+
+    monkeypatch.setattr("atlas.hungaromet._cached_bytes", daily_file)
+    monkeypatch.setattr("atlas.hungaromet._zip_text", lambda text: text)
+    # Empty frames must keep their types when concatenated with populated files,
+    # including pandas versions that retain empty inputs during type inference.
+    empty = _parse_lightning("")
+    assert str(empty["time"].dtype) == "datetime64[ns, UTC]"
+    assert empty["latitude"].dtype == "float64"
+    assert empty["longitude"].dtype == "float64"
+
+    archive = fetch_lightning_archive(config, date(2026, 10, 3), date(2026, 10, 5))
+
+    assert archive.available
+    assert archive.missing_days == 0
+    assert len(archive.frame) == int(has_events)
+    assert validate_lightning_period(archive, date(2026, 10, 3), date(2026, 10, 5), TZ).ok
+    if has_events:
+        assert archive.frame.iloc[0]["distance_km"] == pytest.approx(0)
+        assert archive.hourly["flash_count"].sum() == 1
 
 
 def test_pipeline_lags_to_the_latest_complete_station_day(tmp_path, monkeypatch):
