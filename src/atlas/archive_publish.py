@@ -17,7 +17,7 @@ PUBLISHED_SIZE_SCHEMA = "atlas.published-archive-size/1"
 
 @dataclass(frozen=True)
 class PublishedArchiveLimits:
-    total_bytes: int = 256 * 1024 * 1024
+    total_bytes: int = 512 * 1024 * 1024
     shared_bytes: int = 16 * 1024 * 1024
     daily_bytes: int = 1 * 1024 * 1024
     period_bytes: int = 16 * 1024 * 1024
