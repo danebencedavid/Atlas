@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import zipfile
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -17,6 +17,8 @@ from atlas.cold_archive import require_verified_cold_release
 from atlas.cold_archive import restore_and_validate_cold_package
 from atlas.cold_archive import _write_verification_record
 from atlas.cold_archive import upload_and_verify_cold_release
+from atlas.config import AtlasConfig, OutputConfig
+from atlas.site import build_report_archive
 
 
 LOCATION = {
@@ -263,3 +265,77 @@ def test_retention_plan_is_verified_and_non_destructive(tmp_path: Path):
     assert plan["eligible"][0]["path"] == "data/daily.csv"
     assert plan["eligible"][0]["core_copy"] == "bundle/data/daily.csv.gz"
     assert (edition / "data" / "daily.csv").is_file()
+
+
+@pytest.mark.parametrize(
+    "collection,day,verification,today,is_cold",
+    [
+        ("daily", "2026-08-31", "verified", "2026-10-10", True),
+        ("periods", "2026-08-31", "verified", "2026-10-10", True),
+        ("weeks", "2026-08-31", "verified", "2026-10-10", True),
+        ("daily", "2026-08-31", "missing", "2026-10-10", False),
+        ("daily", "2026-08-31", "partial", "2026-10-10", False),
+        ("daily", "2026-08-31", "mismatched", "2026-10-10", False),
+        ("daily", "2026-09-01", "verified", "2026-10-10", False),
+        ("daily", "2026-10-01", "verified", "2026-10-10", False),
+        ("daily", "2026-11-30", "verified", "2027-01-01", True),
+        ("daily", "2026-12-01", "verified", "2027-01-01", False),
+    ],
+)
+def test_publication_retention_preserves_verified_cold_editions(
+    tmp_path: Path, monkeypatch, collection, day, verification, today, is_cold
+):
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime.fromisoformat(today).replace(tzinfo=timezone.utc)
+
+    monkeypatch.setattr("atlas.site.datetime", Clock)
+    reports = tmp_path / "reports"
+    slug = day if collection == "daily" else f"{day}_{day}"
+    edition = reports / collection / slug
+    (edition / "assets").mkdir(parents=True)
+    (edition / "index.html").write_text("<html><body><main>Original report</main></body></html>", encoding="utf-8")
+    (edition / "weather.html").write_text("<html><body><main>Original weather</main></body></html>", encoding="utf-8")
+    (edition / "assets" / "satellite.webp").write_bytes(b"saved media" * 1000)
+    if collection == "periods":
+        (edition / "analysis").mkdir()
+        (edition / "analysis" / "index.html").write_text("Original analysis", encoding="utf-8")
+        (edition / "analysis" / "storms-satellite.html").write_text("Original storms", encoding="utf-8")
+    ensure_edition_bundle(edition, collection, **LOCATION)
+    original = {path.relative_to(edition): path.read_bytes() for path in edition.rglob("*") if path.is_file()}
+    package = build_cold_package(reports, day[:7], tmp_path / "dist")
+    asset = {
+        "id": 42, "name": package.asset_path.name, "state": "uploaded",
+        "size": package.bytes, "digest": f"sha256:{package.sha256}",
+        "url": "https://api.github.test/assets/42",
+        "browser_download_url": "https://github.test/releases/archive.zip",
+    }
+    release = {"tag_name": "atlas-archive-2026", "html_url": "https://github.test/releases/atlas-archive-2026"}
+    if verification != "missing":
+        record_path = _write_verification_record(reports, package, "owner/repo", release, asset, restore_validated=verification != "partial")
+        if verification == "mismatched":
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+            record["editions"][0]["source_tree_sha256"] = "different"
+            record_path.write_text(json.dumps(record), encoding="utf-8")
+    config = AtlasConfig(outputs=OutputConfig(site_dir=tmp_path / "site", reports_dir=reports))
+    index = build_report_archive(config)
+    published = index.parent / collection / slug
+    catalog = json.loads((index.parent / "data" / "catalog.v1.json").read_text(encoding="utf-8"))
+    entry = catalog["entries"][0]
+    assert entry["publication"]["storage"] == ("cold" if is_cold else "hot")
+    assert (index.parent / entry["href"]).is_file()
+    assert (index.parent / entry["manifest_href"]).is_file()
+    assert (published / "assets" / "satellite.webp").exists() is not is_cold
+    for route in (path for path in original if path.suffix == ".html"):
+        assert (published / route).is_file()
+        if is_cold:
+            document = (published / route).read_text(encoding="utf-8")
+            assert asset["browser_download_url"] in document
+            assert package.sha256 in document
+            archive_href = "../../../index.html" if route.parent.name == "analysis" else "../../index.html"
+            assert f'href="{archive_href}"' in document
+    if is_cold:
+        assert "Open cold archive" in index.read_text(encoding="utf-8")
+        assert entry["publication"]["download_href"] == asset["browser_download_url"]
+    assert {path.relative_to(edition): path.read_bytes() for path in edition.rglob("*") if path.is_file()} == original

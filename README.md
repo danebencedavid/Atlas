@@ -38,6 +38,13 @@ satellite, storms, the upper atmosphere, land conditions, and energy impacts.
 Browse preserved editions and search the Weather Event Index for past fog,
 frost, heat, thunder, heavy rain, snow, and frontal passages.
 
+The current and previous calendar month stay fully browsable online. Older
+editions automatically become clearly labelled monthly ZIP downloads once their
+exact cold archive has passed download and restore verification. Download and
+extract the ZIP to read the original reports locally (interactive charts may
+still need an internet connection). If verification is missing,
+the edition stays online; retention never deletes the saved source reports.
+
 ## How to read Atlas
 
 Every report opens with the observed period, update time, and an integrity

@@ -570,7 +570,7 @@ def require_verified_cold_release(
     collection: str,
     edition_id: str,
 ) -> Path:
-    """Safety gate for any future pruning implementation; this function never deletes."""
+    """Safety gate for cold publication; this function never deletes source files."""
 
     edition = reports_dir / collection / edition_id
     manifest = json.loads((edition / "manifest.json").read_text(encoding="utf-8"))
@@ -708,9 +708,9 @@ def build_retention_plan(reports_dir: Path, before: date) -> dict[str, Any]:
         "execution": {
             "enabled": False,
             "reason": (
-                "Planning only: activation requires a separate reviewed publisher "
-                "change after the capacity threshold is reached. This command cannot "
-                "delete or omit files."
+                "This command only plans compact-resource savings and never deletes "
+                "or omits files. The site publisher separately applies automatic "
+                "edition retention using exact restore-verified monthly cold archives."
             ),
         },
         "eligible": eligible,

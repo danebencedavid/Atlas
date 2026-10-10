@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +33,8 @@ from atlas.build_status import read_recovered
 from atlas.build_status import RecoveredBuild
 from atlas.climatology import ClimateReference
 from atlas.config import AtlasConfig
+from atlas.cold_archive import ColdReleaseVerificationError
+from atlas.cold_archive import require_verified_cold_release
 from atlas.electricity import ElectricitySummary
 from atlas.energy import EnergyIndex, PhysicalEnergy
 from atlas.errata import annotate_daily_from_periods
@@ -4316,7 +4318,7 @@ def _archive_table(entries: list[dict[str, Any]], section_id: str, title: str) -
           <td class="archive-date"><strong>{html.escape(entry['date_label'])}</strong><span>{html.escape(entry['slug'])}</span></td>
           <td>{html.escape(entry['edition'])}</td>
           <td>{html.escape(entry['coverage'])}; {entry['page_count']} saved page{'s' if entry['page_count'] != 1 else ''}</td>
-          <td><a class="archive-open" href="{html.escape(entry['href'])}">Open report &rarr;</a></td>
+          <td><a class="archive-open" href="{html.escape(entry['href'])}">{'Open cold archive' if entry.get('cold') else 'Open report'} &rarr;</a></td>
         </tr>"""
         for entry in entries
     )
@@ -4479,6 +4481,46 @@ def build_report_archive(
     return archive_dir / "index.html"
 
 
+def _publish_cold_archive_entry(
+    config: AtlasConfig,
+    entry: dict[str, Any],
+    target: Path,
+    record: dict[str, Any],
+    updated: str,
+) -> None:
+    """Keep bookmarked report routes without deploying the archived media again."""
+    content = _page_intro(
+        entry["date_label"],
+        "This edition is preserved in the monthly cold archive.",
+        "Saved Atlas edition",
+    )
+    content += (
+        '<section><h2>Download the preserved report</h2>'
+        '<p>The ZIP contains the original reports, figures and observations. '
+        'Extract it and open '
+        f'<code>reports/{html.escape(target.parent.name)}/{html.escape(entry["slug"])}/'
+        f'{html.escape(entry["href"].split("/", 2)[2])}</code> to read this edition locally. '
+        'Interactive charts may still need an internet connection.</p>'
+        f'<p><a href="{html.escape(record["asset_url"])}">Download {html.escape(record["month"])} archive (ZIP)</a></p>'
+        '<p>This exact saved edition passed download and restore verification before leaving the online archive.</p>'
+        f'<p>ZIP SHA-256: <code>{html.escape(record["sha256"])}</code></p></section>'
+    )
+    source = entry["source"]
+    pages = [*source.glob("*.html"), *(source / "analysis").glob("*.html")]
+    for page in pages:
+        published = target / page.relative_to(source)
+        published.parent.mkdir(parents=True, exist_ok=True)
+        published.write_text(
+            _page_document(
+                config, page.name, "Cold archive", "Download a preserved Atlas edition.",
+                content, updated, "archive",
+            ),
+            encoding="utf-8",
+        )
+    for name in ("manifest.json", "narrative.json"):
+        shutil.copy2(source / name, target / name)
+
+
 def _build_report_archive_into(
     config: AtlasConfig,
     site_dir: Path,
@@ -4487,6 +4529,10 @@ def _build_report_archive_into(
     archive_dir: Path,
 ) -> Path:
     archive_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now(timezone.utc)
+    updated = updated or now.strftime("%Y-%m-%d %H:%M UTC")
+    # Keep the current and previous UTC calendar month fully online.
+    retention_before = (now.replace(day=1) - timedelta(days=1)).strftime("%Y-%m-01")
 
     saved = {
         collection: _saved_report_directories(reports_dir / collection)
@@ -4515,12 +4561,34 @@ def _build_report_archive_into(
     }
     recovered_publications = read_recovered(config)
     archive_figure_renderer = write_shared_figure_renderer(archive_dir)
+    publication = {}
 
     for collection, entries in collections.items():
         target_parent = archive_dir / collection
         for entry in entries:
             target = target_parent / entry["slug"]
             target.parent.mkdir(parents=True, exist_ok=True)
+            cold = None
+            if entry["end"] < retention_before:
+                try:
+                    record_path = require_verified_cold_release(
+                        reports_dir, collection, entry["slug"]
+                    )
+                    cold = json.loads(record_path.read_text(encoding="utf-8"))
+                except ColdReleaseVerificationError:
+                    pass  # An unverified edition stays fully online, never discarded.
+            if cold is not None:
+                _publish_cold_archive_entry(config, entry, target, cold, updated)
+                _rewrite_published_archive_links(target, collection)
+                entry["cold"] = True
+                entry["edition"] += " (cold archive)"
+                publication[entry["href"]] = {
+                    "storage": "cold",
+                    "download_href": cold["asset_url"],
+                    "sha256": cold["sha256"],
+                }
+                continue
+            publication[entry["href"]] = {"storage": "hot"}
             shutil.copytree(entry["source"], target)
             _rewrite_published_archive_links(target, collection)
             _overlay_archived_recovery(
@@ -4554,9 +4622,17 @@ def _build_report_archive_into(
         json.dumps({"events": events}, indent=2, ensure_ascii=False, allow_nan=False),
         encoding="utf-8",
     )
+    catalog = build_archive_catalog(saved)
+    for entry in catalog["entries"]:
+        entry["publication"] = publication[entry["href"]]
+    catalog["retention"] = {
+        "cutoff_exclusive": retention_before,
+        "source_editions_remain_immutable": True,
+        "requires_remote_restore_drill": True,
+    }
     (archive_data_dir / "catalog.v1.json").write_text(
         json.dumps(
-            build_archive_catalog(saved),
+            catalog,
             indent=2,
             sort_keys=True,
             ensure_ascii=False,
@@ -4583,6 +4659,7 @@ def _build_report_archive_into(
         "Saved Atlas editions",
     )
     content += f"""
+<p>The current and previous calendar month remain fully browsable. Older editions switch automatically to monthly ZIP downloads only after their exact cold copy passes download and restore verification. Saved reports and the event index remain preserved.</p>
 <div class="archive-summary" aria-label="Archive summary">
   <div class="archive-stat"><span>All editions</span><strong>{total}</strong><small>saved reports</small></div>
   <div class="archive-stat"><span>Daily public</span><strong>{len(collections['daily'])}</strong><small>complete local days</small></div>
@@ -4630,7 +4707,6 @@ def _build_report_archive_into(
 </script>
 """
 
-    updated = updated or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     index = archive_dir / "index.html"
     index.write_text(
         _page_document(
