@@ -1,13 +1,5 @@
 {
-  "withheld": [
-    {
-      "attempted_at": "2026-10-10T16:18:19+00:00",
-      "period_start": "2026-10-07",
-      "period_end": "2026-10-09",
-      "reason": "Published archive size gate failed: total",
-      "shortfall_hours": null
-    }
-  ],
+  "withheld": [],
   "recovered": [
     {
       "attempted_at": "2026-08-28T08:37:17+00:00",
@@ -34,6 +26,19 @@
       "data_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-10-05/data/daily_station_observations.csv",
       "workflow_url": "https://github.com/danebencedavid/Atlas/actions/runs/37505072713",
       "shortfall_hours": 22.17
+    },
+    {
+      "attempted_at": "2026-10-10T16:18:19+00:00",
+      "period_start": "2026-10-07",
+      "period_end": "2026-10-09",
+      "reason": "Published archive size gate failed: total",
+      "recovered_at": "2026-10-10T17:14:57+00:00",
+      "station_observed": 144,
+      "station_expected": 144,
+      "report_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-10-09/",
+      "data_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-10-09/data/daily_station_observations.csv",
+      "workflow_url": "https://github.com/danebencedavid/Atlas/actions/runs/38070778702",
+      "shortfall_hours": null
     }
   ]
 }
