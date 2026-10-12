@@ -1,0 +1,5 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-10-09 09:00:00+00:00,2026-10-09 10:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +2.5 hPa, temperature +2.8 C, wind shifted 22 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-10-10 18:00:00+00:00,2026-10-10 19:00:00+00:00,Thunderstorm,1 LINET event(s) with radar reflectivity reaching 40.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-10-10 23:00:00+00:00,2026-10-11 00:00:00+00:00,Probable cold-front passage,"Probable cold-front passage: pressure changed -0.7 hPa, temperature -2.8 C, wind shifted 83 degrees, and 3-hour precipitation was 1.1 mm.",0.79,Objective compound surface-change detector
+2026-10-11 01:00:00+00:00,2026-10-11 05:00:00+00:00,Heavy rain,Peak hourly precipitation 5.3 mm; maximum rolling three-hour total 13.4 mm.,0.92,HungaroMet station 64711
