@@ -124,6 +124,34 @@ def _safe_year(value: date, year: int) -> date:
         return value.replace(year=year, day=28)
 
 
+def solar_reference_evidence(
+    archive: pd.DataFrame, day: date, first_year: int, final_year: int, minimum_years: int,
+) -> dict:
+    """Preserve missing/invalid daily radiation before aggregation can erase it."""
+    samples = []
+    for year in range(first_year, final_year + 1):
+        target = _safe_year(day, year)
+        rows = archive[archive["date"] == target]
+        value = None
+        status = "missing" if rows.empty else "duplicate" if len(rows) > 1 else "invalid"
+        if len(rows) == 1:
+            raw = pd.to_numeric(rows["shortwave_radiation_sum"], errors="coerce").iloc[0]
+            if pd.isna(rows["shortwave_radiation_sum"].iloc[0]):
+                status = "missing"
+            if pd.notna(raw) and not isinstance(raw, bool) and 0 <= raw < float("inf"):
+                value = float(raw) * 277.7777778
+                status = "valid"
+        samples.append({"date": target.isoformat(), "radiation_wh_m2": value, "status": status})
+    values = [sample["radiation_wh_m2"] for sample in samples if sample["radiation_wh_m2"] is not None]
+    mean = sum(values) / len(values) if values else None
+    return {
+        "status": "derived" if len(values) >= minimum_years and mean is not None and mean > 0 else "insufficient-evidence",
+        "date": day.isoformat(), "mean_wh_m2": mean,
+        "valid_years": len(values), "expected_years": len(samples), "minimum_years": minimum_years,
+        "samples": samples, "provider": "Open-Meteo", "product": "ERA5 daily same-calendar radiation",
+    }
+
+
 def _aggregate_daily(group: pd.DataFrame) -> dict[str, float]:
     wind_column = (
         "wind_speed_100m_mean"

@@ -93,3 +93,14 @@ def test_climate_archive_uses_immutable_annual_caches(monkeypatch, tmp_path: Pat
     second = fetch_climate_archive(config, date(2023, 7, 2), refresh=True)
     assert requested_years == []
     assert second.equals(first)
+
+def test_solar_reference_does_not_turn_missing_daily_radiation_into_zero():
+    from datetime import date
+    import pandas as pd
+    from atlas.climatology import solar_reference_evidence
+
+    archive = pd.DataFrame({"date": [date(year, 8, 26) for year in range(1991, 2021)], "shortwave_radiation_sum": [float("nan")] * 7 + [18.0] * 23})
+    reference = solar_reference_evidence(archive, date(2026, 8, 26), 1991, 2020, 24)
+    assert reference["status"] == "insufficient-evidence"
+    assert reference["valid_years"] == 23
+    assert reference["samples"][0]["radiation_wh_m2"] is None

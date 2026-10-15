@@ -31,6 +31,7 @@ from atlas.site import build_report_archive
 from atlas.site import build_site
 from atlas.site import collect_weather_event_index
 from atlas.site import _load_activity_lenses
+from atlas.site import _activity_lenses_section
 from atlas.site import _share_date_label
 from atlas.site import _share_story_headline
 from atlas.synoptic import SynopticArchive
@@ -319,9 +320,9 @@ def test_report_generation_smoke(tmp_path: Path):
     assert "Cycling conditions" in report_html
     assert "Favorable &middot; 100/100" in report_html
     assert "How activity lens scores are calculated" in report_html
-    assert "Begin at 100" in report_html
+    assert "Score each usable hour" in report_html
     assert "80-100 is favorable, 55-79 is mixed" in report_html
-    assert "See the exact penalty thresholds for all six lenses" in report_html
+    assert "See the exact rules and severity limits for all six lenses" in report_html
     assert "8-12 m/s: &minus;10" in report_html
     assert 'href="data/activity_lenses.json" download' in report_html
     assert (target.parent / "data" / "activity_lenses.json").is_file()
@@ -477,6 +478,29 @@ def test_activity_lens_renderer_rejects_evidence_from_another_edition(
 
     with pytest.raises(ValueError, match="daily edition date"):
         _load_activity_lenses(source, "2026-08-03", "Europe/Budapest")
+
+
+def test_legacy_saved_methodology_is_rendered_without_recalculation(tmp_path: Path) -> None:
+    from atlas.activity_lenses import available_lens_ids
+
+    legacy = {
+        "schema": "atlas.activity-lenses/1", "date": "2026-08-03", "timezone": "Europe/Budapest",
+        "lenses": [{"id": key, "label": key, "status": "available", "rating": "mixed", "score": 73,
+                    "summary": "Saved legacy explanation", "limiting_factors": []} for key in available_lens_ids()],
+        "methodology": {"base_score": 100, "calculation": "Legacy saved arithmetic",
+                        "lenses": [{"id": key, "rules": []} for key in available_lens_ids()]},
+    }
+    path = tmp_path / "legacy.json"
+    original = json.dumps(legacy).encode()
+    path.write_bytes(original)
+    loaded = _load_activity_lenses(path, "2026-08-03", "Europe/Budapest")
+    assert loaded == legacy
+    rendered = _activity_lenses_section(loaded, "legacy.json")
+    assert "73/100" in rendered and "Saved legacy explanation" in rendered
+    assert "Legacy saved arithmetic" in rendered
+    assert "Begin at 100" in rendered
+    assert "methodology_version" not in loaded
+    assert path.read_bytes() == original
 
 
 def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):

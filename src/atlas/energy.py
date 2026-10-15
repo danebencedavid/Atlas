@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -17,6 +17,7 @@ class EnergyIndex:
     calm_wind_penalty: float
     cloud_penalty: float
     label: str
+    solar_evidence: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,7 @@ class PhysicalEnergy:
     peak_pv_time: str | None
     peak_wind_time: str | None
     notes: list[str]
+    pv_evidence: dict = field(default_factory=dict)
 
 
 def clamp(value: float, lower: float = 0.0, upper: float = 100.0) -> float:
@@ -45,6 +47,12 @@ def ratio_index(value: float, baseline: float) -> float:
 
 
 def compute_energy_index(current: dict[str, float], baseline: dict[str, float]) -> EnergyIndex:
+    solar_valid = all(
+        np.isfinite(values[key])
+        and (values[key] >= 0 if key == "shortwave_total_wh_m2" else 0 <= values[key] <= 100)
+        for values in (current, baseline)
+        for key in ("shortwave_total_wh_m2", "cloud_cover_mean_pct")
+    ) and baseline["shortwave_total_wh_m2"] > 0
     solar_raw = ratio_index(current["shortwave_total_wh_m2"], baseline["shortwave_total_wh_m2"])
     cloud_excess = max(current["cloud_cover_mean_pct"] - baseline["cloud_cover_mean_pct"], 0.0)
     cloud_penalty = clamp(cloud_excess * 0.35, 0.0, 30.0)
@@ -69,6 +77,10 @@ def compute_energy_index(current: dict[str, float], baseline: dict[str, float]) 
         calm_wind_penalty=round(calm_wind_penalty, 1),
         cloud_penalty=round(cloud_penalty, 1),
         label=label,
+        solar_evidence={
+            "status": "derived" if solar_valid else "fallback",
+            "dependencies": ["shortwave_radiation", "cloud_cover", "climate_baseline"],
+        },
     )
 
 
@@ -174,4 +186,14 @@ def compute_physical_energy(config: AtlasConfig, frame: pd.DataFrame) -> Physica
             f"Wind output uses observed/modelled {config.physical_energy.wind_hub_height_m:g} m wind, moist-air density correction, and a generic {cut_in:g}/{rated:g}/{cut_out:g} m/s cut-in/rated/cut-out power curve.",
             "These are reference-system weather yields, not metered production or a forecast.",
         ],
+        pv_evidence={
+            "status": "derived" if all(
+                np.isfinite(pd.to_numeric(weather[key], errors="coerce")).all()
+                for key in ("shortwave_radiation", "direct_radiation", "diffuse_radiation", "temperature_2m", "wind_speed_10m")
+            ) else "fallback",
+            "model": "pvlib plane-of-array irradiance; Faiman cell temperature; 0.96 conversion factor",
+            "tilt_degrees": config.physical_energy.pv_tilt_degrees,
+            "azimuth_degrees": config.physical_energy.pv_azimuth_degrees,
+            "temperature_coefficient": config.physical_energy.pv_temperature_coefficient,
+        },
     )

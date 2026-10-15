@@ -12,7 +12,9 @@ from PIL import Image, ImageDraw
 
 from atlas.almanac import build_almanac
 from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import ACTIVITY_LENS_METHODOLOGY
 from atlas.activity_lenses import write_activity_lens_evidence
+from atlas.climatology import solar_reference_evidence
 from atlas.analogs import AnalogAnalysis, AnalogPeriod
 from atlas.anomalies import anomalies_as_frame, compute_anomalies, percentile_rank, period_metrics
 from atlas.climatology import ClimateReference
@@ -566,6 +568,7 @@ def run_demo_pipeline(
     physical_energy = compute_physical_energy(config, current)
     daily_physical_energy = compute_physical_energy(config, daily)
     daily_physical_energy_evidence = {
+        "pv_evidence": daily_physical_energy.pv_evidence,
         "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
         "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
         "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
@@ -666,6 +669,15 @@ def run_demo_pipeline(
         config.location.timezone,
         energy=asdict(daily_energy),
         physical_energy=daily_physical_energy_evidence,
+        source={"provider": "Atlas demo", "product": "synthetic weather", "resolution": "hourly", "kind": "synthetic"},
+        solar_reference={
+            **solar_reference_evidence(
+                _daily_climate_archive(range(config.climatology.standard_start_year, config.climatology.standard_end_year + 1)),
+                end, config.climatology.standard_start_year, config.climatology.standard_end_year,
+                config.climatology.minimum_standard_years,
+            ),
+            "provider": "Atlas demo", "product": "synthetic same-calendar radiation",
+        },
     )
 
     processed_paths: dict[str, Path] = {
@@ -738,6 +750,7 @@ def run_demo_pipeline(
                     "electricity": asdict(electricity_summary),
                     "activity_lenses": {
                         "schema": ACTIVITY_LENS_SCHEMA,
+                        "methodology_version": ACTIVITY_LENS_METHODOLOGY,
                         "path": activity_lenses_path.name,
                     },
                 }

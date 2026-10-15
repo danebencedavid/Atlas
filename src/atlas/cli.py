@@ -13,7 +13,9 @@ import pandas as pd
 
 from atlas.almanac import build_almanac
 from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import ACTIVITY_LENS_METHODOLOGY
 from atlas.activity_lenses import write_activity_lens_evidence
+from atlas.climatology import solar_reference_evidence
 from atlas.analogs import find_historical_analogs
 from atlas.anomalies import anomalies_as_frame, period_metrics
 from atlas.archive_publish import PublishedArchiveBudgetError
@@ -391,6 +393,7 @@ def run_pipeline(
     daily_energy = compute_energy_index(daily_metrics, daily_standard_means)
     daily_physical_energy = compute_physical_energy(config, daily_frame)
     daily_physical_energy_evidence = {
+        "pv_evidence": daily_physical_energy.pv_evidence,
         "pv_yield_kwh_per_kwp": daily_physical_energy.pv_yield_kwh_per_kwp,
         "pv_capacity_factor_pct": daily_physical_energy.pv_capacity_factor_pct,
         "wind_full_load_hours": daily_physical_energy.wind_full_load_hours,
@@ -571,6 +574,11 @@ def run_pipeline(
         config.location.timezone,
         energy=asdict(daily_energy),
         physical_energy=daily_physical_energy_evidence,
+        source={"provider": "Open-Meteo", "product": "Historical Weather API, best match (model/reanalysis)", "resolution": "hourly", "kind": "gridded historical weather estimate"},
+        solar_reference=solar_reference_evidence(
+            climate_archive, end, config.climatology.standard_start_year,
+            config.climatology.standard_end_year, config.climatology.minimum_standard_years,
+        ),
     )
     daily_summary_path.write_text(
         json.dumps(
@@ -589,6 +597,7 @@ def run_pipeline(
                     "physical_energy": daily_physical_energy_evidence,
                     "activity_lenses": {
                         "schema": ACTIVITY_LENS_SCHEMA,
+                        "methodology_version": ACTIVITY_LENS_METHODOLOGY,
                         "path": activity_lenses_path.name,
                     },
                     "regime": asdict(daily_regime),

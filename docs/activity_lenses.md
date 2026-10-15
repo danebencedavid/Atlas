@@ -1,5 +1,22 @@
 # Atlas activity lenses
 
+Newly calculated results use **methodology `atlas.activity-lenses/2.0`**. Read the
+[v2 methodology and evidence contract](activity_lenses_v2.md) and the
+[calibration review](activity_lenses_calibration.md) for the current behavior.
+
+V2 validates expected hourly slots, uses stated activity windows, records severity
+ceilings and adverse-hour duration, separates morning/evening commutes, and keeps
+season-relative radiation separate from estimated PV yield. It preserves the
+existing rules/evidence/explanation engine and per-lens withholding. Thresholds
+remain explicitly provisional convenience heuristics.
+
+The JSON envelope remains `atlas.activity-lenses/1`; its explicit
+`methodology_version` identifies the scoring semantics. Historical results without
+that field are **methodology 1** and retain their saved scores and rule snapshots.
+The description below documents that original methodology, not v2 calculations.
+
+## Historical methodology 1
+
 Activity lenses translate a completed Debrecen weather day into a small set of
 repeatable, evidence-backed convenience ratings. They do not forecast conditions
 or replace official warnings, health guidance, or personal judgement.

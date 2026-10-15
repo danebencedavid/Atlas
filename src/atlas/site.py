@@ -15,6 +15,7 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from atlas.activity_lenses import ACTIVITY_LENS_SCHEMA
+from atlas.activity_lenses import ACTIVITY_LENS_METHODOLOGY
 from atlas.activity_lenses import available_lens_ids
 from atlas.almanac import Almanac, PeriodClimate, RecordEntry
 from atlas.analogs import AnalogAnalysis
@@ -2001,6 +2002,11 @@ def _load_activity_lenses(
     methodology = document.get("methodology")
     if not isinstance(methodology, dict):
         raise ValueError("Activity-lens evidence has no calculation methodology")
+    version = document.get("methodology_version")
+    if version is None and methodology.get("version") is not None:
+        raise ValueError("Activity-lens evidence has inconsistent methodology version metadata")
+    if version is not None and (version != ACTIVITY_LENS_METHODOLOGY or methodology.get("version") != version):
+        raise ValueError("Activity-lens evidence uses an unsupported or inconsistent methodology version")
     method_lenses = methodology.get("lenses")
     if not isinstance(method_lenses, list):
         raise ValueError("Activity-lens methodology has no lens rules")
@@ -2029,7 +2035,7 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
     groups: list[str] = []
     for lens in methodology["lenses"]:
         label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
-        scope = (
+        scope = ", ".join(lens["windows"]) if lens.get("windows") else (
             "06:00-10:00 and 15:00-19:00"
             if lens.get("scope") == "commute-hours"
             else "Full local day"
@@ -2043,6 +2049,7 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
             thresholds = "; ".join(
                 f'{html.escape(str(band.get("condition", "")))}: '
                 f'&minus;{html.escape(str(band.get("deduction", "")))}'
+                + (f'; hourly ceiling {band["ceiling"]}' if band.get("ceiling") is not None else "")
                 for band in rule.get("bands", [])
                 if isinstance(band, dict)
             )
@@ -2057,6 +2064,20 @@ def _activity_lens_methodology(document: dict[str, Any]) -> str:
         )
     calculation = html.escape(str(methodology.get("calculation", "")))
     coverage_policy = html.escape(str(methodology.get("coverage_policy", "")))
+    if document.get("methodology_version"):
+        version = html.escape(str(document["methodology_version"]))
+        solar = html.escape(str(methodology.get("solar_calculation", "")))
+        return f"""
+  <p class="evidence-meta">Methodology {version}. Thresholds are provisional convenience heuristics.</p>
+  <ol class="activity-method-steps" aria-label="How activity lens scores are calculated">
+    <li class="activity-method-step"><span>1</span><div><strong>Check the relevant hours</strong><p>{coverage_policy}</p></div></li>
+    <li class="activity-method-step"><span>2</span><div><strong>Score each usable hour</strong><p>{calculation}</p></div></li>
+    <li class="activity-method-step"><span>3</span><div><strong>Translate the final score</strong><p>80-100 is favorable, 55-79 is mixed, and 0-54 is difficult. Unknown hours are not favorable hours.</p></div></li>
+  </ol>
+  <details class="activity-lens-method"><summary>See the exact rules and severity limits for all six lenses</summary>
+    <p>{solar}</p><div class="activity-threshold-groups">{''.join(groups)}</div>
+  </details>
+"""
     return f"""
   <ol class="activity-method-steps" aria-label="How activity lens scores are calculated">
     <li class="activity-method-step"><span>1</span><div><strong>Begin at {base_score}</strong><p>Every activity lens starts with {base_score} points.</p></div></li>
@@ -2100,9 +2121,11 @@ def _activity_lenses_section(
                     value = html.escape(str(factor.get("value", "n/a")))
                     unit = html.escape(str(factor.get("unit", "")))
                     deduction = html.escape(str(factor.get("deduction", "n/a")))
-                    explanations.append(
-                        f"{explanation} ({value} {unit}; &minus;{deduction} points.)"
-                    )
+                    if "hours" in factor:
+                        ceiling = f'; hourly ceiling {factor["ceiling"]}' if factor.get("ceiling") is not None else ""
+                        explanations.append(f'{explanation} ({factor["hours"]} hour(s); &minus;{deduction} per affected hour{ceiling}.)')
+                    else:
+                        explanations.append(f"{explanation} ({value} {unit}; &minus;{deduction} points.)")
                 if explanations:
                     detail = f"{detail} {' '.join(explanations)}"
         else:
@@ -2113,19 +2136,52 @@ def _activity_lenses_section(
                 html.escape(str(item).replace("_", " "))
                 for item in missing
             )
-            detail = "This lens was withheld because its required daily evidence was incomplete."
+            detail = html.escape(str(lens.get("summary", "This lens was withheld because its required daily evidence was incomplete.")))
             if missing_labels:
                 detail += f" Missing or sparse: {missing_labels}."
+        extra = []
+        windows = lens.get("journeys", [lens])
+        for window in windows:
+            if "expected_hours" not in window:
+                continue
+            title = str(window.get("window", "Evaluated window")).title()
+            rating_text = f'{window["score"]}/100, {window["rating"]}' if window.get("score") is not None else "insufficient evidence"
+            extra.append(f'<p><strong>{html.escape(title)} ({html.escape(str(window.get("local_window", "")))})</strong>: {html.escape(rating_text)}. {html.escape(str(window.get("summary", "")))}</p>')
+            for limit in window.get("rating_limits", []):
+                extra.append(f'<p>{html.escape(str(limit["explanation"]))} Window ceiling: {limit["ceiling"]}/100.</p>')
+            runs = []
+            for run in window.get("favorable_windows", []):
+                start = pd.Timestamp(run["start"]).tz_convert(document["timezone"]).strftime("%H:%M")
+                end = pd.Timestamp(run["end"]).tz_convert(document["timezone"]).strftime("%H:%M")
+                runs.append(f"{start}-{end}")
+            if runs:
+                extra.append(f'<p>Favorable hourly windows: {", ".join(runs)} local time.</p>')
+        pv = lens.get("pv_estimate")
+        if isinstance(pv, dict):
+            pv_text = f'{pv["value"]} kWh/kWp' if pv.get("status") == "available" else "insufficient evidence"
+            extra.append(f'<p><strong>Estimated reference-system PV yield</strong>: {html.escape(pv_text)}. Separate from the seasonal comparison.</p>')
+            if pv.get("reason"):
+                extra.append(f'<p>{html.escape(str(pv["reason"]))}</p>')
+            model = document.get("pv_model")
+            if isinstance(model, dict) and model.get("model"):
+                assumptions = f'{model["model"]}; tilt {model.get("tilt_degrees")} degrees; azimuth {model.get("azimuth_degrees")} degrees; temperature coefficient {model.get("temperature_coefficient")} per degree C.'
+                extra.append(f'<details><summary>PV reference-system assumptions</summary><p>{html.escape(assumptions)}</p></details>')
+        daily = lens.get("daily_context")
+        if isinstance(daily, dict):
+            context = "; ".join(f'{_ACTIVITY_FACT_LABELS.get(key, key)}: {fact["value"]} {fact["unit"]} ({fact["coverage"]:.0%} coverage)' for key, fact in daily.items())
+            extra.append(f'<details><summary>Full-day weather context</summary><p>{html.escape(context)}</p></details>')
         cards.append(
             f'<article class="insight activity-lens-card" data-rating="{html.escape(rating_key)}">'
             f'<span class="provenance">{provenance}</span>'
-            f"<h3>{label}</h3><p>{detail}</p></article>"
+            f"<h3>{label}</h3><p>{detail}</p>{''.join(extra)}</article>"
         )
     evidence_link = (
         f' <a href="{html.escape(data_href)}" download>Download the full evidence JSON</a>.'
         if data_href
         else ""
     )
+    source = document.get("source", {})
+    source_note = html.escape(f'{source.get("provider", "")}: {source.get("product", "")}; {source.get("resolution", "hourly")} inputs.') if source else ""
     return f"""
 <section class="content-section activity-lenses-section" aria-labelledby="activity-lenses-heading">
   <div class="section-heading"><span class="activity-lenses-symbol" aria-hidden="true"></span><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
@@ -2133,6 +2189,7 @@ def _activity_lenses_section(
   <div class="insight-grid activity-lenses-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
 {_activity_lens_methodology(document)}
   <p class="evidence-meta">{html.escape(str(document.get("disclaimer", "")))}{evidence_link}</p>
+  <p class="evidence-meta">{source_note}</p>
 </section>
 """
 
