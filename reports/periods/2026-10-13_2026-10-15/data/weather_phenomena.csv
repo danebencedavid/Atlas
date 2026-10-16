@@ -1,0 +1,3 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-10-15 10:00:00+00:00,2026-10-15 11:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed -0.4 hPa, temperature +2.2 C, wind shifted 111 degrees, and 3-hour precipitation was 1.1 mm.",0.71,Objective compound surface-change detector
+2026-10-15 12:00:00+00:00,2026-10-15 14:00:00+00:00,Thunderstorm,7 LINET event(s) with radar reflectivity reaching 48.5 dBZ.,0.96,HungaroMet LINET and composite radar
