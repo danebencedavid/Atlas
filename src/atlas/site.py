@@ -1422,6 +1422,28 @@ h2 { font-size: 19px; font-weight: 620; }
 .activity-lens-card[data-rating="mixed"] { box-shadow: inset 3px 0 0 var(--gold); }
 .activity-lens-card[data-rating="difficult"] { box-shadow: inset 3px 0 0 var(--red); }
 .activity-lens-card[data-rating="unavailable"] { box-shadow: inset 3px 0 0 var(--muted); }
+.activity-lenses-compact .activity-lenses-grid { gap: 14px; border: 0; }
+.activity-lenses-compact .activity-lens-card { border: 1px solid var(--line); border-radius: 4px; padding: 18px 20px 10px; }
+.activity-lenses-compact .activity-lens-card .provenance { padding: 3px 7px; border-radius: 4px; background: var(--blue-soft); color: var(--ink); font-size: 12px; }
+.activity-lenses-compact .activity-lens-card[data-rating="favorable"] .provenance { background: #edf5f1; color: var(--green); }
+.activity-lenses-compact .activity-lens-card h3 { margin: 3px 0 8px; }
+.activity-lenses-compact .activity-lens-card p { font-size: 13px; line-height: 1.6; }
+.activity-lens-hours { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+.activity-lens-journeys { margin: 12px 0 0; }
+.activity-lens-journeys > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 7px 10px; margin-top: 4px; background: var(--blue-soft); border-radius: 4px; }
+.activity-lens-journeys dt, .activity-lens-journeys dd { margin: 0; font-size: 12px; }
+.activity-lens-journeys dt span { display: inline-block; margin-left: 5px; }
+.activity-lens-journeys dd { font-weight: 650; }
+.activity-lens-card .activity-lens-warning { margin-top: 10px; padding-left: 9px; border-left: 2px solid var(--gold); }
+.activity-lens-card .activity-lens-pv { margin-top: 12px; padding: 8px 10px; background: var(--blue-soft); border-radius: 4px; }
+.activity-lens-pv strong { display: block; font-size: 12px; }
+.activity-lens-evidence { margin-top: 10px; }
+.activity-lens-evidence > summary { min-height: 44px; padding: 11px 0; color: var(--blue); font-size: 13px; font-weight: 650; cursor: pointer; }
+.activity-lens-evidence[open] > summary { margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.activity-lens-evidence p + p, .activity-lens-evidence details { margin-top: 10px; }
+.activity-lens-evidence summary { cursor: pointer; }
+.activity-lens-evidence { overflow-wrap: anywhere; }
+.activity-lenses-compact > .activity-lens-method { margin-top: 18px; }
 .event-list, .analog-list { border-top-color: var(--line-strong); }
 table { font-size: 12px; }
 th, td { border-color: var(--line); }
@@ -2101,6 +2123,7 @@ def _activity_lenses_section(
 
     if document is None:
         return ""
+    compact = bool(document.get("methodology_version"))
     cards: list[str] = []
     for lens in document["lenses"]:
         label = html.escape(str(lens.get("label", lens.get("id", "Activity"))))
@@ -2146,7 +2169,8 @@ def _activity_lenses_section(
                 continue
             title = str(window.get("window", "Evaluated window")).title()
             rating_text = f'{window["score"]}/100, {window["rating"]}' if window.get("score") is not None else "insufficient evidence"
-            extra.append(f'<p><strong>{html.escape(title)} ({html.escape(str(window.get("local_window", "")))})</strong>: {html.escape(rating_text)}. {html.escape(str(window.get("summary", "")))}</p>')
+            if lens.get("journeys") or not compact:
+                extra.append(f'<p><strong>{html.escape(title)} ({html.escape(str(window.get("local_window", "")))})</strong>: {html.escape(rating_text)}. {html.escape(str(window.get("summary", "")))}</p>')
             for limit in window.get("rating_limits", []):
                 extra.append(f'<p>{html.escape(str(limit["explanation"]))} Window ceiling: {limit["ceiling"]}/100.</p>')
             runs = []
@@ -2156,10 +2180,11 @@ def _activity_lenses_section(
                 runs.append(f"{start}-{end}")
             if runs:
                 extra.append(f'<p>Favorable hourly windows: {", ".join(runs)} local time.</p>')
+        pv_preview = ""
         pv = lens.get("pv_estimate")
         if isinstance(pv, dict):
             pv_text = f'{pv["value"]} kWh/kWp' if pv.get("status") == "available" else "insufficient evidence"
-            extra.append(f'<p><strong>Estimated reference-system PV yield</strong>: {html.escape(pv_text)}. Separate from the seasonal comparison.</p>')
+            pv_preview = f'<p class="activity-lens-pv"><strong>Estimated reference-system PV yield</strong>{html.escape(pv_text)}</p>'
             if pv.get("reason"):
                 extra.append(f'<p>{html.escape(str(pv["reason"]))}</p>')
             model = document.get("pv_model")
@@ -2170,10 +2195,47 @@ def _activity_lenses_section(
         if isinstance(daily, dict):
             context = "; ".join(f'{_ACTIVITY_FACT_LABELS.get(key, key)}: {fact["value"]} {fact["unit"]} ({fact["coverage"]:.0%} coverage)' for key, fact in daily.items())
             extra.append(f'<details><summary>Full-day weather context</summary><p>{html.escape(context)}</p></details>')
+        body = f"<p>{detail}</p>{''.join(extra)}"
+        if compact:
+            overview = html.escape(str(lens.get("summary", "")))
+            if lens.get("journeys"):
+                overview = ("Overall rating follows the less favorable journey." if status == "available"
+                            else "Overall rating withheld: one or both journeys lack sufficient evidence.")
+            elif status == "available" and "hour_counts" in lens:
+                favorable = lens["hour_counts"]["favorable"]
+                expected = lens["expected_hours"]
+                overview = (f"All {expected} evaluated hours were favorable." if favorable == expected
+                            else f"{favorable} of {expected} evaluated hours were favorable.")
+                unknown = lens["hour_counts"].get("unknown", 0)
+                if unknown:
+                    overview += f" {unknown} hour(s) lacked sufficient evidence."
+                overview = html.escape(overview)
+                overview += f'<span class="activity-lens-hours">{html.escape(lens["local_window"])} local time</span>'
+            journey_rows = []
+            warnings = []
+            for window in windows:
+                window_name = str(window.get("window", "")).title()
+                if lens.get("journeys"):
+                    journey_rating = (f'{html.escape(str(window["score"]))}/100 &middot; {html.escape(str(window["rating"]).title())}'
+                                      if window.get("score") is not None else "Insufficient evidence")
+                    journey_rows.append(f'<div><dt><strong>{html.escape(window_name)}</strong><span>{html.escape(window["local_window"])}</span></dt><dd>{journey_rating}</dd></div>')
+                    if window.get("status") != "available":
+                        warnings.append(f'{window_name}: {window["summary"]}')
+                for factor in window.get("limiting_factors", []):
+                    if factor.get("ceiling") is not None and factor["ceiling"] <= 54:
+                        fact_label = _ACTIVITY_FACT_LABELS.get(factor["fact"], factor["fact"].replace("_", " "))
+                        prefix = f"{window_name}: " if lens.get("journeys") else ""
+                        warnings.append(f'{prefix}{fact_label}: {factor["condition"]} during {factor["hours"]} hour(s).')
+            journeys = f'<dl class="activity-lens-journeys">{"".join(journey_rows)}</dl>' if journey_rows else ""
+            warning_html = "".join(f'<p class="activity-lens-warning">{html.escape(warning)}</p>' for warning in dict.fromkeys(warnings))
+            body = (f'<p>{overview}</p>{journeys}{warning_html}{pv_preview}'
+                    f'<details class="activity-lens-evidence"><summary>View evidence<span class="sr-only"> for {label}</span></summary>{body}</details>')
+        else:
+            body += pv_preview
         cards.append(
             f'<article class="insight activity-lens-card" data-rating="{html.escape(rating_key)}">'
             f'<span class="provenance">{provenance}</span>'
-            f"<h3>{label}</h3><p>{detail}</p>{''.join(extra)}</article>"
+            f"<h3>{label}</h3>{body}</article>"
         )
     evidence_link = (
         f' <a href="{html.escape(data_href)}" download>Download the full evidence JSON</a>.'
@@ -2182,12 +2244,15 @@ def _activity_lenses_section(
     )
     source = document.get("source", {})
     source_note = html.escape(f'{source.get("provider", "")}: {source.get("product", "")}; {source.get("resolution", "hourly")} inputs.') if source else ""
+    methodology = _activity_lens_methodology(document)
+    if compact:
+        methodology = f'<details class="activity-lens-method"><summary>How these ratings work</summary>{methodology}</details>'
     return f"""
-<section class="content-section activity-lenses-section" aria-labelledby="activity-lenses-heading">
+<section class="content-section activity-lenses-section{' activity-lenses-compact' if compact else ''}" aria-labelledby="activity-lenses-heading">
   <div class="section-heading"><span class="activity-lenses-symbol" aria-hidden="true"></span><h2 id="activity-lenses-heading">Activity Lenses</h2></div>
   <p class="public-lead">How the completed day suited six everyday activities, using fixed and inspectable convenience thresholds. Scores of 80 or more are favorable, 55-79 are mixed, and lower scores are difficult.</p>
   <div class="insight-grid activity-lenses-grid" aria-label="Daily activity lens ratings">{''.join(cards)}</div>
-{_activity_lens_methodology(document)}
+{methodology}
   <p class="evidence-meta">{html.escape(str(document.get("disclaimer", "")))}{evidence_link}</p>
   <p class="evidence-meta">{source_note}</p>
 </section>

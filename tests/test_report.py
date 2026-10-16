@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from html.parser import HTMLParser
 from dataclasses import asdict
 
 import numpy as np
@@ -501,6 +502,81 @@ def test_legacy_saved_methodology_is_rendered_without_recalculation(tmp_path: Pa
     assert "Begin at 100" in rendered
     assert "methodology_version" not in loaded
     assert path.read_bytes() == original
+
+
+def _collapsed_lens_text(markup: str) -> str:
+    class CollapsedText(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.depth = 0
+            self.text = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "details":
+                assert "open" not in dict(attrs)
+                self.depth += 1
+
+        def handle_endtag(self, tag):
+            if tag == "details":
+                self.depth -= 1
+
+        def handle_data(self, data):
+            if not self.depth:
+                self.text.append(data)
+
+    parser = CollapsedText()
+    parser.feed(markup)
+    assert parser.depth == 0
+    return " ".join(parser.text)
+
+
+def test_activity_cards_keep_calculations_in_closed_evidence() -> None:
+    from test_activity_lenses import _day_frame, _evaluate
+
+    document = _evaluate(_day_frame())
+    original = json.dumps(document)
+    markup = _activity_lenses_section(document, "evidence.json")
+    visible = _collapsed_lens_text(markup)
+    assert visible.count("All 12 evaluated hours were favorable") == 3
+    assert "0 mixed, 0 difficult" not in visible
+    assert "Score each usable hour" not in visible
+    assert "View evidence" in markup
+    assert "0 mixed, 0 difficult" in markup
+    assert "Score each usable hour" in markup
+    assert "Morning" in visible and "Evening" in visible
+    assert "06:00-10:00" in visible and "15:00-19:00" in visible
+    assert "Estimated reference-system PV yield" in visible
+    assert json.dumps(document) == original
+
+
+def test_activity_cards_keep_severe_conditions_and_withholding_visible() -> None:
+    from test_activity_lenses import _day_frame, _evaluate
+
+    frame = _day_frame()
+    frame.loc[frame.index[15:19], "wind_gusts_10m"] = 30.0
+    document = _evaluate(frame)
+    markup = _activity_lenses_section(document, "evidence.json")
+    visible = _collapsed_lens_text(markup)
+    assert "Difficult" in visible
+    assert "Morning" in visible and "Evening" in visible
+    assert "gust" in visible.lower()
+    assert "per affected hour" not in visible
+    assert "per affected hour" in markup
+    frame.loc[frame.index[6:10], "temperature_2m"] = np.nan
+    withheld = _collapsed_lens_text(_activity_lenses_section(_evaluate(frame), "evidence.json"))
+    assert "Insufficient evidence" in withheld
+    assert "Only 0/4 evaluated hourly slots" in withheld
+
+
+def test_compact_activity_cards_escape_saved_display_values() -> None:
+    from test_activity_lenses import _day_frame, _evaluate
+
+    document = _evaluate(_day_frame())
+    commute = next(lens for lens in document["lenses"] if lens["id"] == "outdoor_commute")
+    commute["journeys"][0]["score"] = "<script>unexpected</script>"
+    markup = _activity_lenses_section(document, "evidence.json")
+    assert "<script>unexpected</script>" not in markup
+    assert "&lt;script&gt;unexpected&lt;/script&gt;" in markup
 
 
 def test_archive_public_site_uses_daily_report_as_archive_index(tmp_path: Path):
