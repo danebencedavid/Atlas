@@ -66,6 +66,9 @@ satellite:
   image_width_px: 960
   webp_quality: 72
   required: false
+  # Thinned cadence for the published archive copy only. Frozen source editions
+  # and verified cold packages keep every captured frame.
+  archive_frame_interval_minutes: 360
 
 analogs:
   enabled: true

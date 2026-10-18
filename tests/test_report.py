@@ -435,11 +435,15 @@ def test_report_generation_smoke(tmp_path: Path):
 
     # The daily report and the 72-hour analysis describe different periods, so each
     # carries its own card rather than one standing in for the other.
-    daily_card = site_root / "assets" / "share-card.png"
-    analysis_card = site_root / "assets" / "share-card-analysis.png"
+    daily_card = site_root / "assets" / "share-card.jpg"
+    analysis_card = site_root / "assets" / "share-card-analysis.jpg"
     assert daily_card.is_file()
     assert analysis_card.is_file()
     assert daily_card.read_bytes() != analysis_card.read_bytes()
+    # The per-edition cards are JPEG so that a redrawn card costs a fraction of a
+    # lossless one in every frozen edition. The fixed motif artwork stays PNG.
+    assert daily_card.read_bytes().startswith(b"\xff\xd8\xff")
+    assert analysis_card.read_bytes().startswith(b"\xff\xd8\xff")
     for artwork in (
         "share-front-landscape.png",
         "share-front-portrait.png",
@@ -448,9 +452,10 @@ def test_report_generation_smoke(tmp_path: Path):
     ):
         assert (site_root / "assets" / artwork).is_file()
 
-    assert "assets/share-card-analysis.png" in analysis_page
-    assert "assets/share-card-analysis.png" not in report_html
-    assert "assets/share-card.png" in report_html
+    assert "assets/share-card-analysis.jpg" in analysis_page
+    assert "assets/share-card-analysis.jpg" not in report_html
+    assert "assets/share-card.jpg" in report_html
+    assert '<meta property="og:image:type" content="image/jpeg">' in report_html
     assert '"kind_label": "72-hour analysis"' in analysis_page
     assert '"kind_label": "Daily report"' in report_html
     assert '"story_headline":' in analysis_page

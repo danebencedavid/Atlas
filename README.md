@@ -45,6 +45,12 @@ extract the ZIP to read the original reports locally (interactive charts may
 still need an internet connection). If verification is missing,
 the edition stays online; retention never deletes the saved source reports.
 
+Satellite imagery is the largest part of an archived edition, so the online
+archive copy steps through the Meteosat frames at roughly six-hourly intervals
+and says so beside the player. The current edition, the preserved source report
+and the verified monthly ZIP all keep every captured frame, so the coarser
+cadence reduces what the online player steps through, never what is kept.
+
 ## How to read Atlas
 
 Every report opens with the observed period, update time, and an integrity

@@ -8,7 +8,7 @@ import re
 import shutil
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import pandas as pd
@@ -2286,8 +2286,14 @@ def _site_origin(config: AtlasConfig) -> str:
     return config.project.site_url.rstrip("/")
 
 
-SHARE_CARD_ASSET = "share-card.png"
-ANALYSIS_SHARE_CARD_ASSET = "share-card-analysis.png"
+# Link-preview cards are redrawn for every edition, so unlike the fixed motif
+# artwork below they are a new file in every frozen edition and in every
+# published archive copy. As flat editorial artwork they carry no detail that
+# lossless encoding protects: JPEG at 4:4:4 quality 92 is visually equivalent at
+# roughly a fifth of the bytes, and every Open Graph consumer accepts it.
+SHARE_CARD_ASSET = "share-card.jpg"
+ANALYSIS_SHARE_CARD_ASSET = "share-card-analysis.jpg"
+SHARE_CARD_JPEG_QUALITY = 92
 SHARE_FRONT_LANDSCAPE_ASSET = "share-front-landscape.png"
 SHARE_FRONT_PORTRAIT_ASSET = "share-front-portrait.png"
 SHARE_FLOW_LANDSCAPE_ASSET = "share-flow-landscape.png"
@@ -2583,7 +2589,14 @@ def write_share_card(
     assets_dir = site_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     target = assets_dir / asset_name
-    image.save(target, format="PNG", optimize=True)
+    image.save(
+        target,
+        format="JPEG",
+        quality=SHARE_CARD_JPEG_QUALITY,
+        subsampling=0,
+        optimize=True,
+        progressive=True,
+    )
     return target
 
 
@@ -2611,6 +2624,7 @@ def _social_meta(
         f'<meta property="og:description" content="{html.escape(description)}">',
         f'<meta property="og:url" content="{html.escape(page_url)}">',
         f'<meta property="og:image" content="{html.escape(image_url)}">',
+        '<meta property="og:image:type" content="image/jpeg">',
         '<meta property="og:image:width" content="1200">',
         '<meta property="og:image:height" content="630">',
         '<meta name="twitter:card" content="summary_large_image">',
@@ -4399,6 +4413,112 @@ def _externalize_shared_archive_artwork(edition_dir: Path, archive_dir: Path) ->
         source.unlink()
 
 
+SATELLITE_DIARY_PAYLOAD_PREFIX = "const data="
+SATELLITE_DIARY_PAYLOAD_SUFFIX = "; const product="
+
+
+def _thinned_frames(
+    frames: list[dict[str, Any]],
+    interval: timedelta,
+) -> list[dict[str, Any]]:
+    """Resample one product to the coarser published cadence.
+
+    Mirrors the greedy capture sampler in ``atlas.satellite``: keep a frame, then
+    skip until at least ``interval`` has elapsed. The final captured frame is
+    always kept so the published player still reaches the end of the period
+    rather than stopping short of it.
+    """
+
+    if len(frames) < 3:
+        return list(frames)
+    kept: list[dict[str, Any]] = []
+    last: datetime | None = None
+    for frame in frames:
+        moment = datetime.fromisoformat(str(frame["time"]))
+        if last is None or moment - last >= interval:
+            kept.append(frame)
+            last = moment
+    if kept[-1] is not frames[-1]:
+        kept.append(frames[-1])
+    return kept
+
+
+def _thin_published_satellite_media(edition_dir: Path, interval_minutes: int) -> int:
+    """Resample the deployable copy's satellite frames to a coarser cadence.
+
+    Satellite imagery is the largest single term in published archive growth: at
+    the 180-minute capture cadence one 72-hour edition carries about 7 MB of
+    frames, around 70% of everything the archive adds each month, against a fixed
+    published budget. Thinning the online copy keeps that budget solvent without
+    touching the record. The frozen source edition under ``reports`` and the
+    restore-verified monthly cold package both retain every captured frame, so
+    this reduces the resolution of the online player, never the preserved
+    evidence. The page says so, because a reader counting frames in an archived
+    edition would otherwise have no way to know the capture was denser.
+
+    Returns the number of bytes removed.
+    """
+
+    if interval_minutes <= 0:
+        return 0
+    diary = edition_dir / "assets" / "satellite_diary.html"
+    media_dir = edition_dir / "assets" / "satellite_media"
+    if not diary.is_file() or not media_dir.is_dir():
+        return 0
+
+    document = diary.read_text(encoding="utf-8")
+    start = document.find(SATELLITE_DIARY_PAYLOAD_PREFIX)
+    end = document.find(SATELLITE_DIARY_PAYLOAD_SUFFIX, start)
+    if start < 0 or end < 0:
+        raise ValueError(
+            f"Satellite diary in {edition_dir.name} has no recognizable frame "
+            "payload; the thinning step and plot template have diverged"
+        )
+    payload_start = start + len(SATELLITE_DIARY_PAYLOAD_PREFIX)
+    payload = json.loads(document[payload_start:end])
+
+    interval = timedelta(minutes=interval_minutes)
+    products = payload.get("products") or {}
+    captured = sum(len(frames) for frames in products.values())
+    payload["products"] = {
+        product: _thinned_frames(frames, interval)
+        for product, frames in products.items()
+    }
+    published = sum(len(frames) for frames in payload["products"].values())
+    if published == captured:
+        return 0
+
+    kept_names = {
+        PurePosixPath(str(frame["src"])).name
+        for frames in payload["products"].values()
+        for frame in frames
+    }
+    removed = 0
+    for frame_path in media_dir.iterdir():
+        if frame_path.is_file() and frame_path.name not in kept_names:
+            removed += frame_path.stat().st_size
+            frame_path.unlink()
+
+    note = (
+        '<div class="atlas-figure-attribution">Published archive copy: '
+        f"{published} of {captured} captured frames, resampled to about "
+        f"{interval_minutes // 60} hours between steps. The preserved edition and "
+        "the verified monthly archive package keep every captured frame.</div>"
+    )
+    document = (
+        document[:payload_start]
+        + json.dumps(payload, allow_nan=False)
+        + document[end:]
+    )
+    document = document.replace(
+        '<div class="atlas-figure-attribution">',
+        f'{note}<div class="atlas-figure-attribution">',
+        1,
+    )
+    diary.write_text(document, encoding="utf-8")
+    return removed
+
+
 def _overlay_archived_recovery(
     edition_dir: Path,
     collection: str,
@@ -4684,6 +4804,7 @@ def _build_report_archive_into(
     recovered_publications = read_recovered(config)
     archive_figure_renderer = write_shared_figure_renderer(archive_dir)
     publication = {}
+    cold_edition_ids: set[str] = set()
 
     for collection, entries in collections.items():
         target_parent = archive_dir / collection
@@ -4703,6 +4824,7 @@ def _build_report_archive_into(
                 _publish_cold_archive_entry(config, entry, target, cold, updated)
                 _rewrite_published_archive_links(target, collection)
                 entry["cold"] = True
+                cold_edition_ids.add(entry["slug"])
                 entry["edition"] += " (cold archive)"
                 publication[entry["href"]] = {
                     "storage": "cold",
@@ -4719,6 +4841,10 @@ def _build_report_archive_into(
                 recovered_publications,
             )
             _externalize_shared_archive_artwork(target, archive_dir)
+            _thin_published_satellite_media(
+                target,
+                config.satellite.archive_frame_interval_minutes,
+            )
             manifest = json.loads(
                 (entry["source"] / "manifest.json").read_text(encoding="utf-8")
             )
@@ -4843,7 +4969,14 @@ def _build_report_archive_into(
         encoding="utf-8",
     )
     externalize_repeated_archive_styles(archive_dir)
-    enforce_published_archive_limits(archive_dir)
+    # Retention keeps only the current and previous UTC calendar month fully
+    # online, so the capacity forecast is told the window it should project.
+    enforce_published_archive_limits(
+        archive_dir,
+        retention_before=retention_before,
+        retained_months=2,
+        cold_edition_ids=cold_edition_ids,
+    )
     return index
 
 

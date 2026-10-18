@@ -163,6 +163,35 @@ def _forecast_level(months_remaining: float | None) -> str:
     return "normal"
 
 
+def _beyond_retention_bytes(
+    editions: list[dict[str, object]],
+    retention_before: str | None,
+    cold_ids: set[str],
+) -> int:
+    """Bytes held by editions the retention rule should have released but did not.
+
+    Retention replaces an edition older than the window with a small cold-storage
+    stub, but only once its monthly package passes download-and-restore
+    verification. An edition whose verification is missing stays fully online by
+    design, because losing the reader's access is worse than exceeding a soft
+    budget. Those editions are the one thing that can defeat the steady state, so
+    they are measured separately instead of being averaged into a growth rate.
+    Editions already served as cold stubs are excluded: they are the retention
+    rule working, not a shortfall.
+    """
+
+    if not retention_before:
+        return 0
+    total = 0
+    for item in editions:
+        if str(item["id"]) in cold_ids:
+            continue
+        end = _edition_end_date(str(item["id"]))
+        if end is not None and end.isoformat() < retention_before:
+            total += int(item["bytes"])
+    return total
+
+
 def _highest_capacity_level(*levels: str) -> str:
     order = {"normal": 0, "watch": 1, "warning": 2, "critical": 3, "exceeded": 4}
     return max(levels, key=order.__getitem__)
@@ -171,8 +200,19 @@ def _highest_capacity_level(*levels: str) -> str:
 def enforce_published_archive_limits(
     archive_dir: Path,
     limits: PublishedArchiveLimits | None = None,
+    *,
+    retention_before: str | None = None,
+    retained_months: int = 2,
+    cold_edition_ids: set[str] | None = None,
 ) -> Path:
-    """Measure the final deployed tree, write its report, and enforce hard gates."""
+    """Measure the final deployed tree, write its report, and enforce hard gates.
+
+    ``retention_before`` is the exclusive cutoff the publisher applied: editions
+    ending before it are served as cold-storage stubs rather than full copies.
+    Supplying it makes the capacity forecast bounded rather than a countdown.
+    Without it the report keeps its original meaning, which is the right one for
+    an archive that only ever accumulates.
+    """
 
     limits = limits or PublishedArchiveLimits()
     report_path = archive_dir / "data" / "published-size-report.v1.json"
@@ -199,6 +239,9 @@ def enforce_published_archive_limits(
     base_total = _tree_bytes(archive_dir, exclude=report_path)
     base_shared = base_total - edition_total
     forecast = _growth_forecast(editions)
+    stale_bytes = _beyond_retention_bytes(
+        editions, retention_before, cold_edition_ids or set()
+    )
 
     def payload(report_bytes: int) -> dict[str, object]:
         total_bytes = base_total + report_bytes
@@ -221,7 +264,27 @@ def enforce_published_archive_limits(
             else None
         )
         usage_level = _capacity_level(used_ratio)
-        forecast_level = _forecast_level(estimated_months_remaining)
+        # A countdown to the hard gate only describes an archive that keeps every
+        # edition online for ever. With verified retention in force the hot set is
+        # a sliding window, so the question is not when the budget runs out but
+        # whether the window's steady state fits inside it. Reporting the
+        # countdown unconditionally understated the headroom: it drove a limit
+        # increase while the published size was in fact levelling off.
+        steady_state_bytes: int | None = None
+        steady_state_ratio: float | None = None
+        if retention_before and retained_months > 0:
+            steady_state_bytes = (
+                shared_bytes
+                + monthly_growth * retained_months
+                + stale_bytes
+            )
+            steady_state_ratio = steady_state_bytes / limits.total_bytes
+            forecast_level = _capacity_level(steady_state_ratio)
+            if steady_state_bytes <= limits.total_bytes:
+                # Bounded: the gate is not approached by accumulation at all.
+                estimated_months_remaining = None
+        else:
+            forecast_level = _forecast_level(estimated_months_remaining)
         return {
             "schema": PUBLISHED_SIZE_SCHEMA,
             "status": "within" if not violations else "exceeded",
@@ -257,6 +320,19 @@ def enforce_published_archive_limits(
                 "forecast": {
                     **forecast,
                     "estimated_months_remaining": estimated_months_remaining,
+                    "retention": {
+                        "cutoff_exclusive": retention_before,
+                        "retained_months": retained_months if retention_before else None,
+                        "beyond_window_bytes": stale_bytes,
+                        "projected_steady_state_bytes": steady_state_bytes,
+                        "projected_steady_state_ratio": (
+                            None
+                            if steady_state_ratio is None
+                            else round(steady_state_ratio, 6)
+                        ),
+                        "bounded": steady_state_bytes is not None
+                        and steady_state_bytes <= limits.total_bytes,
+                    },
                 },
             },
             "editions": editions,

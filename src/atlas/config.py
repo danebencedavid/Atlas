@@ -102,6 +102,12 @@ class SatelliteConfig:
     image_width_px: int = 960
     webp_quality: int = 72
     required: bool = False
+    # Satellite media dominates the published archive: at the 180-minute capture
+    # cadence a 72-hour edition carries about 7 MB of frames, roughly 70% of all
+    # published archive growth. The archive copy is resampled to this coarser
+    # interval while the live edition, the frozen source under reports/ and the
+    # verified monthly cold package all keep every captured frame. 0 disables it.
+    archive_frame_interval_minutes: int = 360
 
 
 @dataclass(frozen=True)

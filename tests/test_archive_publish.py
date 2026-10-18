@@ -132,3 +132,139 @@ def test_growth_forecast_can_warn_while_current_usage_is_low(tmp_path: Path):
     assert capacity["signals"]["usage"] == "normal"
     assert capacity["signals"]["forecast"] in {"warning", "critical"}
     assert capacity["level"] in {"warning", "critical"}
+
+
+def _daily_archive(root: Path, days: list[str], size: int) -> Path:
+    archive = root / "archive"
+    for day in days:
+        edition = archive / "daily" / day
+        edition.mkdir(parents=True)
+        (edition / "index.html").write_bytes(b"x" * size)
+    return archive
+
+
+def test_retention_window_reports_a_bounded_steady_state(tmp_path: Path):
+    """A sliding hot window does not approach the gate by accumulating.
+
+    The unconditional countdown treated every archive as one that keeps all its
+    editions online for ever, so it reported a deadline for an archive whose
+    published size had in fact levelled off.
+    """
+
+    archive = _daily_archive(tmp_path, ["2026-10-15", "2026-10-16"], 6_000)
+    limits = PublishedArchiveLimits(
+        total_bytes=100_000_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    report_path = enforce_published_archive_limits(
+        archive,
+        limits,
+        retention_before="2026-09-01",
+        retained_months=2,
+    )
+
+    capacity = json.loads(report_path.read_text(encoding="utf-8"))["capacity"]
+    retention = capacity["forecast"]["retention"]
+    assert retention["bounded"] is True
+    assert retention["cutoff_exclusive"] == "2026-09-01"
+    assert retention["retained_months"] == 2
+    assert retention["beyond_window_bytes"] == 0
+    # Two months of the observed monthly growth, plus the shared base.
+    assert retention["projected_steady_state_bytes"] == (
+        capacity["forecast"]["estimated_monthly_growth_bytes"] * 2
+        + json.loads(report_path.read_text(encoding="utf-8"))["shared"]["bytes"]
+    )
+    assert capacity["forecast"]["estimated_months_remaining"] is None
+    assert capacity["signals"]["forecast"] == "normal"
+
+
+def test_steady_state_above_the_gate_still_raises_the_capacity_signal(tmp_path: Path):
+    archive = _daily_archive(tmp_path, ["2026-10-15", "2026-10-16"], 6_000)
+    limits = PublishedArchiveLimits(
+        total_bytes=200_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    with pytest.warns(PublishedArchiveCapacityWarning):
+        report_path = enforce_published_archive_limits(
+            archive,
+            limits,
+            retention_before="2026-09-01",
+            retained_months=2,
+        )
+
+    capacity = json.loads(report_path.read_text(encoding="utf-8"))["capacity"]
+    assert capacity["forecast"]["retention"]["bounded"] is False
+    assert capacity["signals"]["forecast"] in {"warning", "critical", "exceeded"}
+    # A window that does not fit is still a deadline, so the countdown stays.
+    assert capacity["forecast"]["estimated_months_remaining"] is not None
+
+
+def test_editions_retention_failed_to_release_are_measured_separately(tmp_path: Path):
+    """An edition past the window that is not a cold stub defeats the steady state.
+
+    Atlas deliberately keeps such an edition online when its cold package has no
+    verification, so this is a real state, not a bug. The forecast has to carry
+    its weight rather than average it into a growth rate.
+    """
+
+    archive = _daily_archive(
+        tmp_path, ["2026-07-10", "2026-07-11", "2026-10-15", "2026-10-16"], 6_000
+    )
+    limits = PublishedArchiveLimits(
+        total_bytes=100_000_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    stale = enforce_published_archive_limits(
+        archive,
+        limits,
+        retention_before="2026-09-01",
+        retained_months=2,
+    )
+    stale_bytes = json.loads(stale.read_text(encoding="utf-8"))["capacity"]["forecast"][
+        "retention"
+    ]["beyond_window_bytes"]
+    assert stale_bytes >= 12_000
+
+    # Naming them as cold stubs removes them from the shortfall: that is
+    # retention working, not retention failing.
+    released = enforce_published_archive_limits(
+        archive,
+        limits,
+        retention_before="2026-09-01",
+        retained_months=2,
+        cold_edition_ids={"2026-07-10", "2026-07-11"},
+    )
+    assert json.loads(released.read_text(encoding="utf-8"))["capacity"]["forecast"][
+        "retention"
+    ]["beyond_window_bytes"] == 0
+
+
+def test_capacity_report_without_retention_keeps_the_countdown(tmp_path: Path):
+    archive = _daily_archive(tmp_path, ["2026-08-17", "2026-08-18"], 6_000)
+    limits = PublishedArchiveLimits(
+        total_bytes=100_000,
+        shared_bytes=10_000,
+        daily_bytes=10_000,
+        period_bytes=10_000,
+        weekly_bytes=10_000,
+    )
+
+    with pytest.warns(PublishedArchiveCapacityWarning):
+        report_path = enforce_published_archive_limits(archive, limits)
+
+    capacity = json.loads(report_path.read_text(encoding="utf-8"))["capacity"]
+    assert capacity["forecast"]["estimated_months_remaining"] is not None
+    assert capacity["forecast"]["retention"]["cutoff_exclusive"] is None
+    assert capacity["forecast"]["retention"]["bounded"] is False

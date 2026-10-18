@@ -1,7 +1,9 @@
-from pathlib import Path
+import json
+from pathlib import Path, PurePosixPath
 
 import numpy as np
 import pandas as pd
+import pytest
 from PIL import Image
 
 from atlas.anomalies import Anomaly
@@ -18,6 +20,7 @@ from atlas.plots import (
     plot_synoptic_evolution,
 )
 from atlas.satellite import SatelliteArchive, SatelliteFrame
+from atlas.site import _thin_published_satellite_media
 from atlas.synoptic import SynopticArchive
 
 
@@ -174,3 +177,99 @@ def test_new_scientific_visuals_render(tmp_path: Path):
     synoptic_html = synoptic_path.read_text(encoding="utf-8")
     assert "850 hPa theta-e" in synoptic_html
     assert "850 hPa frontogenesis" in synoptic_html
+
+
+def test_published_archive_satellite_thinning_keeps_the_player_consistent(
+    tmp_path: Path,
+) -> None:
+    """Thinning the deployable copy must not leave the frame player broken.
+
+    Satellite media is the largest single term in published archive growth, so
+    the archive copy steps through time more coarsely than the capture. The
+    frozen source edition and the verified cold package keep every frame, so the
+    only correctness requirement here is that the published page and the files
+    beside it still agree, and that the reduction is disclosed on the page.
+    """
+
+    config = AtlasConfig()
+    times = pd.date_range("2026-10-13T00:00Z", periods=24, freq="1h")
+    for name in ("airmass.png", "infrared.png"):
+        Image.new("RGB", (320, 200), (90, 110, 140)).save(tmp_path / name)
+    satellite = SatelliteArchive(
+        {
+            "AirmassRGB": [
+                SatelliteFrame(moment, "AirmassRGB", tmp_path / "airmass.png")
+                for moment in times
+            ],
+            "InfraCloud": [
+                SatelliteFrame(moment, "InfraCloud", tmp_path / "infrared.png")
+                for moment in times
+            ],
+        },
+        ["Synthetic satellite fixture."],
+    )
+    radar = RadarArchive(
+        [],
+        np.array([]),
+        np.array([]),
+        np.empty((0, 0, 0)),
+        np.empty((0, 0)),
+        pd.DataFrame(),
+        ["Synthetic radar fixture."],
+    )
+    lightning = LightningArchive(pd.DataFrame(), pd.DataFrame(), ["No strikes."])
+
+    edition = tmp_path / "edition"
+    assets = edition / "assets"
+    assets.mkdir(parents=True)
+    plot_satellite_diary(
+        satellite, radar, lightning, assets / "satellite_diary.html", config
+    )
+    media = assets / "satellite_media"
+    captured = sorted(path.name for path in media.iterdir())
+    assert len(captured) == 48
+
+    removed = _thin_published_satellite_media(edition, 360)
+
+    assert removed > 0
+    document = (assets / "satellite_diary.html").read_text(encoding="utf-8")
+    start = document.index("const data=") + len("const data=")
+    payload = json.loads(document[start : document.index("; const product=")])
+    published = {
+        PurePosixPath(frame["src"]).name
+        for frames in payload["products"].values()
+        for frame in frames
+    }
+    remaining = {path.name for path in media.iterdir()}
+
+    # Nothing the page asks for is missing, and nothing unreferenced is shipped.
+    assert published == remaining
+    assert published < set(captured)
+    for frames in payload["products"].values():
+        steps = [
+            pd.Timestamp(right["time"]) - pd.Timestamp(left["time"])
+            for left, right in zip(frames, frames[1:])
+        ]
+        # Every step but the last respects the cadence. The last may be shorter:
+        # the final captured frame is kept deliberately so the player still
+        # reaches the end of the period instead of stopping short of it.
+        assert all(step >= pd.Timedelta(minutes=360) for step in steps[:-1])
+        assert frames[-1]["time"] == times[-1].isoformat()
+    assert "Published archive copy:" in document
+
+    # Rebuilding the published archive runs this over every online edition, so a
+    # second pass has to be a no-op rather than thinning what it already thinned.
+    assert _thin_published_satellite_media(edition, 360) == 0
+
+
+def test_satellite_thinning_rejects_a_diverged_plot_template(tmp_path: Path) -> None:
+    edition = tmp_path / "edition"
+    assets = edition / "assets"
+    (assets / "satellite_media").mkdir(parents=True)
+    (assets / "satellite_media" / "AirmassRGB_20261013_0000.webp").write_bytes(b"frame")
+    (assets / "satellite_diary.html").write_text(
+        "<html><body>no payload here</body></html>", encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="no recognizable frame payload"):
+        _thin_published_satellite_media(edition, 360)
