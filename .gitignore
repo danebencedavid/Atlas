@@ -18,6 +18,13 @@ theory/
 style-lab.html
 style-lab-report.html
 
+# Local scratch areas: screenshots, design experiments and render/QA output.
+# These hold hundreds of megabytes of regenerable material and vendored
+# node_modules, none of which belongs in the publication history.
+tmp/
+screenshots/
+atlas-design-test/
+
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !reports/figures/.gitkeep

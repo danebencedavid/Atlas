@@ -1,0 +1,278 @@
+{
+  "reviewed_source_commit": "a5da258",
+  "created_on": "2026-10-15",
+  "note": "Actual archived Atlas figures, not synthetic or demo data. PNGs omit the enclosing HTML footer; attribution accompanies them in atlas_reference.md. Animation is represented by its saved initial state.",
+  "examples": [
+    {
+      "figure": "air_mass_trajectory",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/air_mass_trajectory.plotly.json.gz",
+      "source_sha256": "fea1e3d255740d605b0dc7f056dfbdde0f40f35bba3cc1ba6d7f71f71e5a67ca",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/air_mass_trajectory.html",
+      "preview": "docs/assets/atlas-reference/air_mass_trajectory.png",
+      "preview_sha256": "d3203b445be4e558ef1b330f454c115c34950688ac06880c4a9ee7acbd587085",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "anomaly_bars",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/anomaly_bars.plotly.json.gz",
+      "source_sha256": "fc69021d934eb9c53ee461d41847bb7e982c346e0247b4e91f857fc6eefc3faf",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/anomaly_bars.html",
+      "preview": "docs/assets/atlas-reference/anomaly_bars.png",
+      "preview_sha256": "ed0c3f9c5ca4777a30575460aed5cb866c275223d27fb1ad7bb09567b621e5d9",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "climate_reference",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/climate_reference.plotly.json.gz",
+      "source_sha256": "438b35fb11a6ebce292abf2d188a20c3208a6753f9a3c37fb95ec23d48680abf",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/climate_reference.html",
+      "preview": "docs/assets/atlas-reference/climate_reference.png",
+      "preview_sha256": "a3dcd574341b1a672c1d66224e2ddd25fd23f4741a8cc2a52f86cdf800696e58",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "column_diagnostics",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/column_diagnostics.plotly.json.gz",
+      "source_sha256": "9e0642cf3c9501f60cefccaa83301cb834aae8ed1dff68059e68c1090ce74af2",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/column_diagnostics.html",
+      "preview": "docs/assets/atlas-reference/column_diagnostics.png",
+      "preview_sha256": "a1c5433f487e001f49cfca86fbb8faea0bbb74545cb741e2c79896210e8ea57d",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "daily_climate_reference",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/daily_climate_reference.plotly.json.gz",
+      "source_sha256": "d1eaad68151f1945db09f37bcde8e52260e8f8ac89674764fc6de09e1e1a6318",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/daily_climate_reference.html",
+      "preview": "docs/assets/atlas-reference/daily_climate_reference.png",
+      "preview_sha256": "b6744ad729290097e01df400afafcfbc0d840286196ecb6f6bcab0f3162b38a6",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "daily_meteogram",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/daily_meteogram.plotly.json.gz",
+      "source_sha256": "f67a624e41a71424da6673ec9b76fad9af057b9e8e249b40779b2845840e3672",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/daily_meteogram.html",
+      "preview": "docs/assets/atlas-reference/daily_meteogram.png",
+      "preview_sha256": "fdf645775e82c1ffed92510a35d63a65a064556573735c8999110bae8ae80490",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "daily_physical_energy",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/daily_physical_energy.plotly.json.gz",
+      "source_sha256": "0e7f7f70831a1034facb65d8a377a83bfe4d598f7492f4c2467e52a39644a2ad",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/daily_physical_energy.html",
+      "preview": "docs/assets/atlas-reference/daily_physical_energy.png",
+      "preview_sha256": "2a26f8555f4cd79d8af14fec551986e503aeba2f3524b9e35e8a4722bae2757d",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "dewpoint_spread",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/dewpoint_spread.plotly.json.gz",
+      "source_sha256": "ff9f6d7629cc58567580ecf9b75667b4bbd43f49d53599d47d8828d9d9b695e0",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/dewpoint_spread.html",
+      "preview": "docs/assets/atlas-reference/dewpoint_spread.png",
+      "preview_sha256": "2a7f6c1f57350b3cb16a4a8788063c15b97b2a9dfe1d1a30fcea3fd3905ed77a",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "electricity_overview",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/electricity_overview.plotly.json.gz",
+      "source_sha256": "277ceebf968e337164628b97ef22a0778ca63a9b8b0d83a331c6ad650408c7a5",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/electricity_overview.html",
+      "preview": "docs/assets/atlas-reference/electricity_overview.png",
+      "preview_sha256": "f6b807bf5a98ac591a07a740bf0d911e1ee1cb8fce09c74e3647ae48cf23e454",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "hodograph",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/hodograph.plotly.json.gz",
+      "source_sha256": "67c55d7f7ab206a6d5bcd4fceb75497499effe616195b15cb8eed6af7fd3e678",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/hodograph.html",
+      "preview": "docs/assets/atlas-reference/hodograph.png",
+      "preview_sha256": "cea62a2744018533ab42cc2ccdfb13150153a62e9d92e6cb2665777d1c530fb5",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "land_surface",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/land_surface.plotly.json.gz",
+      "source_sha256": "4618a7acff21d5275d428484229e90542fa61c83d3b2cdec426ade32fe39832c",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/land_surface.html",
+      "preview": "docs/assets/atlas-reference/land_surface.png",
+      "preview_sha256": "210f681ed77dc628831483e2d4fac77691fa7e1bdaa180e6881e8525e251f5e0",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "lightning_diary",
+      "period": "2026-08-16_2026-08-18",
+      "source": "reports/periods/2026-08-16_2026-08-18/bundle/figures/lightning_diary.plotly.json.gz",
+      "source_sha256": "080a395fa4826a84f15f717ff52fc2bb3d32d93c563778bcf056a452d52bccb1",
+      "original_html": "reports/periods/2026-08-16_2026-08-18/assets/lightning_diary.html",
+      "preview": "docs/assets/atlas-reference/lightning_diary.png",
+      "preview_sha256": "7a40ae5d2806f176bb2c62eaf354c1f05f79e89ff7944a71d727ba7ed42f44ba",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "meteogram",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/meteogram.plotly.json.gz",
+      "source_sha256": "bf22dbf3861282f98e3ec76f3eaf4ad1f823ef2a3db950415b56a93bc6dcc3ef",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/meteogram.html",
+      "preview": "docs/assets/atlas-reference/meteogram.png",
+      "preview_sha256": "a037dbfc1180cd6df3d1fc2f6de8a5aabf3e9f71c0269a088a9d0c00ac662b5b",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "model_profile",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/model_profile.plotly.json.gz",
+      "source_sha256": "bc0af24a0e584889d9701798c3571cb3e209c021d1ea6178d305ed8810644af1",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/model_profile.html",
+      "preview": "docs/assets/atlas-reference/model_profile.png",
+      "preview_sha256": "06fc410b4af22b5df10e728e6ba81f08bb0366071377ff80b8d6ddcce643b8b8",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "phenomena_timeline",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/phenomena_timeline.plotly.json.gz",
+      "source_sha256": "5d8ec8f44998222f85f1a0df243b4f91bf074460bf310d97f3a653daba530762",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/phenomena_timeline.html",
+      "preview": "docs/assets/atlas-reference/phenomena_timeline.png",
+      "preview_sha256": "98386a390c9acb4f0fe821b31ece584041f4f9f06c3ed621758ea7cec139cef0",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "physical_energy",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/physical_energy.plotly.json.gz",
+      "source_sha256": "b3a32014e224e6e3fe63460f4ca2918ac05ef4a85e0d735726318f484c2eea76",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/physical_energy.html",
+      "preview": "docs/assets/atlas-reference/physical_energy.png",
+      "preview_sha256": "bfc7994e8a0bd12f2a9c488f858175cdfc8a3b1c142fd0ceef49ec63ff9d0d1f",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "pressure_tendency",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/pressure_tendency.plotly.json.gz",
+      "source_sha256": "41680a6aa735c3239451b4858a2c3d55562f185dfeb2b78eb101b683aa497b0a",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/pressure_tendency.html",
+      "preview": "docs/assets/atlas-reference/pressure_tendency.png",
+      "preview_sha256": "d0f7643f9cd0ab263d58266670d335ffc8c1b076d29f38ad1e0752d25b74d457",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "radar_archive",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/radar_archive.plotly.json.gz",
+      "source_sha256": "674cc3a0b8a0e8508fc8532dfeaccab9e7e50f7fbed38b0475c82f970273e05f",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/radar_archive.html",
+      "preview": "docs/assets/atlas-reference/radar_archive.png",
+      "preview_sha256": "3474990b8c60e3ee89641d8f5cc74f4882c0d12dd3fc8f3995cf569d9e5069fd",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "regime_strip",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/regime_strip.plotly.json.gz",
+      "source_sha256": "92ce194e0dae20b68a7b583e7902e22b6b0a17fa5a2dd5e763eaaf7d463c81d9",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/regime_strip.html",
+      "preview": "docs/assets/atlas-reference/regime_strip.png",
+      "preview_sha256": "64e8016daac3e5127e07f6701fef631c9bb60af44ffefc8f4b86732fc8ff0509",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "seven_day_context",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/seven_day_context.plotly.json.gz",
+      "source_sha256": "5cf12e3c13966e17fb110c6569c79fae100221c750138bdfe3cde0cdae6c8d40",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/seven_day_context.html",
+      "preview": "docs/assets/atlas-reference/seven_day_context.png",
+      "preview_sha256": "f6ed0922617908e3778cac34889a6dedc1b686bd6450146cb93dc93b6a457fc9",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "solar_diurnal",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/solar_diurnal.plotly.json.gz",
+      "source_sha256": "ef4fbf640647ac995e0016342fb070aa8274b1184d08fb8a01c6f0bc31057420",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/solar_diurnal.html",
+      "preview": "docs/assets/atlas-reference/solar_diurnal.png",
+      "preview_sha256": "df625742c84b764a8d9dc7c2f41880815b0a5a3443486b5c587f8b9766c91908",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "station_comparison",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/station_comparison.plotly.json.gz",
+      "source_sha256": "cb51bb1937ee959461b694382505918baabed3a89e41c246457b85628cb8ec74",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/station_comparison.html",
+      "preview": "docs/assets/atlas-reference/station_comparison.png",
+      "preview_sha256": "316a1dfc47543ccb3275fc33b80b61eafa7513a587c9df44fd75410db3ceb7c8",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "synoptic_evolution",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/synoptic_evolution.plotly.json.gz",
+      "source_sha256": "51d0c0bb903bcf75ba7ec39c4a6708ad3cb203c6e11ced9580f66596553379dd",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/synoptic_evolution.html",
+      "preview": "docs/assets/atlas-reference/synoptic_evolution.png",
+      "preview_sha256": "299a02aaed071e7d79ff213048ab38d1a8bb42ea068a49f562666fbbe8da99b4",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "time_pressure",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/time_pressure.plotly.json.gz",
+      "source_sha256": "7a7a9c0e3def2a7cfaedc97a60b570c5038f8ee327ffc1018db5107ddfbcff36",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/time_pressure.html",
+      "preview": "docs/assets/atlas-reference/time_pressure.png",
+      "preview_sha256": "ee6e4b591ad0a85d91de32a9a474702c9d336c7b19a8193dcf13c731276813d5",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "weather_electricity_links",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/weather_electricity_links.plotly.json.gz",
+      "source_sha256": "12e50441076c2923e8578fdbcb8de1a119054784ee4b8b84f05f70b4ac9fbb98",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/weather_electricity_links.html",
+      "preview": "docs/assets/atlas-reference/weather_electricity_links.png",
+      "preview_sha256": "732c9451a3732b1bb93807ad7e390e022c8486d93563b3e412619233e3e62a03",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "wind_rose",
+      "period": "2026-10-07_2026-10-09",
+      "source": "reports/periods/2026-10-07_2026-10-09/bundle/figures/wind_rose.plotly.json.gz",
+      "source_sha256": "d76c599c080bd870959c7f7fcae856ae50a2806c7f5e42c701ef92c2165cd1da",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/wind_rose.html",
+      "preview": "docs/assets/atlas-reference/wind_rose.png",
+      "preview_sha256": "173427751ae8ddefb49d6bd71626879f1871a885ae440b1e27101cc180cb6243",
+      "view": "saved initial state; static export at 1280 px wide"
+    },
+    {
+      "figure": "satellite_diary",
+      "period": "2026-10-07_2026-10-09",
+      "frame_time_utc": "2026-10-09T10:10:00Z",
+      "source": "reports/periods/2026-10-07_2026-10-09/assets/satellite_media/NaturalRGB_20261009_1010.webp",
+      "source_sha256": "5ccdd1d341fd2d6983dbad04bbd96224410b1b7f5e6ec20cbefedaa54ac0bcd3",
+      "original_html": "reports/periods/2026-10-07_2026-10-09/assets/satellite_diary.html",
+      "preview": "docs/assets/atlas-reference/satellite_diary.webp",
+      "preview_sha256": "5ccdd1d341fd2d6983dbad04bbd96224410b1b7f5e6ec20cbefedaa54ac0bcd3",
+      "view": "unaltered NaturalRGB frame saved by Atlas, not a screenshot of the diary UI"
+    }
+  ]
+}
