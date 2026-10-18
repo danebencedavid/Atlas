@@ -29,6 +29,10 @@ from atlas.archive_bundle import ImmutableEditionError
 from atlas.archive_bundle import validate_edition_bundle
 from atlas.archive_styles import externalize_repeated_archive_styles
 from atlas.archive_publish import enforce_published_archive_limits
+from atlas.syndication import build_syndication_entries
+from atlas.syndication import write_atom_feed
+from atlas.syndication import write_robots
+from atlas.syndication import write_sitemap
 from atlas.archive_publish import staged_directory
 from atlas.build_status import read_recovered
 from atlas.build_status import RecoveredBuild
@@ -2618,6 +2622,11 @@ def _social_meta(
     image_url = f"{origin}/assets/{_share_card_asset(family)}"
     tags = [
         f'<link rel="canonical" href="{html.escape(page_url)}">',
+        # Feed autodiscovery. Without this a reader has to guess the address,
+        # and a daily publication nobody can subscribe to is read once.
+        '<link rel="alternate" type="application/atom+xml" '
+        f'title="{html.escape(config.project.name)} editions" '
+        f'href="{origin}/feed.xml">',
         '<meta property="og:type" content="website">',
         f'<meta property="og:site_name" content="{html.escape(config.project.name)}">',
         f'<meta property="og:title" content="{html.escape(title)}">',
@@ -4707,6 +4716,7 @@ def build_report_archive(
     site_dir = site_dir or config.outputs.site_dir
     reports_dir = reports_dir or config.outputs.reports_dir
     archive_dir = site_dir / "archive"
+    syndication_rows: list[dict[str, Any]] = []
     with staged_directory(archive_dir) as staging_dir:
         _build_report_archive_into(
             config,
@@ -4714,13 +4724,55 @@ def build_report_archive(
             reports_dir,
             updated,
             staging_dir,
+            syndication_rows,
         )
+    # Written after the archive is committed, so a feed can never advertise an
+    # edition that the staged build then failed to publish.
+    _write_syndication(config, site_dir, syndication_rows)
     # This history now lives inside the Archive. Retire files from the earlier
     # standalone implementation only after the replacement archive is live.
     for stale in (site_dir / "event-atlas.html", site_dir / "data" / "event_atlas.json"):
         if stale.is_file():
             stale.unlink()
     return archive_dir / "index.html"
+
+
+def _live_sitemap_pages(site_dir: Path) -> list[str]:
+    """Published pages that exist, so the sitemap cannot advertise a 404."""
+
+    pages = [""]
+    for filename, _ in PUBLIC_PAGES:
+        if (site_dir / filename).is_file():
+            pages.append(filename)
+    for filename in ("summary.html", "records.html"):
+        if (site_dir / filename).is_file():
+            pages.append(filename)
+    if (site_dir / "analysis" / "index.html").is_file():
+        pages.append("analysis/")
+        for filename, _ in ANALYSIS_PAGES:
+            if filename != "index.html" and (site_dir / "analysis" / filename).is_file():
+                pages.append(f"analysis/{filename}")
+    if (site_dir / "archive" / "index.html").is_file():
+        pages.append("archive/")
+    return pages
+
+
+def _write_syndication(
+    config: AtlasConfig,
+    site_dir: Path,
+    rows: list[dict[str, Any]],
+) -> None:
+    """Publish the Atom feed, sitemap and robots policy for the finished site."""
+
+    entries = build_syndication_entries(config, rows)
+    write_atom_feed(config, entries, site_dir)
+    write_sitemap(
+        config,
+        entries,
+        site_dir,
+        live_pages=_live_sitemap_pages(site_dir),
+    )
+    write_robots(config, site_dir)
 
 
 def _publish_cold_archive_entry(
@@ -4769,6 +4821,7 @@ def _build_report_archive_into(
     reports_dir: Path,
     updated: str | None,
     archive_dir: Path,
+    syndication_rows: list[dict[str, Any]] | None = None,
 ) -> Path:
     archive_dir.mkdir(parents=True, exist_ok=True)
     now = datetime.now(timezone.utc)
@@ -4859,6 +4912,11 @@ def _build_report_archive_into(
     # Applying the banner to the published copy preserves the source artefact
     # while ensuring the more public daily report carries the correction too.
     annotate_daily_from_periods(archive_dir / "daily", reports_dir / "periods")
+
+    if syndication_rows is not None:
+        for collection, entries in collections.items():
+            for entry in entries:
+                syndication_rows.append({**entry, "collection": collection})
 
     all_entries = [entry for entries in collections.values() for entry in entries]
     earliest = min((entry["start"] for entry in all_entries), default="n/a")

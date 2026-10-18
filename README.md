@@ -51,6 +51,15 @@ and says so beside the player. The current edition, the preserved source report
 and the verified monthly ZIP all keep every captured frame, so the coarser
 cadence reduces what the online player steps through, never what is kept.
 
+### [Follow new editions](https://danebencedavid.github.io/Atlas/feed.xml)
+
+Atlas publishes a new edition every day. The
+[Atom feed](https://danebencedavid.github.io/Atlas/feed.xml) carries each daily
+report and 72-hour analysis with the regime briefing it was published with, so
+any feed reader can follow the publication without visiting it. Entries are
+stamped with the close of the period they describe rather than the build time: a
+rebuilt feed does not re-announce editions that have not changed.
+
 ## How to read Atlas
 
 Every report opens with the observed period, update time, and an integrity
