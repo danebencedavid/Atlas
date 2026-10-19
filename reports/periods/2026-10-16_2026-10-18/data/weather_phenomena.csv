@@ -1,0 +1,2 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-10-16 08:00:00+00:00,2026-10-16 09:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +0.1 hPa, temperature +4.8 C, wind shifted 26 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
