@@ -1,0 +1,5 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-10-19 03:00:00+00:00,2026-10-19 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 1.8 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-10-20 00:00:00+00:00,2026-10-20 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.8 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-10-21 00:00:00+00:00,2026-10-21 06:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 4.8 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-10-21 12:00:00+00:00,2026-10-21 13:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed -2.7 hPa, temperature +2.6 C, wind shifted 35 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
