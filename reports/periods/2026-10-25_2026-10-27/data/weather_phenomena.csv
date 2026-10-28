@@ -1,0 +1,5 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-10-25 03:00:00+00:00,2026-10-25 07:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.8 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-10-26 14:00:00+00:00,2026-10-26 15:00:00+00:00,Thunderstorm,5 LINET event(s) with radar reflectivity reaching 43.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-10-27 08:00:00+00:00,2026-10-27 09:00:00+00:00,Probable warm-front passage,"Probable warm-front passage: pressure changed +0.6 hPa, temperature +4.6 C, wind shifted 24 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-10-27 22:00:00+00:00,2026-10-28 00:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 2.1 C during local night.,0.66,Open-Meteo historical-model pressure levels
