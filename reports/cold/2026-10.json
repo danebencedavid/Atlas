@@ -1,0 +1,299 @@
+{
+  "asset": "atlas-debrecen-archive-2026-10.zip",
+  "asset_id": 701533111,
+  "asset_url": "https://github.com/danebencedavid/Atlas/releases/download/atlas-archive-2026/atlas-debrecen-archive-2026-10.zip",
+  "bytes": 253723797,
+  "editions": [
+    {
+      "collection": "daily",
+      "content_sha256": "ede273c20063791a093746eeedcc7b69cb7d8469670c8a62f325387067da436e",
+      "id": "2026-10-01",
+      "source_tree_sha256": "748314c22233fedfaf89a6139edc2baa150f85fd24bed69b67cc5e4817fcc2eb"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "c611d63f0e02607e12b3b591e00c452bc0933ee07afea0f7d055f6e9e0c8dd3b",
+      "id": "2026-10-02",
+      "source_tree_sha256": "245c1af62c89858c56d77bf0b7b581ada7edb012823a0fa61f7851ee6220d789"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "60e64b9a452af8b55f28b58f0e90e6a396cd5ef0072dd6df628350100878895c",
+      "id": "2026-10-03",
+      "source_tree_sha256": "5646f6fa27f67ae81e4f52dc8d5aca50a1fb6de7cc427fe17f00d0ec102f4d93"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "0ee127cb82611feb2c4b82fcc42de46cf9dff389a97582b297ce1f2d6893258c",
+      "id": "2026-10-04",
+      "source_tree_sha256": "8c22b2d158e1b1738561d3de4df3d3699cd23d0e0a18282ed33de722f14c7849"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "f3e97236a1777ac12cb5fff0bc91e7fc2c6665610ad9e02aef674e8a88b6255d",
+      "id": "2026-10-05",
+      "source_tree_sha256": "10abe60c8191c6cca6ab414a4f6fc8266fb7a64257146e15317c02bae831cd9b"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "671c336515ea3686cab419353012c7ffaa828436c792ec127ce8cb3bd3dbebbf",
+      "id": "2026-10-06",
+      "source_tree_sha256": "84bb8f5efee9d8a8654e01f6c78153e2dea288f0c3ce5704d2114ddf6b1d7bdd"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "c43e0b2c6a59d8ce3eb6d72a40e4fcf3f1c98de057619594b9df070214c914fc",
+      "id": "2026-10-07",
+      "source_tree_sha256": "4b9f416b40016386b1a1d1155a000d7d6730fa6978baeec362597ba5678d48c9"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "8059a24a8bf2f3945a2a23ec05b7657bbcb3ed57f9598402d471c4e084590d25",
+      "id": "2026-10-08",
+      "source_tree_sha256": "5e0b683f63553225142504fb6e511f5e536c56eee57ef22b14daa4cfc97dec0a"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "d2f99e4c087df297c9c3dc51acb3b95e6d0ade828a305787057059756e719ed2",
+      "id": "2026-10-09",
+      "source_tree_sha256": "c6b41793e3da4083cbaef0569257f9f5283e489fe8c7793238157ad5dbf5583e"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "5ba9f3ccb0fe0d650a148321ccd371ff72d22b90a47869d83005d587b7cf508d",
+      "id": "2026-10-10",
+      "source_tree_sha256": "1be82e60b02519f574e99e01c9dccfa3520728d4a4926d2652dd11a25f466570"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "10ca8d83678b0fb842f0402d5cbe7e113a847c3ae6fd46a59ffc067c8bfa0ecc",
+      "id": "2026-10-11",
+      "source_tree_sha256": "cc6bba85a9f9447403137f565cf8c0504f48fe53b687571dde27934fcb5061da"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "b702a505d1032095b422c5833829098d4fed642766260adb7741faa2ced3fffe",
+      "id": "2026-10-12",
+      "source_tree_sha256": "74247027236515193cc25a5783d60a7264d3e3be2966206b7f4a2c5dbab32fba"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "30d55bb8d51643ffa88d89366d78a0592bbf4365cb9c55ac5d3188bbaf51a6bd",
+      "id": "2026-10-13",
+      "source_tree_sha256": "0bec4f523bbe2f9d856aa0543ab37a380de45408f2fc1c2ac1fe3433042fa8e8"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "eab545e13552fe61764bac0e4d7e497c63a3b2f3d4a7719f99011cf714f6e98f",
+      "id": "2026-10-14",
+      "source_tree_sha256": "d196fba550f3dba0aaf51cfbbf59bcad8b3b7eb1a07aa63d5e1acb3f61de8c71"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "6b2413ffcd9dbeb54e2d1b7086524f45a5b6b8df888ad75da36be079af66b412",
+      "id": "2026-10-15",
+      "source_tree_sha256": "a0a4ab2026662c3aeaa3f54e72b7bc242932100915973ddc95804245425ee5d6"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "639d79e1ebdd8a261d0c50769a7c22a9ecd24d5eedd60a6a8b1952ca7afcb4a9",
+      "id": "2026-10-16",
+      "source_tree_sha256": "477c254c407136486906341cd21d54214ee39922deadfe8b69aa5dbbb1303cf6"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "f607e5193f6c7dd11c6f5a5462d32a12397f2e0e451b3a17278216cfb1d542a5",
+      "id": "2026-10-17",
+      "source_tree_sha256": "070ed15b6e7b7c5ba8e46485f8897f5386517923c19eb694d3ac8f6e7d94bf47"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "7ec04166dfb30759da085bd78466cfe4e647cfccc4d7bba03467a66de43b3487",
+      "id": "2026-10-18",
+      "source_tree_sha256": "33188a9b83c222e11bcfb584c1d8336bbd5753eac8d55c783fc76af6521eb8f3"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "4a563cc4bfceca3310f5cca216f83a01752b76a7b1939d1fa0416fa2c8b6c713",
+      "id": "2026-10-19",
+      "source_tree_sha256": "ca6fdfedf068dd8f2d55528308c1b2b8a968fc342a2d856f5d501a004b2fd649"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "75dbffda50a85d639be8bd96b8589e7e3db591ae5c0b7f44c899963e7fd88689",
+      "id": "2026-10-20",
+      "source_tree_sha256": "3a86ebecde615ca9972b9e945867cb618c55d7225972a226a74102d716aa0511"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "f27f02d4e90fdf8592f1c5facd0818f7728439928fa83597180ba33fae3d5f82",
+      "id": "2026-10-21",
+      "source_tree_sha256": "e0b7d3eb7d3ed4bc80ef638c9ae8731d00586f2dcaf6c3fda7fc6de60a931b0c"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "8c19970178cae6bda4a79daf2601470be14123781f968b3c46fafa3f0d516543",
+      "id": "2026-10-22",
+      "source_tree_sha256": "c0886f1ae8843cb96f43674ceadb1d73fe571fba66cc3d2e49de7a6f99081c84"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "ba7275b8eab240ea24d1972bccf1965db34cb333ba2e03b6b7d3ecb3413e9e6f",
+      "id": "2026-10-23",
+      "source_tree_sha256": "7b1ea78dafa9c20231fec516e3d857fb44e19ba4e47b7b1932d1f876a2a4cc86"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "10d57f2deab59cb095a2d71c30485bb62305a7df5032a2ee5f2339402d233368",
+      "id": "2026-10-24",
+      "source_tree_sha256": "46da4e15b2c2f863775c71cc26f4cf131bd99805bed77fac47b2a600bf7734b6"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "3a956e446335774f8cb848358461cb0ed699b2f4be0187ca4ef9ad93f2dea911",
+      "id": "2026-10-25",
+      "source_tree_sha256": "632fa329de64b3f275e00a72bf32f2ef63b6ed610579bbdf8a0a5d237094263b"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "320392cb4f9bfe9a5780a444f2494d782a3da3a9974970252612b478d14311aa",
+      "id": "2026-10-26",
+      "source_tree_sha256": "4e2f492d13c6b33466b662a37414c80401d10e4acf5fa74f3005a5e0d390bf0f"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "613b0318e23de93043fb561223b53ed5640ffb1ee7ddb49ab15feb26d610013f",
+      "id": "2026-10-27",
+      "source_tree_sha256": "8c1e483f2d7e5ec3d99a49e60108883318c1b77a3aa1ccb40ef3d4c63b17ca24"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "8e2b3c8f2680225e3b8430ed62af92ec3507e5a8a79c253df2d0fe672bf1f3a6",
+      "id": "2026-10-28",
+      "source_tree_sha256": "a421f48784526fa3e1bc60859f7304c7725bf4c7702a27958b0f6ab8cb8caad4"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "293bfc8665d25cd70f8a0c20554e1aca4f3c28ded9b1d445fc70de6c375e4235",
+      "id": "2026-10-29",
+      "source_tree_sha256": "bad7267629f4cb7ec4b711e5f4cd7e0b77edd201a983c40d6527bba97136e26b"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "7a93fc5d7cf9526cf5548d8c923991f84d543872d1d233f9bbccbd9741affb64",
+      "id": "2026-10-30",
+      "source_tree_sha256": "06299964f4eadf2b6635e1448ae16fc45d138208c6cbda12ee519807e99d8c4a"
+    },
+    {
+      "collection": "daily",
+      "content_sha256": "6930c36e203b2f88f7d8054e0782b204fc91e6b5e9f63071dca90a2c2e88f913",
+      "id": "2026-10-31",
+      "source_tree_sha256": "b6cbf85a1672af1adfefdd0a6bd7539c83d3b01a0d1b5ae3e2b5fe9047d05f68"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "4e762f0525d00a04c6371fa4ef82d712320fd86a3b173368c21e01d32626c9d4",
+      "id": "2026-10-01_2026-10-03",
+      "source_tree_sha256": "51fddb9b0e04710358be88579546111b26bf020e676fac2f9971d6daa369a050"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "4d4084a29c8956925366043244a3a2164281e5184347074178d7a9ce4645d689",
+      "id": "2026-10-02_2026-10-04",
+      "source_tree_sha256": "76de9e2844a77b0b55439f1fc4346d2bc4cba9c100515bd2d782278ccc9ce396"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "5fbfd9f24912fe49b8ad2650534c0398c2e16466da6ac547664f049c42bb5f0d",
+      "id": "2026-10-03_2026-10-05",
+      "source_tree_sha256": "2d0649b2fb9065802bbe00fe7983f5cf6d88df18b1d6cc5236e2d60fb7d090af"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "8b1d8e81ed4cd6dd17d2e2fe43d3aa231416f8c1ae8c7a8e4eb0dd29e94a8316",
+      "id": "2026-10-04_2026-10-06",
+      "source_tree_sha256": "abd1ee6d382d8b99d42c5ccce1352714ff5f731611347bbf9f4fba2f45298515"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "765b8e38811c2093993aee69640ead9767b1f8c7e4ffd2388f2b20949d984914",
+      "id": "2026-10-07_2026-10-09",
+      "source_tree_sha256": "91357f69933151a9af1d55c36f9c0e382a2424dd031bbee53b72137fc50e30d7"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "344848b24cb3e4160f6ce8ceb4617f5a8a21f00da807700eecbe700b278cb2b7",
+      "id": "2026-10-09_2026-10-11",
+      "source_tree_sha256": "6fc846e37a47448a2f3e4a31775f317b673072f53b3a10662e2cf3941fddf48e"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "abf3d4d7011b747202dc228f3b70e1f4b7cbec9635c6225de96d83063f718420",
+      "id": "2026-10-10_2026-10-12",
+      "source_tree_sha256": "173ed3999228563098c08ea88fedceac19702ac78796b57a696d64ac5f3f3bfe"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "658c5ecb55ca268185c355397ac238ae5ff516f07d78c4d535d46922fbfc7e8b",
+      "id": "2026-10-12_2026-10-14",
+      "source_tree_sha256": "013e821e7f5d94dde06c1dcc03c0f4d404aa23eb234e024980de9ccba831644b"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "72ad13fa3609a2d9300c658f3b6f04c9d02e99432d82615d44762cd726ea2c1d",
+      "id": "2026-10-13_2026-10-15",
+      "source_tree_sha256": "33b6df15e48fcb4f4a08202f5023d254d647751a085c907c09551abc39dff101"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "c53020b25e76eda6302095cdfb3a740ef213feb2948c6292ace76a25c25bc3e1",
+      "id": "2026-10-15_2026-10-17",
+      "source_tree_sha256": "e4d874a6cc2e7ef9d2233d86d1afa335767ca465603c6bde5113558ba0137e10"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "13adfabe8cf52c86811f8b985c01a7b697b0335af9bb9363f76a9cb08c0c0ad7",
+      "id": "2026-10-16_2026-10-18",
+      "source_tree_sha256": "15f358fe6c143e81e1b8e544f029fca2f9d21d5bc2a04a43db2639e13cf1e2f7"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "88faf61c6a4f783937493c91d6cd24e8e4de6feddc7f51b21f3b67b60982e31d",
+      "id": "2026-10-19_2026-10-21",
+      "source_tree_sha256": "32eeb9e9b9195bc37e376e81d3ce4c8199eab06faa5b4539370cff2b3a61c65e"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "dfe525a968f4a574a654637eb03e25ccb4d9b8887295833c6beae73f50a24be0",
+      "id": "2026-10-22_2026-10-24",
+      "source_tree_sha256": "407de70b415f67d563013f638e35e4fbc6dc5b658452a8a9ddf30b36bc378893"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "7842902cdbb8d75423936f9daf26fcfa22229e1c0124d94593020cff71a9dfa0",
+      "id": "2026-10-25_2026-10-27",
+      "source_tree_sha256": "df8f5240a2a54d5a4808e5b49a0bc6890ccc828d5b57d253e1b66bf82a07c39c"
+    },
+    {
+      "collection": "periods",
+      "content_sha256": "37504e7aa7cba8a84021e1d06f9ed6e0840cbfde33b558c5c590c10154bd7f00",
+      "id": "2026-10-28_2026-10-30",
+      "source_tree_sha256": "ce4e81bd8b3859f81b8f018d2105a1e57a1cff63230aed6cdd22b9e0450ae2ee"
+    }
+  ],
+  "github_digest": "sha256:7a65048dc2b6af517a982353364725b8b9a48372f19754d18f5d70d4f0c53d4c",
+  "month": "2026-10",
+  "release_tag": "atlas-archive-2026",
+  "release_url": "https://github.com/danebencedavid/Atlas/releases/tag/atlas-archive-2026",
+  "repository": "danebencedavid/Atlas",
+  "schema": "atlas.cold-release-verification/1",
+  "sha256": "7a65048dc2b6af517a982353364725b8b9a48372f19754d18f5d70d4f0c53d4c",
+  "status": "verified",
+  "verification": {
+    "downloaded_copy": true,
+    "github_metadata": true,
+    "local_package": true,
+    "restored_editions": true
+  },
+  "verified_at": "2026-11-02T11:31:31.975352+00:00"
+}

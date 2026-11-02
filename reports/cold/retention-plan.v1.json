@@ -1,6 +1,6 @@
 {
   "blocked": [],
-  "cutoff_exclusive": "2026-10-01",
+  "cutoff_exclusive": "2026-11-01",
   "eligible": [
     {
       "bytes": 398409,
@@ -244,11 +244,146 @@
       "id": "2026-09-28_2026-09-30",
       "path": "data/land_surface_hourly.csv",
       "sha256": "e60bbc252029e02fb80f2ee6a3ad1fd862808ae52220bcf37d3499c67eefef2a"
+    },
+    {
+      "bytes": 397013,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-01_2026-10-03",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "ab90904d9063db8201d678c4f07e35b8ff75799cff694296020eb5e4c3ca64a7"
+    },
+    {
+      "bytes": 396879,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-02_2026-10-04",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "d16bfb8285e30dfc859873358f2e8c1a66cc2ddf1d5f0529ce34424616201e0d"
+    },
+    {
+      "bytes": 396719,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-03_2026-10-05",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "e504311142958e7d3558839ced0b61723e68e5136eefab49e3b8007fbb5533c3"
+    },
+    {
+      "bytes": 396555,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-04_2026-10-06",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "9e62fd9b93d231f5af6991fb1d5f9e836afd4849fd3d9d5eab215b604f375152"
+    },
+    {
+      "bytes": 396333,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-07_2026-10-09",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "c88abfed57893902135b4277660c0894cae0049c2b07eb80c0ff0f1b866bb6e3"
+    },
+    {
+      "bytes": 396263,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-09_2026-10-11",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "ee8b7cb3c5531bbfd1dcfb41001eba455befeb61c4e8a2f69e31619538d126c9"
+    },
+    {
+      "bytes": 396158,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-10_2026-10-12",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "9996edf69b6f56d51053e522c8e5b1ce517479bbbd035d92f50d3a8abc874f40"
+    },
+    {
+      "bytes": 395935,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-12_2026-10-14",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "559b106fd74a8b7a734de6782b5a0e5669ab0484fa00902534de56ffa6fc036d"
+    },
+    {
+      "bytes": 395852,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-13_2026-10-15",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "ec2111773e53f4869a73b4bc859b322f5431f36d4ba07934696c1c068ad7433c"
+    },
+    {
+      "bytes": 395630,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-15_2026-10-17",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "9471389156d5a6c71808ec4b16f5c71ad3d4c78eab5d8e5d2b24813e13f33f8c"
+    },
+    {
+      "bytes": 395515,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-16_2026-10-18",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "91e24c4aa3b39665296ddaca30426a507f0aa3377ac3e64ba877e49a6063aaa0"
+    },
+    {
+      "bytes": 395263,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-19_2026-10-21",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "5dd68527f7c47e6ad1b85ff3450dadd7ff4114f882c966e8d9e9d828b9c8c6aa"
+    },
+    {
+      "bytes": 395016,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-22_2026-10-24",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "d381c8782cc7f8af009dc82bb6d3523a080e8e46226a084e477d0aa7f78843d9"
+    },
+    {
+      "bytes": 394754,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-25_2026-10-27",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "5c02472dbb6837a7d606b94ba27b54c96e3e617fcec638cd03a6abdec43f56c7"
+    },
+    {
+      "bytes": 394420,
+      "cold_verification": "cold/2026-10.json",
+      "collection": "periods",
+      "core_copy": "bundle/data/land_surface_hourly.csv.gz",
+      "id": "2026-10-28_2026-10-30",
+      "path": "data/land_surface_hourly.csv",
+      "sha256": "59e46ed935d2eef4049a6c6c3ecba7e935c0cc53c79034e19bd22d76b97b9d55"
     }
   ],
   "execution": {
     "enabled": false,
-    "reason": "Planning only: activation requires a separate reviewed publisher change after the capacity threshold is reached. This command cannot delete or omit files."
+    "reason": "This command only plans compact-resource savings and never deletes or omits files. The site publisher separately applies automatic edition retention using exact restore-verified monthly cold archives."
   },
   "mode": "dry-run",
   "policy": {
@@ -262,7 +397,7 @@
   "schema": "atlas.archive-retention-plan/1",
   "totals": {
     "blocked_editions_or_resources": 0,
-    "eligible_bytes": 11548279,
-    "eligible_resources": 27
+    "eligible_bytes": 17486584,
+    "eligible_resources": 42
   }
 }
