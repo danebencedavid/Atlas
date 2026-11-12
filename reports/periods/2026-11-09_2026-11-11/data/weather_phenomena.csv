@@ -1,0 +1,11 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-11-09 00:00:00+00:00,2026-11-09 02:00:00+00:00,Frost,Minimum temperature -0.5 C.,0.92,HungaroMet station 64711
+2026-11-09 03:00:00+00:00,2026-11-09 07:00:00+00:00,Frost,Minimum temperature -0.9 C.,0.92,HungaroMet station 64711
+2026-11-09 03:00:00+00:00,2026-11-09 07:00:00+00:00,Nocturnal low-level inversion,925 hPa temperature exceeded 1000 hPa temperature by as much as 3.5 C during local night.,0.66,Open-Meteo historical-model pressure levels
+2026-11-10 03:00:00+00:00,2026-11-10 04:00:00+00:00,Low visibility,Minimum visibility 2480 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-10 05:00:00+00:00,2026-11-10 06:00:00+00:00,Low visibility,Minimum visibility 1712 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-10 13:00:00+00:00,2026-11-10 14:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed -3.5 hPa, temperature -1.1 C, wind shifted 4 degrees, and 3-hour precipitation was 3.3 mm.",0.79,Objective compound surface-change detector
+2026-11-10 19:00:00+00:00,2026-11-10 20:00:00+00:00,Low visibility,Minimum visibility 2268 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-11 01:00:00+00:00,2026-11-11 08:00:00+00:00,Low visibility,Minimum visibility 1506 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-11 18:00:00+00:00,2026-11-11 22:00:00+00:00,Low visibility,Minimum visibility 1009 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-11 22:00:00+00:00,2026-11-11 23:00:00+00:00,Fog,Minimum visibility 926 m with maximum relative humidity 95%.,0.92,HungaroMet station 64711
