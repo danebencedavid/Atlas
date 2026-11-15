@@ -1,0 +1,1316 @@
+{
+  "budget": {
+    "core_bytes": 1245083,
+    "figure_bytes": 410143,
+    "limit_bytes": 2097152,
+    "media_bytes": 11872654,
+    "status": "within"
+  },
+  "datasets": [
+    {
+      "bytes": 87174,
+      "media_type": "application/json",
+      "path": "data/activity_lenses.json",
+      "retention": "core",
+      "sha256": "522958cf504ce95408ea4e31df72cccfd2c18667ded759b55318f136e6ee4afd"
+    },
+    {
+      "bytes": 14214,
+      "media_type": "application/json",
+      "path": "data/air_mass_origin.json",
+      "retention": "core",
+      "sha256": "e2aaa6a795878856f09ea515e9cc83ade03f359a606ad8c91a22c12dbfcb1846"
+    },
+    {
+      "bytes": 773,
+      "media_type": "text/csv",
+      "path": "data/anomalies.csv",
+      "retention": "core",
+      "sha256": "a5b71553b49a4445135720ebe7be05a7e30d37eec6eb0c415a723503e0e04579"
+    },
+    {
+      "bytes": 1341,
+      "media_type": "text/csv",
+      "path": "data/baseline_metrics.csv",
+      "retention": "core",
+      "sha256": "370b354030373ea11d7ddde527f8b6f83c7c0c0230a7077bdac406b5359c97e1"
+    },
+    {
+      "bytes": 25492,
+      "media_type": "application/json",
+      "path": "data/climate_almanac.json",
+      "retention": "core",
+      "sha256": "1e7455c3d43dd17893a5fcab29a57968c7ed231f72faf954a82ec2e1f1d04518"
+    },
+    {
+      "bytes": 11009,
+      "media_type": "text/csv",
+      "path": "data/current_hourly.csv",
+      "retention": "core",
+      "sha256": "afdacf75ea0ad9307a75989f2bfa1ba1f4749b2d3368ae6c58e534b6234c7297"
+    },
+    {
+      "bytes": 3231,
+      "media_type": "text/csv",
+      "path": "data/daily_physical_energy.csv",
+      "retention": "core",
+      "sha256": "e249fe01dd1f72787ea69e92151a56cfd82f9215417db82fe8d20f6c4249fb49"
+    },
+    {
+      "bytes": 55285,
+      "media_type": "text/csv",
+      "path": "data/electricity.csv",
+      "retention": "core",
+      "sha256": "bc67acf180158c9805a91e909eca07c942db84db4be8694130fa15fd9115ecc9"
+    },
+    {
+      "bytes": 643,
+      "media_type": "text/csv",
+      "path": "data/frontal_passages.csv",
+      "retention": "core",
+      "sha256": "d49098121a61c689c7a3c6ebb893e62a7a0d8217f3c447ca73ee1ef47a448e18"
+    },
+    {
+      "bytes": 4211,
+      "media_type": "text/csv",
+      "path": "data/full_record_metrics.csv",
+      "retention": "core",
+      "sha256": "71d5614f13b5f1376cd750c089b53eb2b541e4b81cce6fcf2565b81afc0f6942"
+    },
+    {
+      "bytes": 1560,
+      "media_type": "text/csv",
+      "path": "data/historical_analogs.csv",
+      "retention": "core",
+      "sha256": "8a854d7b6ddacbb53066c24536b8dff312b12a0ef7731fe72f9d85cb14b40946"
+    },
+    {
+      "bytes": 28963,
+      "media_type": "text/csv",
+      "path": "data/hungaromet_station_observations.csv",
+      "retention": "core",
+      "sha256": "264621941af6437ceb66274289a2f05fbc86c4b08c55d15e221f9f4b1ae71193"
+    },
+    {
+      "bytes": 12323,
+      "media_type": "text/csv",
+      "path": "data/land_surface_daily.csv",
+      "retention": "core",
+      "sha256": "5d45eb01544b8a2a054f9b44d1ddeca7acc595e9f6c1f564761b7d707cbad22e"
+    },
+    {
+      "bytes": 82074,
+      "compression": "gzip",
+      "media_type": "text/csv",
+      "path": "bundle/data/land_surface_hourly.csv.gz",
+      "retention": "core",
+      "sha256": "ffae413276d864dc123e43d1c62679d2d67c2963635cdda959f6fe76d23bf1aa",
+      "source_bytes": 392232,
+      "source_media_type": "text/csv",
+      "source_path": "data/land_surface_hourly.csv",
+      "source_sha256": "88060387f8d525880683d021f516d7a0cef0a236294f58425e07c70a33d3f6ea"
+    },
+    {
+      "bytes": 1745,
+      "media_type": "text/csv",
+      "path": "data/lightning_events.csv",
+      "retention": "core",
+      "sha256": "8dd4753d6a1f240d52dfe61ea30ff65140954495f0b53ca40a58f77a5630e762"
+    },
+    {
+      "bytes": 1093,
+      "media_type": "text/csv",
+      "path": "data/model_profile.csv",
+      "retention": "core",
+      "sha256": "2809f75944712b1212bfc1261a3a94660b8947f49ab9aa4c2db9605d944f64e9"
+    },
+    {
+      "bytes": 68194,
+      "media_type": "text/csv",
+      "path": "data/model_profile_series.csv",
+      "retention": "core",
+      "sha256": "a937e565b59b82925342ef629e9761577d2eb23905d0f4f6110befff9ee25418"
+    },
+    {
+      "bytes": 4136,
+      "media_type": "text/csv",
+      "path": "data/model_profile_surface_series.csv",
+      "retention": "core",
+      "sha256": "1def9c9650032f72ff6c58251dfdfc97ca7cb90a160a6933d8f42a07f273e1e9"
+    },
+    {
+      "bytes": 929,
+      "media_type": "text/csv",
+      "path": "data/period_metrics.csv",
+      "retention": "core",
+      "sha256": "45ab959aeff2fd93f9ac732e06ba79097b87df948d4c395b8dbcb666368d2ed6"
+    },
+    {
+      "bytes": 9533,
+      "media_type": "text/csv",
+      "path": "data/physical_energy.csv",
+      "retention": "core",
+      "sha256": "7dfe8114b4cf5e2e968f4d81f444cd82fc03072870efdea10d38251c131ee9bb"
+    },
+    {
+      "bytes": 80270,
+      "media_type": "application/x-numpy-archive",
+      "path": "data/radar_accumulation.npz",
+      "retention": "core",
+      "sha256": "c03505a17534f8e59f20eb49a1f4fc09eef81e34eab9e3e9176ec1e9f78c2232"
+    },
+    {
+      "bytes": 4781,
+      "media_type": "text/csv",
+      "path": "data/radar_timeline.csv",
+      "retention": "core",
+      "sha256": "5eee70f8ca3608a35bf9407dd0dfa6158be0bacb969382b258964dc8395388bf"
+    },
+    {
+      "bytes": 713,
+      "media_type": "text/csv",
+      "path": "data/recent_anomalies.csv",
+      "retention": "core",
+      "sha256": "cba0edaefad38e141706b6a89de087c7d1f4440ec62596037c2d09feb284d51d"
+    },
+    {
+      "bytes": 5721,
+      "media_type": "text/csv",
+      "path": "data/satellite_manifest.csv",
+      "retention": "core",
+      "sha256": "c4cb0d80d72e4ee24704d40d98dad7616caad35945edaa13747e5ae3b18b0729"
+    },
+    {
+      "bytes": 24929,
+      "media_type": "text/csv",
+      "path": "data/seven_day_context_hourly.csv",
+      "retention": "core",
+      "sha256": "b55659ea1f631c3aae83c6145f9e32ad7b08b760eb78a823b2c00b1e66718868"
+    },
+    {
+      "bytes": 3514,
+      "media_type": "text/csv",
+      "path": "data/standard_normal_metrics.csv",
+      "retention": "core",
+      "sha256": "5040ec73b92cafa3a5a5cd9863dd3c5e2232618b9bcaf851763e532c68d9cd6b"
+    },
+    {
+      "bytes": 123274,
+      "media_type": "application/json",
+      "path": "data/summary.json",
+      "retention": "core",
+      "sha256": "f9a02c2134b4a60cc5ef6987f737b3d372798e386f450786f6be08b6a7732d8d"
+    },
+    {
+      "bytes": 64212,
+      "media_type": "application/x-numpy-archive",
+      "path": "data/synoptic_fields.npz",
+      "retention": "core",
+      "sha256": "370c7168fca3b5a1b56e089c6c28755cd6299dee25abcae3e5bd13ca1590f4e3"
+    },
+    {
+      "bytes": 2064,
+      "media_type": "text/csv",
+      "path": "data/weather_phenomena.csv",
+      "retention": "core",
+      "sha256": "f8da7714678d6251411ce933c15b22c31e6bdf373c83d59fe602c5057c0cdfea"
+    },
+    {
+      "bytes": 7252,
+      "media_type": "application/json",
+      "path": "data/weather_story.json",
+      "retention": "core",
+      "sha256": "bec6e9cb221ca4519732a518b228970fc2ed42d1f4a2981f0d7ea33145a14993"
+    }
+  ],
+  "evidence": {
+    "dataset_count": 30,
+    "status": "self-contained"
+  },
+  "figures": [
+    {
+      "bytes": 4493,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "air_mass_trajectory",
+      "path": "bundle/figures/air_mass_trajectory.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "6c54440189554a33a74ab14814fa38d4c501b93c59d04981d96c7b85398ff81a",
+      "source_bytes": 21287,
+      "source_path": "assets/air_mass_trajectory.html",
+      "source_sha256": "65c5fc7a9c6675eb5ccbb20bc858db9f115851c5dd3909d52a43c94d9674a8ff",
+      "spec_bytes": 18584,
+      "spec_sha256": "a5055d1290a1ce9a0224900b21007bd1cfe511024b1022d7f821d7b75e1ed8f8"
+    },
+    {
+      "bytes": 1924,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "anomaly_bars",
+      "path": "bundle/figures/anomaly_bars.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "86ecb37fe0901b008e9d69a0280b5ce231a45100a15295cbe87dafb599cbf0f2",
+      "source_bytes": 11176,
+      "source_path": "assets/anomaly_bars.html",
+      "source_sha256": "c905e55e9f27419670fe6e62cca171c722c79550df2e73d6d3f8c3694bedf15c",
+      "spec_bytes": 8473,
+      "spec_sha256": "88ae62f293314724cbe176e5bc7495f29592209a95f3649d593059ad3de64c13"
+    },
+    {
+      "bytes": 2430,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "climate_reference",
+      "path": "bundle/figures/climate_reference.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "09ac19161ceb839c10d8405789ac19294e9172cc2a01ac187657c75bbbe71e8d",
+      "source_bytes": 12675,
+      "source_path": "assets/climate_reference.html",
+      "source_sha256": "0d95c68f21f15b8f44ef3c42d8fbb13891e04475326bf7fd9624d027bf9c65cb",
+      "spec_bytes": 9972,
+      "spec_sha256": "1d702da3d0a8c28ac2fd6bb905dd6d390461e0cd74ae7bc9ceb134aae5a4004b"
+    },
+    {
+      "bytes": 3348,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "column_diagnostics",
+      "path": "bundle/figures/column_diagnostics.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "53edcda22d551d315c5c04759a64d5be534e13a2b58db83d5fcd8ac9b898e3b3",
+      "source_bytes": 29104,
+      "source_path": "assets/column_diagnostics.html",
+      "source_sha256": "378a437f045d0b0f164bc5a4de7140802eefed550bea91b384b18d1bd3ca136f",
+      "spec_bytes": 26401,
+      "spec_sha256": "069928c5b2c8abfb26a3e3a0e087381d79c15dd6a8e46c712a37edcc88670c45"
+    },
+    {
+      "bytes": 2415,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_climate_reference",
+      "path": "bundle/figures/daily_climate_reference.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "dc6b759d2cbc027cbdb7c4bfe2d12771232c2e45e16582d78acee98767258a4b",
+      "source_bytes": 12634,
+      "source_path": "assets/daily_climate_reference.html",
+      "source_sha256": "1ceb3c8aac85eb8e7848fda47e86b67292135be1e4a0cc396bbe185a59598ce8",
+      "spec_bytes": 9931,
+      "spec_sha256": "695127dbf8ced857f2b60a09c90f916ab6e618e7dc32de9be6dfca198fad9b39"
+    },
+    {
+      "bytes": 2918,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_meteogram",
+      "path": "bundle/figures/daily_meteogram.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "48be399ae5d8554b05802db92be28fcc2f827e94423f61d55e5864bd9322e043",
+      "source_bytes": 20958,
+      "source_path": "assets/daily_meteogram.html",
+      "source_sha256": "7a4e03dbf3a9aefafa1b878679182caae0239fc58f795588f71a276023be978e",
+      "spec_bytes": 18255,
+      "spec_sha256": "4d370ed0d341d32b2a19ad733a0dac219b4c11503ecfdd253ab8351016244d13"
+    },
+    {
+      "bytes": 2931,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "daily_physical_energy",
+      "path": "bundle/figures/daily_physical_energy.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "3c336022efe59c2e763de46c38d28bf3ba0b83dacb1b89302e03d3290f93fa42",
+      "source_bytes": 17757,
+      "source_path": "assets/daily_physical_energy.html",
+      "source_sha256": "bc6d322dc780386416cc86184d37ed9454a6e2c2bb3f03f030ac9ac363e03e09",
+      "spec_bytes": 15054,
+      "spec_sha256": "267d9b134483531c09857459fa9bfaac5e50d831aa54fe416a79407acbede6c8"
+    },
+    {
+      "bytes": 2774,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "dewpoint_spread",
+      "path": "bundle/figures/dewpoint_spread.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "2b84a75dada3213e33b115e4340b6c18cb4056769cb6384ccf3ecbc9eb3ff7eb",
+      "source_bytes": 19833,
+      "source_path": "assets/dewpoint_spread.html",
+      "source_sha256": "6f1d6e49684a4fc41b86424f5ca361ca1b9f80b23500750d9437d57f11158325",
+      "spec_bytes": 17130,
+      "spec_sha256": "ae29aa67cf5947372634d5cefe085dbbb61d00071bc1da0246ce9491d39d8e9f"
+    },
+    {
+      "bytes": 8996,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "electricity_overview",
+      "path": "bundle/figures/electricity_overview.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "6ac166177cd72a980f206b19cb0d604d5bb2ee2fff221fbad0330a8a5f435cc7",
+      "source_bytes": 71907,
+      "source_path": "assets/electricity_overview.html",
+      "source_sha256": "e8690676a6a42dc5ef435a4d1a8ff683c2232cc1fb88bacf5c91f730ea920f8a",
+      "spec_bytes": 69204,
+      "spec_sha256": "a996b8d0b1b808ce3802101d6becc8b202673e6f0dc03223d7c5bb45489a7ec2"
+    },
+    {
+      "bytes": 2785,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "hodograph",
+      "path": "bundle/figures/hodograph.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "b599fa5070eb015e820b57855ed4ea23ac95be0df9aa11c2ddc1e4a1c104428a",
+      "source_bytes": 12883,
+      "source_path": "assets/hodograph.html",
+      "source_sha256": "18ebe5a45a7919a7f1f433dded39e25e1cf12ffc0931398881e6ce32ff69d9d1",
+      "spec_bytes": 10180,
+      "spec_sha256": "b9eb474da8b8f1aac0b7dd811d32ddc90fa4a45ba5f09529b618a93ac0107016"
+    },
+    {
+      "bytes": 81628,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "land_surface",
+      "path": "bundle/figures/land_surface.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "493bafe15a0a14cfa101db12fab71bea0df2d049459b4e62fed6ec645e749ecd",
+      "source_bytes": 825713,
+      "source_path": "assets/land_surface.html",
+      "source_sha256": "676ae33844698e12646c39931df2aa6a47a33939257a883ba13e39621f9e4534",
+      "spec_bytes": 823010,
+      "spec_sha256": "bcff54798b472ed18abc1d6e24397b5dc7d4f841260e7078f1abd88afc598e5c"
+    },
+    {
+      "bytes": 2994,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "lightning_diary",
+      "path": "bundle/figures/lightning_diary.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "2569850cd3d658934d0237471242beb88435252ba6cdb08bed81991f6542b718",
+      "source_bytes": 13571,
+      "source_path": "assets/lightning_diary.html",
+      "source_sha256": "1d257efc8536ca4f76641ec08f5582ca27d97ccd618878882f43d6675f1f029c",
+      "spec_bytes": 10868,
+      "spec_sha256": "799373f40a077a2c9662efa08fc72949c482756d714c2c0d29682b9528bf70d2"
+    },
+    {
+      "bytes": 4593,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "meteogram",
+      "path": "bundle/figures/meteogram.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "da03d1d3c07afdcf4a769ac87523ef5e93f07f6067853c2c7d4c9e395c7b37f2",
+      "source_bytes": 39958,
+      "source_path": "assets/meteogram.html",
+      "source_sha256": "8ec6870b365e42292fc0116db2a8ae33aca1f7e648e41c70495caf80e81ac1b5",
+      "spec_bytes": 37255,
+      "spec_sha256": "846c20189b7c5ac50e61e38b882fb88530e599647918200dccf54701e810e161"
+    },
+    {
+      "bytes": 14369,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "model_profile",
+      "path": "bundle/figures/model_profile.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "9e9f26c7eecde58c8c8614a3a94072ccf0dc29690a921c6ecc32562b1bdb2ef2",
+      "source_bytes": 54362,
+      "source_path": "assets/model_profile.html",
+      "source_sha256": "6eb065e024f3a056beac9e9d765bdab926672ad4fff7e42c1126effbdaa13f0a",
+      "spec_bytes": 51659,
+      "spec_sha256": "7aa03f4d1d7332445826198f9005c15440d5959db6413fafbd989baebf8e43bd"
+    },
+    {
+      "bytes": 2346,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "phenomena_timeline",
+      "path": "bundle/figures/phenomena_timeline.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "5c4c96700c7435dd34a104918189130180309a65c5358b397d79c6d01e14a00e",
+      "source_bytes": 17711,
+      "source_path": "assets/phenomena_timeline.html",
+      "source_sha256": "cd2dea06f59b7202c8e1801fd8d6d041de3e0d5e49ed72f679e2a6b5471f21ca",
+      "spec_bytes": 15008,
+      "spec_sha256": "f619c7ca17b25f16cb54f2ab99bb727472d43d6a2e831573a4246bef0ac84206"
+    },
+    {
+      "bytes": 4816,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "physical_energy",
+      "path": "bundle/figures/physical_energy.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "feec205904685c7c71d2e300a5adf6cf3ed9353b442e12d01690c43c3d092f1f",
+      "source_bytes": 29436,
+      "source_path": "assets/physical_energy.html",
+      "source_sha256": "4a1535a180d1032413476122511e9f9725fc0420e486a18b19f017c1a0afe11e",
+      "spec_bytes": 26733,
+      "spec_sha256": "29865c791b9102dff18c8c8c3514e1f45ff360911ea18a849b767aafb28f26b7"
+    },
+    {
+      "bytes": 2814,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "pressure_tendency",
+      "path": "bundle/figures/pressure_tendency.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "79bfb1a1c5c9a24d5e93bfd9054b5523e0db6ea0f5aa3dff1e596d22729418e8",
+      "source_bytes": 18682,
+      "source_path": "assets/pressure_tendency.html",
+      "source_sha256": "505d65de1a3f885a012aa3ebf0c571397099df347e50ef164c1381a54ba30dbd",
+      "spec_bytes": 15979,
+      "spec_sha256": "baeaa0af23bedb6bf7e26a000f832ea394f6f9a1592a962cd10755f43b41afd1"
+    },
+    {
+      "bytes": 100124,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "radar_archive",
+      "path": "bundle/figures/radar_archive.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "c438c191327a350f8f7618a723ab57fcf9d0f0642a6e92897b1cbc93ebad5a77",
+      "source_bytes": 1760151,
+      "source_path": "assets/radar_archive.html",
+      "source_sha256": "63fde1da94b39586122c5904eb2060f0d5d3a24c912b0db21d0c3137e5ca7f94",
+      "spec_bytes": 1757180,
+      "spec_sha256": "f47410d96ea8a6bd0674106e33a16c3ddd36caf90ea33f1d2fd65873eeddb481"
+    },
+    {
+      "bytes": 1636,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "regime_strip",
+      "path": "bundle/figures/regime_strip.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "f19f503d579725f4e1fece9fbc90aa205d50dcb0d6fb07a7f6413b1d6ee05f7e",
+      "source_bytes": 10521,
+      "source_path": "assets/regime_strip.html",
+      "source_sha256": "9a0f4f528e993b98bc4a948b4fe46637f167ea51e9dc090201be111fe3aef726",
+      "spec_bytes": 7818,
+      "spec_sha256": "bc774a23843a066846c04062b3f5d50d852dec6e1b48c65554f089ea52865914"
+    },
+    {
+      "bytes": 2252,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "seven_day_context",
+      "path": "bundle/figures/seven_day_context.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "58b87ba4a3ff0b9e43f7fa6f97c8546707ad39ca24b81f6777082681399a3eb2",
+      "source_bytes": 13250,
+      "source_path": "assets/seven_day_context.html",
+      "source_sha256": "5dea309c557135f2a1889270b8a9ec182833753a076d1fbda2ba2400a6e0f639",
+      "spec_bytes": 10547,
+      "spec_sha256": "bb63827c38fd8c2b78e2f087cb28e50b77a3a1fea1d0b1d3476c35a3f740a3ef"
+    },
+    {
+      "bytes": 1944,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "solar_diurnal",
+      "path": "bundle/figures/solar_diurnal.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "5989ffce2c2b19754f8e4b19906effcd2051c3d714377a51ff3c8525e05f2e19",
+      "source_bytes": 12359,
+      "source_path": "assets/solar_diurnal.html",
+      "source_sha256": "ab68c6980def51e14eb55354551b3aade18e7249d28a18b45b76f5d8e7191f77",
+      "spec_bytes": 9656,
+      "spec_sha256": "d605bc83e16a5328a12825dac860def36a09e6f0355ab11212495277a5df0342"
+    },
+    {
+      "bytes": 4380,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "station_comparison",
+      "path": "bundle/figures/station_comparison.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "9cc39d20d8eecf2608e99af2ddcf49d0c53adabe39b5e49e06bde8559f7b357a",
+      "source_bytes": 35373,
+      "source_path": "assets/station_comparison.html",
+      "source_sha256": "687d332b5432770ea34ea82e2db51ae403229e8bf32d3b49d4e3367a418faff8",
+      "spec_bytes": 32670,
+      "spec_sha256": "4ce04131e44907bcd4638ecb94b5237f2e43d50ef45d0745f2f1ecaae8c0bd32"
+    },
+    {
+      "bytes": 93160,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "synoptic_evolution",
+      "path": "bundle/figures/synoptic_evolution.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "c055ff338d15fcebfd79b7fd9f3a9bb0f4d18f6ffa960e38c7b522d3f1623a88",
+      "source_bytes": 337210,
+      "source_path": "assets/synoptic_evolution.html",
+      "source_sha256": "3e78c9d2c73c1754f6eeb138368e34d78b13191c5416db32a43847484f5d8fda",
+      "spec_bytes": 334239,
+      "spec_sha256": "e88a57b166cea6084b8b9d0e3075ba9921ae3626aee3e140f767d28b04babea3"
+    },
+    {
+      "bytes": 51267,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "time_pressure",
+      "path": "bundle/figures/time_pressure.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "1526e82667269fc3c2153c9db331d92ff53b983704a6376ff944a88872f4861b",
+      "source_bytes": 196066,
+      "source_path": "assets/time_pressure.html",
+      "source_sha256": "700a486ebb3d8fdd0348c97d14c38d36a85078cec3b2446e09bde0b6b551a6fb",
+      "spec_bytes": 193363,
+      "spec_sha256": "fa5571b543827291f74ee980747f096bcf94ebafaebaa8f2a30049b2c25ab177"
+    },
+    {
+      "bytes": 4980,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "weather_electricity_links",
+      "path": "bundle/figures/weather_electricity_links.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "1bd05b1261b04a3a791a84ff8dcc8fa608fecb36b0566add0b6025ab10861601",
+      "source_bytes": 20555,
+      "source_path": "assets/weather_electricity_links.html",
+      "source_sha256": "aaf8828494d445c5e25907b7e86ed2f818e31500c7582150711d0d085253e849",
+      "spec_bytes": 17852,
+      "spec_sha256": "e9a2cc2d32edc5be30d818afaaa81f253817b86c071ee288e63383f71ab9dc4f"
+    },
+    {
+      "bytes": 1826,
+      "compression": "gzip",
+      "media_type": "application/gzip",
+      "name": "wind_rose",
+      "path": "bundle/figures/wind_rose.plotly.json.gz",
+      "plotly_src": "https://cdn.plot.ly/plotly-4.1.1.min.js",
+      "retention": "core",
+      "schema": "atlas.plotly-figure/1",
+      "sha256": "8068b4352873062633f772be41105d52499c08ced542bdf318aef887e7e525c5",
+      "source_bytes": 12362,
+      "source_path": "assets/wind_rose.html",
+      "source_sha256": "a950eaba1c97a7660b4454694d65e41188504acc5d9344b3d7f4cba018f2ccd8",
+      "spec_bytes": 9659,
+      "spec_sha256": "62d087567d7be662349ed5a75a05fd2192ae2ed2357004f5bc942ce720391ed9"
+    }
+  ],
+  "generator": "atlas.archive-bundle/4",
+  "id": "2026-11-12_2026-11-14",
+  "immutability": {
+    "frozen": true,
+    "source_file_count": 153,
+    "source_tree_sha256": "185a403db35823fdf6f0c15b553b13789984207eeac9a9416eea20af89107ea2"
+  },
+  "integrity": {
+    "content_sha256": "6a725d1efd2eed8e80a30f79fe9d3ffaac2f4b7d21719a27edc3b809f556b259"
+  },
+  "kind": "period",
+  "legacy": {
+    "cold_candidates": [
+      {
+        "bytes": 392232,
+        "media_type": "text/csv",
+        "path": "data/land_surface_hourly.csv",
+        "retention": "cold-candidate",
+        "sha256": "88060387f8d525880683d021f516d7a0cef0a236294f58425e07c70a33d3f6ea"
+      }
+    ],
+    "rendered_asset_bytes": 3649638,
+    "rendered_asset_count": 27,
+    "shared_figure_source_bytes": 3627494,
+    "source_tree_bytes": 17942951
+  },
+  "location": {
+    "latitude": 47.5316,
+    "longitude": 21.6273,
+    "name": "Debrecen"
+  },
+  "media": [
+    {
+      "bytes": 65952,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261112_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "efb5c8f83cab4c59de88e9df63f8e6d519ee1d2573d5bdaa05d1316a9b2c37cc"
+    },
+    {
+      "bytes": 65660,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261112_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "248e4b5217e5c1f9a3868d219e514c8e7633914c2f1ee2efafd2dfa5fadea64e"
+    },
+    {
+      "bytes": 65912,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261112_2340.webp",
+      "retention": "legacy-hot",
+      "sha256": "50ff40b4e5ba1a6655b65b6e81e5f3c539acb60b78d35d63fe85a081ee69b9b4"
+    },
+    {
+      "bytes": 67290,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_0240.webp",
+      "retention": "legacy-hot",
+      "sha256": "7b8deeb7714fdd3a87be47f59a2cddfef4d1fc79ae8c23b5e6fccdf50bd5163a"
+    },
+    {
+      "bytes": 68302,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_0540.webp",
+      "retention": "legacy-hot",
+      "sha256": "3b59f76c1c77fd3f9ba8fa45e673fc47cda866d57e666db8d1746070f1da2b17"
+    },
+    {
+      "bytes": 69008,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_0840.webp",
+      "retention": "legacy-hot",
+      "sha256": "29b9e77237f913d9b411ff2a1b79e24a797ca705f96172327a2e30bae03e365c"
+    },
+    {
+      "bytes": 70964,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_1140.webp",
+      "retention": "legacy-hot",
+      "sha256": "eb44b90a995ca9e0252112a26f9f48293ff48737f30f9a29009dd805c5b3d981"
+    },
+    {
+      "bytes": 70934,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_1440.webp",
+      "retention": "legacy-hot",
+      "sha256": "853d2b4b60660f5fbffbbf28e8ab47471160f357abec7a8e63ee21b56d7f3cc7"
+    },
+    {
+      "bytes": 70112,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "d338636195abbc383066bf67f75c0a088005482fd328b83a251a3d0f8901ffc5"
+    },
+    {
+      "bytes": 69434,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "f0f04d224bc325802399b38b7b2debb5fea786bee739df13e4859901c32c135d"
+    },
+    {
+      "bytes": 68962,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261113_2340.webp",
+      "retention": "legacy-hot",
+      "sha256": "15c33e14cd703ae4386dbea8d4d6752e18a7cec9218ad41cda492274de7114d0"
+    },
+    {
+      "bytes": 69100,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_0240.webp",
+      "retention": "legacy-hot",
+      "sha256": "acc8bebfefdc5a24d8b0e535d4bd3b5f1b7a1e1cf7a9aeeb7e6c00f390682563"
+    },
+    {
+      "bytes": 68662,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_0540.webp",
+      "retention": "legacy-hot",
+      "sha256": "6d45db5b1d35d822d613182421a0d6974c95c99e85dcf7879abc35faa7635352"
+    },
+    {
+      "bytes": 70060,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_0840.webp",
+      "retention": "legacy-hot",
+      "sha256": "dd73c04a2ee949c11049a7a8b74e578283cb972180e2b742cc8722deb5d0c795"
+    },
+    {
+      "bytes": 73362,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_1140.webp",
+      "retention": "legacy-hot",
+      "sha256": "ac056641cb6d50c04ffc85ae3df99a848036ec89a24df5eb316a6f08586e01c1"
+    },
+    {
+      "bytes": 72250,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_1440.webp",
+      "retention": "legacy-hot",
+      "sha256": "f3468b41657fe9908671a161af7d217c6707360fbaba52c2d180015a50cd596b"
+    },
+    {
+      "bytes": 71628,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "62b1c6d70ca62e43c8e7be9cb53cdb9d4ed6eef9bff6dc38be0795e4d575db5e"
+    },
+    {
+      "bytes": 69878,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/AirmassRGB_20261114_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "a9f3446bd86759a209fb0a60dadbd90750c9360ad2e6f7c3d1069fe9feff5631"
+    },
+    {
+      "bytes": 23410,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261113_0410.webp",
+      "retention": "legacy-hot",
+      "sha256": "8789dba505395944640302dcbb20dabab0c969aba97cb4859759754a2c1eb3eb"
+    },
+    {
+      "bytes": 103172,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261113_0710.webp",
+      "retention": "legacy-hot",
+      "sha256": "a0c976107ab5a0dfaa64bb4b709f3f2d020fc1c198b83425595f7ef10b732645"
+    },
+    {
+      "bytes": 92966,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261113_1010.webp",
+      "retention": "legacy-hot",
+      "sha256": "4ceefdb163e85b4af0c9e7122f4c9165e14cf5fa757afa9aff2bea5b2be292fe"
+    },
+    {
+      "bytes": 104318,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261113_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "3191f3f7031529ef75de6361b08ccb4b0b8e297b387c07a6ce2b445eff37b245"
+    },
+    {
+      "bytes": 23812,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261113_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "680af0b9f96724b9e8e3f079809c73a1e47068d8e6f4814b20160e5d871fa2b6"
+    },
+    {
+      "bytes": 23476,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261114_0410.webp",
+      "retention": "legacy-hot",
+      "sha256": "f8bef6b91abd04adbfcec2294ee6eb733659a8fde2a51e3b9c71d6693d5906d5"
+    },
+    {
+      "bytes": 72684,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261114_0710.webp",
+      "retention": "legacy-hot",
+      "sha256": "842285faa438ac9cab83254d6ec40ec3231d11a3c9d2fd6b107af82e1916e82b"
+    },
+    {
+      "bytes": 76406,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261114_1010.webp",
+      "retention": "legacy-hot",
+      "sha256": "5bcd0fa2726efb44df16580e6fd273e3afb0be6fc09e8c110f53a9e2bbbf6c7f"
+    },
+    {
+      "bytes": 82112,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261114_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "6d4690a3f8fec9c7cf369009e23247a4bc8f0af71c99d19c9ca24a62c58baebb"
+    },
+    {
+      "bytes": 23514,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/FogRGB_20261114_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "2ddfbf74bc0b60d94310fc2e264acb9a83a85a79e25b1ca5c04a295e0db5eee1"
+    },
+    {
+      "bytes": 94356,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261112_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "1467ddffd6c9f4d61c8bca359a4c3a5e48267241c3ac69f1cc01aa576c17054f"
+    },
+    {
+      "bytes": 99204,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261112_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "f5caeb6542fe416076bc518cbcc370e8356c6e04f8bfb7a5a691a65ab077b75a"
+    },
+    {
+      "bytes": 105868,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261112_2340.webp",
+      "retention": "legacy-hot",
+      "sha256": "ab488ddb1902d7ec53267f331ff672185f8645ef65e2dde1415f4f27961180c4"
+    },
+    {
+      "bytes": 110900,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_0240.webp",
+      "retention": "legacy-hot",
+      "sha256": "82522a4eedaad20a55b4c1fb88d849babc9c6feec73917984692f629060a4bcb"
+    },
+    {
+      "bytes": 114214,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_0540.webp",
+      "retention": "legacy-hot",
+      "sha256": "13738b1bf13731cfe8b1d167f10567fb199b6cfb47c41072bd4eef8bc785436b"
+    },
+    {
+      "bytes": 105546,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_0840.webp",
+      "retention": "legacy-hot",
+      "sha256": "2a80146163be0e8cb1b5b943fce2dccc3f8e99ca6aad9aa1043063cbb18f529f"
+    },
+    {
+      "bytes": 100820,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_1140.webp",
+      "retention": "legacy-hot",
+      "sha256": "4a3bed60bff911cdc488fa9e3f879df9ec24788fda7c88e8e03926712e9089b9"
+    },
+    {
+      "bytes": 105342,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_1440.webp",
+      "retention": "legacy-hot",
+      "sha256": "f75f9f26702f089adb1e4b548589a985d724bc4a4b5585d9dd6afeccd16166db"
+    },
+    {
+      "bytes": 108374,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "6e559d233cc0fe3f394d159cbf6e27e5e52f99c3c3344ac8aaf3d0335a59b54a"
+    },
+    {
+      "bytes": 110876,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "23fe72a872c50730bbb9119f68d567fedd64687f25c225a33f1d95a9217bcbb1"
+    },
+    {
+      "bytes": 117908,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261113_2340.webp",
+      "retention": "legacy-hot",
+      "sha256": "17bcf980d875d37f290363cfb06d6d9321581bcf0ec7d2182e91cc9d9ea5db82"
+    },
+    {
+      "bytes": 123856,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_0240.webp",
+      "retention": "legacy-hot",
+      "sha256": "b4127e2c948fcdc26210c9ff77343c55aff957f1ed5de0d594a321fc65216e87"
+    },
+    {
+      "bytes": 122992,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_0540.webp",
+      "retention": "legacy-hot",
+      "sha256": "71d8a329acca1da9e09876f0010261b3de5a79f81371a29683f078f57b44bbae"
+    },
+    {
+      "bytes": 112378,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_0840.webp",
+      "retention": "legacy-hot",
+      "sha256": "e7935749049020a9b7fdcf0c0ab39658d4043aed000cbd0e93646d50347bd488"
+    },
+    {
+      "bytes": 99238,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_1140.webp",
+      "retention": "legacy-hot",
+      "sha256": "5ab00ebe2fdef2d0efb692221b19e68a319399bbd5cbc81b7094bde3dfd444be"
+    },
+    {
+      "bytes": 101496,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_1440.webp",
+      "retention": "legacy-hot",
+      "sha256": "6abc14d83e887b879c25693c4a4a75be4e099bd7fdaad0f8f0bab395619724c5"
+    },
+    {
+      "bytes": 103812,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "cd9b088b4be5884da3541a70b73111a2d1dc7589dff2ff84a8a81d526956e581"
+    },
+    {
+      "bytes": 107220,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/InfraCloud_20261114_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "1ba587bbeb284d1100f966f27550c52934b9cf79d15a7c73e74ba01e8c6ed61b"
+    },
+    {
+      "bytes": 51124,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261112_1710.webp",
+      "retention": "legacy-hot",
+      "sha256": "c132467fd63b7ab3bb392a9b9e4ae90955b8dc5802f5b204ad3e019f82563e41"
+    },
+    {
+      "bytes": 41514,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261113_0410.webp",
+      "retention": "legacy-hot",
+      "sha256": "9e629791dc485a938d5fd58097d0c14123f3580fc82d260ce49d40ab4daa7dae"
+    },
+    {
+      "bytes": 77480,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261113_0710.webp",
+      "retention": "legacy-hot",
+      "sha256": "a8affd57f551cfbca8f46c8dc655b5de9a3357577c12aa4638caf9dddb9a48dc"
+    },
+    {
+      "bytes": 111928,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261113_1010.webp",
+      "retention": "legacy-hot",
+      "sha256": "af1251174fcdf57b86139263421b0b3392a5cccaa41fa7949bc1e3e03778c663"
+    },
+    {
+      "bytes": 108030,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261113_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "50d0146691304808336bd8464d47f2561af499ebdd31b70747b338aa7f2fcf72"
+    },
+    {
+      "bytes": 65968,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261113_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "ca7ef8c59887ece9b139254fea687f681b981ecbf2d19f7f96e7de0e9657cd91"
+    },
+    {
+      "bytes": 41434,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261114_0410.webp",
+      "retention": "legacy-hot",
+      "sha256": "183c10a110f12f183b399e53d9aa4bca0a7612c31cebf8f0f65304fef9027135"
+    },
+    {
+      "bytes": 76836,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261114_0710.webp",
+      "retention": "legacy-hot",
+      "sha256": "186fe11577c9245be9582603b5ebf7a88d0566696ac9351344c96adff024434a"
+    },
+    {
+      "bytes": 111094,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261114_1010.webp",
+      "retention": "legacy-hot",
+      "sha256": "3009ecda1580c6e6fb7f9e79dee76a5a22edc8176f4b779e2c206f130f1f974c"
+    },
+    {
+      "bytes": 104308,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261114_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "6b0e500c6129eb7d6edd5423834cb1dee8aea7eec8715bf7bd6d0f6d174ca774"
+    },
+    {
+      "bytes": 67174,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NaturalRGB_20261114_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "1cd24e502f54c7dd5a844b084bf7ac836d302a7b4a3d8df93056cae973beb938"
+    },
+    {
+      "bytes": 103736,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261112_1740.webp",
+      "retention": "legacy-hot",
+      "sha256": "dce001b8822550a68386ed83683b795551c4f43397c95505c277db4e7a20ad9e"
+    },
+    {
+      "bytes": 103074,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261112_2040.webp",
+      "retention": "legacy-hot",
+      "sha256": "081d1ed428571a8ef690c7f9c3f2cb5ec8f784b8a69163883a9b184aaa19b580"
+    },
+    {
+      "bytes": 101160,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261112_2340.webp",
+      "retention": "legacy-hot",
+      "sha256": "f7f4481db3b62a6853995b56731e1c1244b5cd558fb32ce3298022b696e9c947"
+    },
+    {
+      "bytes": 102394,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_0240.webp",
+      "retention": "legacy-hot",
+      "sha256": "7a54b12f725606f175768686db5d08d0b71fb1bcb5fee8e16452e4e95c9f7240"
+    },
+    {
+      "bytes": 97870,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_0540.webp",
+      "retention": "legacy-hot",
+      "sha256": "0e3a3efa5414f0a471ff11b916345eb67ee4d4bd686176bd6403be2354b85dd8"
+    },
+    {
+      "bytes": 94988,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "9d86b3adb6c1cfdd3a9460e50035e4f46716619ec5ac3966e329ff962596c0bb"
+    },
+    {
+      "bytes": 100314,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "222279189fd271ca879e7d27a3ec9bdcb93bf669c6b751746cbc00e0d84e4e75"
+    },
+    {
+      "bytes": 98462,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_1910.webp",
+      "retention": "legacy-hot",
+      "sha256": "00b973ca1a06b2e2268c3297f32e296870dcb9f17a4a7f42696169f0326029e9"
+    },
+    {
+      "bytes": 96482,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261113_2210.webp",
+      "retention": "legacy-hot",
+      "sha256": "538dc63cebb1f5a35b7bfb4eafe3757d8986dadf8765552274e1afab44522882"
+    },
+    {
+      "bytes": 97732,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_0110.webp",
+      "retention": "legacy-hot",
+      "sha256": "cfb4ddf639be4566f122601f1173065c24aaa2739e2921be47052cf9729f61d7"
+    },
+    {
+      "bytes": 95712,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_0410.webp",
+      "retention": "legacy-hot",
+      "sha256": "6208bfc4ee81d5906d2642908f17dfadbe04d3a385541a4502df7ea8bf5ae57e"
+    },
+    {
+      "bytes": 91144,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_0710.webp",
+      "retention": "legacy-hot",
+      "sha256": "460fbb10febbf4c29e88554b1393fd4ba7391bff317ae619ba940f6cdc7f39ee"
+    },
+    {
+      "bytes": 97108,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_1310.webp",
+      "retention": "legacy-hot",
+      "sha256": "95d0afc626ea48625629d0faf756b1c136b0917e772d9aafbdd97a96bd378bec"
+    },
+    {
+      "bytes": 100166,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_1610.webp",
+      "retention": "legacy-hot",
+      "sha256": "15cd3a6c61dbaba6328900bfe3410a9b5e9669629c6d1ab5ce79066fe9614c94"
+    },
+    {
+      "bytes": 98750,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_1910.webp",
+      "retention": "legacy-hot",
+      "sha256": "2b362eeffa8b441a448e247fd1914d08e1a8b191947ef713ed4070f828d7729a"
+    },
+    {
+      "bytes": 97180,
+      "media_type": "image/webp",
+      "path": "assets/satellite_media/NightRGB_20261114_2210.webp",
+      "retention": "legacy-hot",
+      "sha256": "cef1a2020f73a0001c2e365cf0894d518c0eaa6d93852ce84170890695d9606c"
+    },
+    {
+      "bytes": 126522,
+      "media_type": "image/jpeg",
+      "path": "assets/share-card-analysis.jpg",
+      "retention": "legacy-hot",
+      "sha256": "192b8f240305808163884e3f3af17189eacc3f857fc67a8f21b28d7f0d094624"
+    },
+    {
+      "bytes": 124629,
+      "media_type": "image/jpeg",
+      "path": "assets/share-card.jpg",
+      "retention": "legacy-hot",
+      "sha256": "78e5846ed93bd7ff8ffd82f9d7db000478dd9b84c9a66e9a94134ab0cbfb3b4a"
+    },
+    {
+      "bytes": 1168111,
+      "media_type": "image/png",
+      "path": "assets/share-flow-landscape.png",
+      "retention": "legacy-hot",
+      "sha256": "9c98c1b8531bfe260d230dbf68f90364ce071e7e9dfad1d4c0e545ab4612eba4"
+    },
+    {
+      "bytes": 1377689,
+      "media_type": "image/png",
+      "path": "assets/share-flow-portrait.png",
+      "retention": "legacy-hot",
+      "sha256": "a0b51c6bb92b496a261e40202d21f578ae5ffdcbf30edc8229deaabf7b3363ea"
+    },
+    {
+      "bytes": 1353788,
+      "media_type": "image/png",
+      "path": "assets/share-front-landscape.png",
+      "retention": "legacy-hot",
+      "sha256": "ac2352a636a0de0f86162ff013082bbe6657e3a9421eaa4c4c6ea4fdcf98f0ab"
+    },
+    {
+      "bytes": 1471013,
+      "media_type": "image/png",
+      "path": "assets/share-front-portrait.png",
+      "retention": "legacy-hot",
+      "sha256": "d68bae3f93f9c9954cfcf05e3afc360b4767273ae361e10e22c28af03e7897aa"
+    }
+  ],
+  "narrative": {
+    "bytes": 56056,
+    "path": "narrative.json",
+    "sha256": "cf4553d78b3012d2e7bcdec5a9607ada7e23844a2ee01795bdd09176ba81f2c3"
+  },
+  "renderer": "atlas-archive/v1",
+  "routes": [
+    {
+      "path": "analysis/climate.html",
+      "title": "Climate & Analogs | Atlas"
+    },
+    {
+      "path": "analysis/index.html",
+      "title": "Atlas"
+    },
+    {
+      "path": "analysis/land-energy.html",
+      "title": "Land Surface & Energy | Atlas"
+    },
+    {
+      "path": "analysis/methods.html",
+      "title": "Methods & Evidence | Atlas"
+    },
+    {
+      "path": "analysis/storms-satellite.html",
+      "title": "Storms & Satellite | Atlas"
+    },
+    {
+      "path": "analysis/story.html",
+      "title": "Weather Story | Atlas"
+    },
+    {
+      "path": "analysis/surface-synoptic.html",
+      "title": "Surface & Synoptic | Atlas"
+    },
+    {
+      "path": "analysis/upper-air.html",
+      "title": "Upper Air & Dynamics | Atlas"
+    },
+    {
+      "path": "context.html",
+      "title": "Climate Context | Atlas"
+    },
+    {
+      "path": "energy.html",
+      "title": "Daily Energy | Atlas"
+    },
+    {
+      "path": "events.html",
+      "title": "Daily Events | Atlas"
+    },
+    {
+      "path": "index.html",
+      "title": "Atlas"
+    },
+    {
+      "path": "methods.html",
+      "title": "About | Atlas"
+    },
+    {
+      "path": "records.html",
+      "title": "All-Time Record Book | Atlas"
+    },
+    {
+      "path": "report.html",
+      "title": "Daily Overview | Atlas"
+    },
+    {
+      "path": "summary.html",
+      "title": "Season & Month Summary | Atlas"
+    },
+    {
+      "path": "weather.html",
+      "title": "Daily Weather | Atlas"
+    }
+  ],
+  "schema": "atlas.edition/2",
+  "window": {
+    "end": "2026-11-14",
+    "start": "2026-11-12",
+    "timezone": "Europe/Budapest"
+  }
+}
