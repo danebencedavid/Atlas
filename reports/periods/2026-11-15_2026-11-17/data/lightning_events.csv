@@ -1,0 +1,2 @@
+time,latitude,longitude,height_km,event_type,peak_current_ka,location_error,distance_km
+2026-11-15 03:40:04.497896500+00:00,47.5122,19.7853,0.0,1,-2.2,0.505,138.33094643905835
