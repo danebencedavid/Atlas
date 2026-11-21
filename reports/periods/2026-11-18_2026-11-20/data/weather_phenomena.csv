@@ -1,0 +1,10 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-11-18 08:00:00+00:00,2026-11-18 12:00:00+00:00,Thunderstorm,727 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-11-18 10:00:00+00:00,2026-11-18 11:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed -2.4 hPa, temperature +1.0 C, wind shifted 9 degrees, and 3-hour precipitation was 2.4 mm.",0.71,Objective compound surface-change detector
+2026-11-19 02:00:00+00:00,2026-11-19 06:00:00+00:00,Thunderstorm,432 LINET event(s) with radar reflectivity reaching 60.5 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-11-19 07:00:00+00:00,2026-11-19 08:00:00+00:00,Fog,Minimum visibility 738 m with maximum relative humidity 96%.,0.92,HungaroMet station 64711
+2026-11-19 08:00:00+00:00,2026-11-19 10:00:00+00:00,Low visibility,Minimum visibility 2654 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-19 19:00:00+00:00,2026-11-19 23:00:00+00:00,Heavy rain,Peak hourly precipitation 7.3 mm; maximum rolling three-hour total 17.9 mm.,0.92,HungaroMet station 64711
+2026-11-19 20:00:00+00:00,2026-11-19 21:00:00+00:00,Thunderstorm,2 LINET event(s) with radar reflectivity reaching 49.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-11-20 00:00:00+00:00,2026-11-20 01:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed +5.6 hPa, temperature -0.6 C, wind shifted 122 degrees, and 3-hour precipitation was 2.8 mm.",0.88,Objective compound surface-change detector
+2026-11-20 14:00:00+00:00,2026-11-20 18:00:00+00:00,Thunderstorm,727 LINET event(s) with radar reflectivity reaching 54.5 dBZ.,0.96,HungaroMet LINET and composite radar

@@ -1,0 +1,3 @@
+time,kind,confidence,score,pressure_change_3h_hpa,temperature_change_3h_c,wind_shift_3h_deg,precipitation_3h_mm,briefing
+2026-11-18T10:00:00+00:00,Probable frontal trough or wind-shift line,0.71,3,-2.449999999999818,1.049999999999999,8.796422250061909,2.4000000000000004,"Probable frontal trough or wind-shift line: pressure changed -2.4 hPa, temperature +1.0 C, wind shifted 9 degrees, and 3-hour precipitation was 2.4 mm."
+2026-11-20T00:00:00+00:00,Probable frontal trough or wind-shift line,0.88,5,5.583333333333144,-0.5666666666666682,121.79524789438602,2.800000000000001,"Probable frontal trough or wind-shift line: pressure changed +5.6 hPa, temperature -0.6 C, wind shifted 122 degrees, and 3-hour precipitation was 2.8 mm."
