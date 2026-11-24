@@ -1,0 +1,9 @@
+start_time,end_time,kind,evidence,confidence,source
+2026-11-20 06:00:00+00:00,2026-11-20 07:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed +3.5 hPa, temperature -1.0 C, wind shifted 54 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-11-20 14:00:00+00:00,2026-11-20 18:00:00+00:00,Thunderstorm,727 LINET event(s).,0.86,HungaroMet LINET and composite radar
+2026-11-21 07:00:00+00:00,2026-11-21 08:00:00+00:00,Low visibility,Minimum visibility 2800 m in saturated or near-saturated air.,0.87,HungaroMet station 64711
+2026-11-21 11:00:00+00:00,2026-11-21 12:00:00+00:00,Thunderstorm,6 LINET event(s) with radar reflectivity reaching 44.0 dBZ.,0.96,HungaroMet LINET and composite radar
+2026-11-21 18:00:00+00:00,2026-11-21 19:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed +2.6 hPa, temperature -0.6 C, wind shifted 134 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
+2026-11-22 01:00:00+00:00,2026-11-22 02:00:00+00:00,Frost,Minimum temperature -0.2 C.,0.92,HungaroMet station 64711
+2026-11-22 03:00:00+00:00,2026-11-22 06:00:00+00:00,Frost,Minimum temperature -0.3 C.,0.92,HungaroMet station 64711
+2026-11-22 13:00:00+00:00,2026-11-22 14:00:00+00:00,Probable frontal trough or wind-shift line,"Probable frontal trough or wind-shift line: pressure changed -2.5 hPa, temperature +0.4 C, wind shifted 136 degrees, and 3-hour precipitation was 0.0 mm.",0.71,Objective compound surface-change detector
