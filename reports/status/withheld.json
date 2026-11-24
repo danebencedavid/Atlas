@@ -1,13 +1,5 @@
 {
-  "withheld": [
-    {
-      "attempted_at": "2026-11-24T00:58:28+00:00",
-      "period_start": "2026-11-21",
-      "period_end": "2026-11-23",
-      "reason": "Station coverage 294/432 (68%) is below the 95% threshold. 1 local day(s) are below the 95% station threshold: 2026-11-23: 6/144 (4%).",
-      "shortfall_hours": 23.17
-    }
-  ],
+  "withheld": [],
   "recovered": [
     {
       "attempted_at": "2026-08-28T08:37:17+00:00",
@@ -47,6 +39,19 @@
       "data_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-10-09/data/daily_station_observations.csv",
       "workflow_url": "https://github.com/danebencedavid/Atlas/actions/runs/38070778702",
       "shortfall_hours": null
+    },
+    {
+      "attempted_at": "2026-11-24T00:58:28+00:00",
+      "period_start": "2026-11-21",
+      "period_end": "2026-11-23",
+      "reason": "Station coverage 294/432 (68%) is below the 95% threshold. 1 local day(s) are below the 95% station threshold: 2026-11-23: 6/144 (4%).",
+      "recovered_at": "2026-11-24T21:15:12+00:00",
+      "station_observed": 144,
+      "station_expected": 144,
+      "report_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-11-23/",
+      "data_url": "https://danebencedavid.github.io/Atlas/archive/daily/2026-11-23/data/daily_station_observations.csv",
+      "workflow_url": "https://github.com/danebencedavid/Atlas/actions/runs/45488783034",
+      "shortfall_hours": 23.17
     }
   ]
 }
