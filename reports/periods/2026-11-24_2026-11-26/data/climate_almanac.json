@@ -1,0 +1,950 @@
+{
+  "archive_start_year": 1990,
+  "archive_end_year": 2025,
+  "total_days": 13149,
+  "months": [
+    {
+      "key": "1",
+      "name": "January",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": -0.0,
+      "mean_precipitation_mm": 36.8,
+      "mean_wind_speed_ms": 5.2,
+      "mean_cloud_cover_pct": 70.2,
+      "mean_shortwave_wh_m2": 36940.0,
+      "mean_water_balance_mm": 21.2,
+      "warmest_day": {
+        "label": "Warmest January day",
+        "value": 11.7,
+        "unit": "\u00b0C",
+        "on_date": "2025-01-28",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest January day",
+        "value": -14.2,
+        "unit": "\u00b0C",
+        "on_date": "1995-01-18",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest January day",
+        "value": 18.6,
+        "unit": "mm",
+        "on_date": "2010-01-01",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest January day",
+        "value": 12.9,
+        "unit": "m/s",
+        "on_date": "2007-01-19",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest January day",
+        "value": 2386.1,
+        "unit": "Wh/m\u00b2",
+        "on_date": "1991-01-31",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest January day",
+        "value": -1.8,
+        "unit": "mm",
+        "on_date": "2002-01-29",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "2",
+      "name": "February",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 1.9,
+      "mean_precipitation_mm": 39.0,
+      "mean_wind_speed_ms": 5.3,
+      "mean_cloud_cover_pct": 65.4,
+      "mean_shortwave_wh_m2": 57889.0,
+      "mean_water_balance_mm": 12.1,
+      "warmest_day": {
+        "label": "Warmest February day",
+        "value": 13.2,
+        "unit": "\u00b0C",
+        "on_date": "2024-02-11",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest February day",
+        "value": -15.5,
+        "unit": "\u00b0C",
+        "on_date": "2005-02-10",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest February day",
+        "value": 29.5,
+        "unit": "mm",
+        "on_date": "1999-02-10",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest February day",
+        "value": 13.7,
+        "unit": "m/s",
+        "on_date": "2020-02-05",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest February day",
+        "value": 3775.0,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2000-02-29",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest February day",
+        "value": -2.8,
+        "unit": "mm",
+        "on_date": "2017-02-28",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "3",
+      "name": "March",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 6.6,
+      "mean_precipitation_mm": 40.2,
+      "mean_wind_speed_ms": 5.6,
+      "mean_cloud_cover_pct": 58.7,
+      "mean_shortwave_wh_m2": 105542.0,
+      "mean_water_balance_mm": -20.8,
+      "warmest_day": {
+        "label": "Warmest March day",
+        "value": 19.3,
+        "unit": "\u00b0C",
+        "on_date": "2024-03-31",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest March day",
+        "value": -7.3,
+        "unit": "\u00b0C",
+        "on_date": "2018-03-01",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest March day",
+        "value": 28.4,
+        "unit": "mm",
+        "on_date": "2001-03-03",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest March day",
+        "value": 13.3,
+        "unit": "m/s",
+        "on_date": "2002-03-25",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest March day",
+        "value": 5552.8,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2008-03-31",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest March day",
+        "value": -5.4,
+        "unit": "mm",
+        "on_date": "2024-03-31",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "4",
+      "name": "April",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 12.2,
+      "mean_precipitation_mm": 51.8,
+      "mean_wind_speed_ms": 5.1,
+      "mean_cloud_cover_pct": 57.1,
+      "mean_shortwave_wh_m2": 143048.0,
+      "mean_water_balance_mm": -43.0,
+      "warmest_day": {
+        "label": "Warmest April day",
+        "value": 23.7,
+        "unit": "\u00b0C",
+        "on_date": "2013-04-30",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest April day",
+        "value": 0.8,
+        "unit": "\u00b0C",
+        "on_date": "2003-04-07",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest April day",
+        "value": 24.3,
+        "unit": "mm",
+        "on_date": "2000-04-05",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest April day",
+        "value": 12.2,
+        "unit": "m/s",
+        "on_date": "1997-04-07",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest April day",
+        "value": 7175.0,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2024-04-30",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest April day",
+        "value": -6.4,
+        "unit": "mm",
+        "on_date": "2024-04-01",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "5",
+      "name": "May",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 17.1,
+      "mean_precipitation_mm": 65.0,
+      "mean_wind_speed_ms": 4.7,
+      "mean_cloud_cover_pct": 57.0,
+      "mean_shortwave_wh_m2": 173907.0,
+      "mean_water_balance_mm": -60.6,
+      "warmest_day": {
+        "label": "Warmest May day",
+        "value": 25.6,
+        "unit": "\u00b0C",
+        "on_date": "2005-05-29",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest May day",
+        "value": 7.3,
+        "unit": "\u00b0C",
+        "on_date": "2019-05-06",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest May day",
+        "value": 37.0,
+        "unit": "mm",
+        "on_date": "2018-05-16",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest May day",
+        "value": 12.4,
+        "unit": "m/s",
+        "on_date": "2014-05-15",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest May day",
+        "value": 7947.2,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2008-05-29",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest May day",
+        "value": -6.9,
+        "unit": "mm",
+        "on_date": "2001-05-26",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "6",
+      "name": "June",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 21.0,
+      "mean_precipitation_mm": 70.8,
+      "mean_wind_speed_ms": 4.3,
+      "mean_cloud_cover_pct": 53.2,
+      "mean_shortwave_wh_m2": 179531.0,
+      "mean_water_balance_mm": -68.0,
+      "warmest_day": {
+        "label": "Warmest June day",
+        "value": 30.5,
+        "unit": "\u00b0C",
+        "on_date": "2022-06-30",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest June day",
+        "value": 10.3,
+        "unit": "\u00b0C",
+        "on_date": "2005-06-10",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest June day",
+        "value": 40.9,
+        "unit": "mm",
+        "on_date": "2005-06-09",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest June day",
+        "value": 12.7,
+        "unit": "m/s",
+        "on_date": "2010-06-22",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest June day",
+        "value": 8219.4,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2009-06-14",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest June day",
+        "value": -7.9,
+        "unit": "mm",
+        "on_date": "2014-06-11",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "7",
+      "name": "July",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 22.7,
+      "mean_precipitation_mm": 73.1,
+      "mean_wind_speed_ms": 4.1,
+      "mean_cloud_cover_pct": 49.0,
+      "mean_shortwave_wh_m2": 180577.0,
+      "mean_water_balance_mm": -73.7,
+      "warmest_day": {
+        "label": "Warmest July day",
+        "value": 31.7,
+        "unit": "\u00b0C",
+        "on_date": "2007-07-20",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest July day",
+        "value": 13.0,
+        "unit": "\u00b0C",
+        "on_date": "1998-07-09",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest July day",
+        "value": 36.9,
+        "unit": "mm",
+        "on_date": "1998-07-08",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest July day",
+        "value": 9.7,
+        "unit": "m/s",
+        "on_date": "2000-07-17",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest July day",
+        "value": 8102.8,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2025-07-05",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest July day",
+        "value": -8.6,
+        "unit": "mm",
+        "on_date": "2000-07-04",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "8",
+      "name": "August",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 22.4,
+      "mean_precipitation_mm": 54.8,
+      "mean_wind_speed_ms": 4.1,
+      "mean_cloud_cover_pct": 42.1,
+      "mean_shortwave_wh_m2": 162849.0,
+      "mean_water_balance_mm": -78.7,
+      "warmest_day": {
+        "label": "Warmest August day",
+        "value": 30.3,
+        "unit": "\u00b0C",
+        "on_date": "1992-08-29",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest August day",
+        "value": 13.0,
+        "unit": "\u00b0C",
+        "on_date": "1993-08-31",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest August day",
+        "value": 48.0,
+        "unit": "mm",
+        "on_date": "2017-08-13",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest August day",
+        "value": 9.2,
+        "unit": "m/s",
+        "on_date": "2001-08-12",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest August day",
+        "value": 7297.2,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2020-08-02",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest August day",
+        "value": -7.7,
+        "unit": "mm",
+        "on_date": "2003-08-29",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "9",
+      "name": "September",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 17.1,
+      "mean_precipitation_mm": 60.2,
+      "mean_wind_speed_ms": 4.6,
+      "mean_cloud_cover_pct": 53.0,
+      "mean_shortwave_wh_m2": 110820.0,
+      "mean_water_balance_mm": -25.0,
+      "warmest_day": {
+        "label": "Warmest September day",
+        "value": 28.7,
+        "unit": "\u00b0C",
+        "on_date": "2008-09-07",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest September day",
+        "value": 8.8,
+        "unit": "\u00b0C",
+        "on_date": "2018-09-26",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest September day",
+        "value": 38.9,
+        "unit": "mm",
+        "on_date": "1998-09-06",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest September day",
+        "value": 11.1,
+        "unit": "m/s",
+        "on_date": "1992-09-06",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest September day",
+        "value": 5813.9,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2009-09-01",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest September day",
+        "value": -6.5,
+        "unit": "mm",
+        "on_date": "2008-09-07",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "10",
+      "name": "October",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 11.5,
+      "mean_precipitation_mm": 50.9,
+      "mean_wind_speed_ms": 4.7,
+      "mean_cloud_cover_pct": 54.9,
+      "mean_shortwave_wh_m2": 74282.0,
+      "mean_water_balance_mm": 0.6,
+      "warmest_day": {
+        "label": "Warmest October day",
+        "value": 22.5,
+        "unit": "\u00b0C",
+        "on_date": "2023-10-21",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest October day",
+        "value": -2.1,
+        "unit": "\u00b0C",
+        "on_date": "1997-10-29",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest October day",
+        "value": 50.0,
+        "unit": "mm",
+        "on_date": "2009-10-13",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest October day",
+        "value": 13.7,
+        "unit": "m/s",
+        "on_date": "2009-10-13",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest October day",
+        "value": 4286.1,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2017-10-01",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest October day",
+        "value": -5.0,
+        "unit": "mm",
+        "on_date": "1993-10-14",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "11",
+      "name": "November",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 5.9,
+      "mean_precipitation_mm": 50.5,
+      "mean_wind_speed_ms": 4.8,
+      "mean_cloud_cover_pct": 68.0,
+      "mean_shortwave_wh_m2": 39988.0,
+      "mean_water_balance_mm": 27.3,
+      "warmest_day": {
+        "label": "Warmest November day",
+        "value": 18.7,
+        "unit": "\u00b0C",
+        "on_date": "2018-11-02",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest November day",
+        "value": -7.9,
+        "unit": "\u00b0C",
+        "on_date": "2001-11-27",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest November day",
+        "value": 29.3,
+        "unit": "mm",
+        "on_date": "1999-11-22",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest November day",
+        "value": 13.7,
+        "unit": "m/s",
+        "on_date": "2004-11-14",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest November day",
+        "value": 2658.3,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2009-11-01",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest November day",
+        "value": -3.3,
+        "unit": "mm",
+        "on_date": "2002-11-16",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "12",
+      "name": "December",
+      "kind": "month",
+      "years": 36,
+      "mean_temperature_c": 1.1,
+      "mean_precipitation_mm": 48.0,
+      "mean_wind_speed_ms": 4.9,
+      "mean_cloud_cover_pct": 72.7,
+      "mean_shortwave_wh_m2": 28444.0,
+      "mean_water_balance_mm": 34.9,
+      "warmest_day": {
+        "label": "Warmest December day",
+        "value": 12.5,
+        "unit": "\u00b0C",
+        "on_date": "2009-12-25",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest December day",
+        "value": -14.5,
+        "unit": "\u00b0C",
+        "on_date": "1996-12-27",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest December day",
+        "value": 25.9,
+        "unit": "mm",
+        "on_date": "2023-12-01",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest December day",
+        "value": 13.3,
+        "unit": "m/s",
+        "on_date": "1996-12-26",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest December day",
+        "value": 1700.0,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2019-12-01",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest December day",
+        "value": -1.7,
+        "unit": "mm",
+        "on_date": "2008-12-01",
+        "metric": "water_balance_mm"
+      }
+    }
+  ],
+  "seasons": [
+    {
+      "key": "Winter",
+      "name": "Winter",
+      "kind": "season",
+      "years": 37,
+      "mean_temperature_c": 0.9,
+      "mean_precipitation_mm": 120.4,
+      "mean_wind_speed_ms": 5.1,
+      "mean_cloud_cover_pct": 69.5,
+      "mean_shortwave_wh_m2": 119942.0,
+      "mean_water_balance_mm": 66.3,
+      "warmest_day": {
+        "label": "Warmest Winter day",
+        "value": 13.2,
+        "unit": "\u00b0C",
+        "on_date": "2024-02-11",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest Winter day",
+        "value": -15.5,
+        "unit": "\u00b0C",
+        "on_date": "2005-02-10",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest Winter day",
+        "value": 29.5,
+        "unit": "mm",
+        "on_date": "1999-02-10",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest Winter day",
+        "value": 13.7,
+        "unit": "m/s",
+        "on_date": "2020-02-05",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest Winter day",
+        "value": 3775.0,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2000-02-29",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest Winter day",
+        "value": -2.8,
+        "unit": "mm",
+        "on_date": "2017-02-28",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "Spring",
+      "name": "Spring",
+      "kind": "season",
+      "years": 36,
+      "mean_temperature_c": 11.9,
+      "mean_precipitation_mm": 157.1,
+      "mean_wind_speed_ms": 5.1,
+      "mean_cloud_cover_pct": 57.6,
+      "mean_shortwave_wh_m2": 422498.0,
+      "mean_water_balance_mm": -124.4,
+      "warmest_day": {
+        "label": "Warmest Spring day",
+        "value": 25.6,
+        "unit": "\u00b0C",
+        "on_date": "2005-05-29",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest Spring day",
+        "value": -7.3,
+        "unit": "\u00b0C",
+        "on_date": "2018-03-01",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest Spring day",
+        "value": 37.0,
+        "unit": "mm",
+        "on_date": "2018-05-16",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest Spring day",
+        "value": 13.3,
+        "unit": "m/s",
+        "on_date": "2002-03-25",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest Spring day",
+        "value": 7947.2,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2008-05-29",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest Spring day",
+        "value": -6.9,
+        "unit": "mm",
+        "on_date": "2001-05-26",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "Summer",
+      "name": "Summer",
+      "kind": "season",
+      "years": 36,
+      "mean_temperature_c": 22.1,
+      "mean_precipitation_mm": 198.7,
+      "mean_wind_speed_ms": 4.2,
+      "mean_cloud_cover_pct": 48.1,
+      "mean_shortwave_wh_m2": 522957.0,
+      "mean_water_balance_mm": -220.4,
+      "warmest_day": {
+        "label": "Warmest Summer day",
+        "value": 31.7,
+        "unit": "\u00b0C",
+        "on_date": "2007-07-20",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest Summer day",
+        "value": 10.3,
+        "unit": "\u00b0C",
+        "on_date": "2005-06-10",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest Summer day",
+        "value": 48.0,
+        "unit": "mm",
+        "on_date": "2017-08-13",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest Summer day",
+        "value": 12.7,
+        "unit": "m/s",
+        "on_date": "2010-06-22",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest Summer day",
+        "value": 8219.4,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2009-06-14",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest Summer day",
+        "value": -8.6,
+        "unit": "mm",
+        "on_date": "2000-07-04",
+        "metric": "water_balance_mm"
+      }
+    },
+    {
+      "key": "Autumn",
+      "name": "Autumn",
+      "kind": "season",
+      "years": 36,
+      "mean_temperature_c": 11.5,
+      "mean_precipitation_mm": 161.6,
+      "mean_wind_speed_ms": 4.7,
+      "mean_cloud_cover_pct": 58.6,
+      "mean_shortwave_wh_m2": 225090.0,
+      "mean_water_balance_mm": 2.9,
+      "warmest_day": {
+        "label": "Warmest Autumn day",
+        "value": 28.7,
+        "unit": "\u00b0C",
+        "on_date": "2008-09-07",
+        "metric": "temperature_c"
+      },
+      "coldest_day": {
+        "label": "Coldest Autumn day",
+        "value": -7.9,
+        "unit": "\u00b0C",
+        "on_date": "2001-11-27",
+        "metric": "temperature_c"
+      },
+      "wettest_day": {
+        "label": "Wettest Autumn day",
+        "value": 50.0,
+        "unit": "mm",
+        "on_date": "2009-10-13",
+        "metric": "precipitation_mm"
+      },
+      "windiest_day": {
+        "label": "Windiest Autumn day",
+        "value": 13.7,
+        "unit": "m/s",
+        "on_date": "2004-11-14",
+        "metric": "wind_speed_ms"
+      },
+      "sunniest_day": {
+        "label": "Sunniest Autumn day",
+        "value": 5813.9,
+        "unit": "Wh/m\u00b2",
+        "on_date": "2009-09-01",
+        "metric": "shortwave_wh_m2"
+      },
+      "driest_day": {
+        "label": "Driest Autumn day",
+        "value": -6.5,
+        "unit": "mm",
+        "on_date": "2008-09-07",
+        "metric": "water_balance_mm"
+      }
+    }
+  ],
+  "all_time_records": [
+    {
+      "label": "Warmest day on record (since 1990)",
+      "value": 31.7,
+      "unit": "\u00b0C",
+      "on_date": "2007-07-20",
+      "metric": "temperature_c"
+    },
+    {
+      "label": "Coldest day on record (since 1990)",
+      "value": -15.5,
+      "unit": "\u00b0C",
+      "on_date": "2005-02-10",
+      "metric": "temperature_c"
+    },
+    {
+      "label": "Wettest day on record (since 1990)",
+      "value": 50.0,
+      "unit": "mm",
+      "on_date": "2009-10-13",
+      "metric": "precipitation_mm"
+    },
+    {
+      "label": "Windiest day on record (since 1990)",
+      "value": 13.7,
+      "unit": "m/s",
+      "on_date": "2020-02-05",
+      "metric": "wind_speed_ms"
+    },
+    {
+      "label": "Sunniest day on record (since 1990)",
+      "value": 8219.4,
+      "unit": "Wh/m\u00b2",
+      "on_date": "2009-06-14",
+      "metric": "shortwave_wh_m2"
+    },
+    {
+      "label": "Cloudiest day on record (since 1990)",
+      "value": 100.0,
+      "unit": "%",
+      "on_date": "1990-04-08",
+      "metric": "cloud_cover_pct"
+    },
+    {
+      "label": "Clearest day on record (since 1990)",
+      "value": 0.0,
+      "unit": "%",
+      "on_date": "1990-01-04",
+      "metric": "cloud_cover_pct"
+    },
+    {
+      "label": "Driest day on record (since 1990)",
+      "value": -8.6,
+      "unit": "mm",
+      "on_date": "2000-07-04",
+      "metric": "water_balance_mm"
+    },
+    {
+      "label": "Highest pressure on record (since 1990)",
+      "value": 1044.6,
+      "unit": "hPa",
+      "on_date": "1993-01-05",
+      "metric": "pressure_hpa"
+    },
+    {
+      "label": "Lowest pressure on record (since 1990)",
+      "value": 984.3,
+      "unit": "hPa",
+      "on_date": "2015-01-31",
+      "metric": "pressure_hpa"
+    }
+  ],
+  "notes": [
+    "Month and season summaries and the record book use 13149 daily ERA5 reanalysis values for Debrecen from 1990 to 2025.",
+    "Daily temperature, wind and cloud cover are calendar-day means; precipitation and solar energy are calendar-day totals. Extremes reflect that same daily resolution, not sub-daily instantaneous readings.",
+    "Winter groups December with the following January and February, so a winter is labelled by the year its January falls in."
+  ]
+}

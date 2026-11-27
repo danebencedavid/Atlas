@@ -1,0 +1,601 @@
+{
+  "level_hpa": 850,
+  "hours_traced": 72.0,
+  "hours_requested": 72,
+  "points": [
+    {
+      "time": "2026-11-26T23:00:00+00:00",
+      "hours_before_arrival": 0.0,
+      "latitude": 47.5316,
+      "longitude": 21.6273,
+      "distance_from_city_km": 0.0,
+      "temperature_c": 0.8465381671111162
+    },
+    {
+      "time": "2026-11-26T22:00:00+00:00",
+      "hours_before_arrival": 1.0,
+      "latitude": 47.422354062123965,
+      "longitude": 21.536016413260164,
+      "distance_from_city_km": 13.950986276248186,
+      "temperature_c": 0.9912015839665205
+    },
+    {
+      "time": "2026-11-26T21:00:00+00:00",
+      "hours_before_arrival": 2.0,
+      "latitude": 47.318417159187554,
+      "longitude": 21.456462809760847,
+      "distance_from_city_km": 26.964690883585728,
+      "temperature_c": 1.3028160109522202
+    },
+    {
+      "time": "2026-11-26T20:00:00+00:00",
+      "hours_before_arrival": 3.0,
+      "latitude": 47.219168959125824,
+      "longitude": 21.367239565570827,
+      "distance_from_city_km": 39.87980528527356,
+      "temperature_c": 1.8376595954865764
+    },
+    {
+      "time": "2026-11-26T19:00:00+00:00",
+      "hours_before_arrival": 4.0,
+      "latitude": 47.12804745680142,
+      "longitude": 21.245868556111194,
+      "distance_from_city_km": 53.29118515844197,
+      "temperature_c": 2.3586540560863214
+    },
+    {
+      "time": "2026-11-26T18:00:00+00:00",
+      "hours_before_arrival": 5.0,
+      "latitude": 47.03585436616687,
+      "longitude": 21.10529669327235,
+      "distance_from_city_km": 67.74272218291229,
+      "temperature_c": 2.489655157021674
+    },
+    {
+      "time": "2026-11-26T17:00:00+00:00",
+      "hours_before_arrival": 6.0,
+      "latitude": 46.94040576801657,
+      "longitude": 20.956305107065415,
+      "distance_from_city_km": 82.9924566234187,
+      "temperature_c": 2.8882041420494624
+    },
+    {
+      "time": "2026-11-26T16:00:00+00:00",
+      "hours_before_arrival": 7.0,
+      "latitude": 46.86199080946384,
+      "longitude": 20.810372867058973,
+      "distance_from_city_km": 96.71288128755207,
+      "temperature_c": 3.1733746190108945
+    },
+    {
+      "time": "2026-11-26T15:00:00+00:00",
+      "hours_before_arrival": 8.0,
+      "latitude": 46.80079921888805,
+      "longitude": 20.669978428702795,
+      "distance_from_city_km": 108.81533347319782,
+      "temperature_c": 3.4401731082859364
+    },
+    {
+      "time": "2026-11-26T14:00:00+00:00",
+      "hours_before_arrival": 9.0,
+      "latitude": 46.727352616013086,
+      "longitude": 20.513960316979496,
+      "distance_from_city_km": 122.84406124037662,
+      "temperature_c": 3.8104175664229425
+    },
+    {
+      "time": "2026-11-26T13:00:00+00:00",
+      "hours_before_arrival": 10.0,
+      "latitude": 46.59589937652419,
+      "longitude": 20.327548339782286,
+      "distance_from_city_km": 143.23551042278723,
+      "temperature_c": 4.0273093745337345
+    },
+    {
+      "time": "2026-11-26T12:00:00+00:00",
+      "hours_before_arrival": 11.0,
+      "latitude": 46.37836529031585,
+      "longitude": 20.111930771631528,
+      "distance_from_city_km": 172.2496177923331,
+      "temperature_c": 4.5184141541967175
+    },
+    {
+      "time": "2026-11-26T11:00:00+00:00",
+      "hours_before_arrival": 12.0,
+      "latitude": 46.067686078155596,
+      "longitude": 19.89295539591193,
+      "distance_from_city_km": 209.5727314939657,
+      "temperature_c": 4.808601770673181
+    },
+    {
+      "time": "2026-11-26T10:00:00+00:00",
+      "hours_before_arrival": 13.0,
+      "latitude": 45.68930738949043,
+      "longitude": 19.7236033406047,
+      "distance_from_city_km": 251.20090779305133,
+      "temperature_c": 4.652501594178943
+    },
+    {
+      "time": "2026-11-26T09:00:00+00:00",
+      "hours_before_arrival": 14.0,
+      "latitude": 45.28336308654318,
+      "longitude": 19.64816225964313,
+      "distance_from_city_km": 292.4188008771931,
+      "temperature_c": 4.340523288499819
+    },
+    {
+      "time": "2026-11-26T08:00:00+00:00",
+      "hours_before_arrival": 15.0,
+      "latitude": 44.8948015542225,
+      "longitude": 19.643120689111747,
+      "distance_from_city_km": 330.5381917475723,
+      "temperature_c": 4.925521392737649
+    },
+    {
+      "time": "2026-11-26T07:00:00+00:00",
+      "hours_before_arrival": 16.0,
+      "latitude": 44.56996340848407,
+      "longitude": 19.665322547896626,
+      "distance_from_city_km": 362.42687482101184,
+      "temperature_c": 5.217750521397144
+    },
+    {
+      "time": "2026-11-26T06:00:00+00:00",
+      "hours_before_arrival": 17.0,
+      "latitude": 44.297473818356835,
+      "longitude": 19.714351266945673,
+      "distance_from_city_km": 388.8458604469576,
+      "temperature_c": 5.319839742343834
+    },
+    {
+      "time": "2026-11-26T05:00:00+00:00",
+      "hours_before_arrival": 18.0,
+      "latitude": 44.04479287917944,
+      "longitude": 19.75536128037587,
+      "distance_from_city_km": 413.95989739179504,
+      "temperature_c": 5.399412041591541
+    },
+    {
+      "time": "2026-11-26T04:00:00+00:00",
+      "hours_before_arrival": 19.0,
+      "latitude": 43.80038651460393,
+      "longitude": 19.745151102473,
+      "distance_from_city_km": 439.8803408699162,
+      "temperature_c": 5.750701836551922
+    },
+    {
+      "time": "2026-11-26T03:00:00+00:00",
+      "hours_before_arrival": 20.0,
+      "latitude": 43.567002883759734,
+      "longitude": 19.7016917989368,
+      "distance_from_city_km": 465.6059706652279,
+      "temperature_c": 5.695652995539321
+    },
+    {
+      "time": "2026-11-26T02:00:00+00:00",
+      "hours_before_arrival": 21.0,
+      "latitude": 43.348071256561596,
+      "longitude": 19.68015552413575,
+      "distance_from_city_km": 489.3216266042168,
+      "temperature_c": 6.160436484166049
+    },
+    {
+      "time": "2026-11-26T01:00:00+00:00",
+      "hours_before_arrival": 22.0,
+      "latitude": 43.15375197616351,
+      "longitude": 19.659601450496652,
+      "distance_from_city_km": 510.46207874499606,
+      "temperature_c": 6.032004722288973
+    },
+    {
+      "time": "2026-11-26T00:00:00+00:00",
+      "hours_before_arrival": 23.0,
+      "latitude": 42.967425106676494,
+      "longitude": 19.60595332109268,
+      "distance_from_city_km": 531.5586924155015,
+      "temperature_c": 6.062600821538455
+    },
+    {
+      "time": "2026-11-25T23:00:00+00:00",
+      "hours_before_arrival": 24.0,
+      "latitude": 42.76536986402463,
+      "longitude": 19.561640510565557,
+      "distance_from_city_km": 554.1299981692125,
+      "temperature_c": 5.528296312507256
+    },
+    {
+      "time": "2026-11-25T22:00:00+00:00",
+      "hours_before_arrival": 25.0,
+      "latitude": 42.554281075332916,
+      "longitude": 19.534091149983762,
+      "distance_from_city_km": 577.3107003269398,
+      "temperature_c": 5.443856603138017
+    },
+    {
+      "time": "2026-11-25T21:00:00+00:00",
+      "hours_before_arrival": 26.0,
+      "latitude": 42.34527943629141,
+      "longitude": 19.500329898201127,
+      "distance_from_city_km": 600.4377638460998,
+      "temperature_c": 4.976609062685114
+    },
+    {
+      "time": "2026-11-25T20:00:00+00:00",
+      "hours_before_arrival": 27.0,
+      "latitude": 42.14519436500795,
+      "longitude": 19.45563998336179,
+      "distance_from_city_km": 622.8676426122506,
+      "temperature_c": 4.942488009041952
+    },
+    {
+      "time": "2026-11-25T19:00:00+00:00",
+      "hours_before_arrival": 28.0,
+      "latitude": 41.940032361806786,
+      "longitude": 19.415155373795876,
+      "distance_from_city_km": 645.7658015272793,
+      "temperature_c": 4.839182238739385
+    },
+    {
+      "time": "2026-11-25T18:00:00+00:00",
+      "hours_before_arrival": 29.0,
+      "latitude": 41.72634679229775,
+      "longitude": 19.361935080863656,
+      "distance_from_city_km": 669.8637359935442,
+      "temperature_c": 4.512194027204149
+    },
+    {
+      "time": "2026-11-25T17:00:00+00:00",
+      "hours_before_arrival": 30.0,
+      "latitude": 41.499486188155046,
+      "longitude": 19.30534427155587,
+      "distance_from_city_km": 695.4597053398628,
+      "temperature_c": 4.503274183460173
+    },
+    {
+      "time": "2026-11-25T16:00:00+00:00",
+      "hours_before_arrival": 31.0,
+      "latitude": 41.252968282732155,
+      "longitude": 19.254537560467252,
+      "distance_from_city_km": 723.0636527400269,
+      "temperature_c": 4.419816076712746
+    },
+    {
+      "time": "2026-11-25T15:00:00+00:00",
+      "hours_before_arrival": 32.0,
+      "latitude": 41.006102089148,
+      "longitude": 19.1742736490321,
+      "distance_from_city_km": 751.3240806797071,
+      "temperature_c": 4.676654386771408
+    },
+    {
+      "time": "2026-11-25T14:00:00+00:00",
+      "hours_before_arrival": 33.0,
+      "latitude": 40.77346225570212,
+      "longitude": 19.05286238866584,
+      "distance_from_city_km": 778.9124047721733,
+      "temperature_c": 4.87692450643485
+    },
+    {
+      "time": "2026-11-25T13:00:00+00:00",
+      "hours_before_arrival": 34.0,
+      "latitude": 40.56834206682201,
+      "longitude": 18.91184016667737,
+      "distance_from_city_km": 803.9785080520018,
+      "temperature_c": 4.93063317553533
+    },
+    {
+      "time": "2026-11-25T12:00:00+00:00",
+      "hours_before_arrival": 35.0,
+      "latitude": 40.39830787288135,
+      "longitude": 18.762375754546643,
+      "distance_from_city_km": 825.504401981534,
+      "temperature_c": 4.925864134139842
+    },
+    {
+      "time": "2026-11-25T11:00:00+00:00",
+      "hours_before_arrival": 36.0,
+      "latitude": 40.235516229098096,
+      "longitude": 18.6126763827654,
+      "distance_from_city_km": 846.3196575024634,
+      "temperature_c": 4.868916068260985
+    },
+    {
+      "time": "2026-11-25T10:00:00+00:00",
+      "hours_before_arrival": 37.0,
+      "latitude": 40.06209073777923,
+      "longitude": 18.46842835815583,
+      "distance_from_city_km": 868.2046567806905,
+      "temperature_c": 5.341886397318636
+    },
+    {
+      "time": "2026-11-25T09:00:00+00:00",
+      "hours_before_arrival": 38.0,
+      "latitude": 39.881179968901456,
+      "longitude": 18.328751880721967,
+      "distance_from_city_km": 890.8268150727379,
+      "temperature_c": 5.395256483143591
+    },
+    {
+      "time": "2026-11-25T08:00:00+00:00",
+      "hours_before_arrival": 39.0,
+      "latitude": 39.6917643318414,
+      "longitude": 18.208689383109657,
+      "distance_from_city_km": 913.9197361245996,
+      "temperature_c": 5.560178887967372
+    },
+    {
+      "time": "2026-11-25T07:00:00+00:00",
+      "hours_before_arrival": 40.0,
+      "latitude": 39.501142673279126,
+      "longitude": 18.100135463075407,
+      "distance_from_city_km": 936.8803165671127,
+      "temperature_c": 5.235759025218439
+    },
+    {
+      "time": "2026-11-25T06:00:00+00:00",
+      "hours_before_arrival": 41.0,
+      "latitude": 39.31903217906608,
+      "longitude": 17.989941047112602,
+      "distance_from_city_km": 958.9869353641077,
+      "temperature_c": 5.058072161607902
+    },
+    {
+      "time": "2026-11-25T05:00:00+00:00",
+      "hours_before_arrival": 42.0,
+      "latitude": 39.1607373324539,
+      "longitude": 17.904020817891595,
+      "distance_from_city_km": 977.9700240051146,
+      "temperature_c": 4.930136992470747
+    },
+    {
+      "time": "2026-11-25T04:00:00+00:00",
+      "hours_before_arrival": 43.0,
+      "latitude": 39.02535817305615,
+      "longitude": 17.853028384488308,
+      "distance_from_city_km": 993.6532876083575,
+      "temperature_c": 4.747261103799158
+    },
+    {
+      "time": "2026-11-25T03:00:00+00:00",
+      "hours_before_arrival": 44.0,
+      "latitude": 38.898063003133416,
+      "longitude": 17.81025659134154,
+      "distance_from_city_km": 1008.2744795775934,
+      "temperature_c": 4.745141206889399
+    },
+    {
+      "time": "2026-11-25T02:00:00+00:00",
+      "hours_before_arrival": 45.0,
+      "latitude": 38.779624717764385,
+      "longitude": 17.756885724227498,
+      "distance_from_city_km": 1022.2156355050523,
+      "temperature_c": 4.559618776612909
+    },
+    {
+      "time": "2026-11-25T01:00:00+00:00",
+      "hours_before_arrival": 46.0,
+      "latitude": 38.66659325600609,
+      "longitude": 17.67312513590272,
+      "distance_from_city_km": 1036.3387400569575,
+      "temperature_c": 4.5966216918557725
+    },
+    {
+      "time": "2026-11-25T00:00:00+00:00",
+      "hours_before_arrival": 47.0,
+      "latitude": 38.557595592051044,
+      "longitude": 17.547190735606396,
+      "distance_from_city_km": 1051.1111868632759,
+      "temperature_c": 4.599431068010429
+    },
+    {
+      "time": "2026-11-24T23:00:00+00:00",
+      "hours_before_arrival": 48.0,
+      "latitude": 38.460884765584446,
+      "longitude": 17.393962927356263,
+      "distance_from_city_km": 1065.3294608783813,
+      "temperature_c": 4.585581394212307
+    },
+    {
+      "time": "2026-11-24T22:00:00+00:00",
+      "hours_before_arrival": 49.0,
+      "latitude": 38.37616449167848,
+      "longitude": 17.23810338468403,
+      "distance_from_city_km": 1078.4225453585548,
+      "temperature_c": 4.539939757331348
+    },
+    {
+      "time": "2026-11-24T21:00:00+00:00",
+      "hours_before_arrival": 50.0,
+      "latitude": 38.30438900178199,
+      "longitude": 17.090366032772526,
+      "distance_from_city_km": 1090.0070768763803,
+      "temperature_c": 4.500618832885023
+    },
+    {
+      "time": "2026-11-24T20:00:00+00:00",
+      "hours_before_arrival": 51.0,
+      "latitude": 38.24985481538222,
+      "longitude": 16.937032893107666,
+      "distance_from_city_km": 1100.0072776807456,
+      "temperature_c": 4.719413109191102
+    },
+    {
+      "time": "2026-11-24T19:00:00+00:00",
+      "hours_before_arrival": 52.0,
+      "latitude": 38.21579363047976,
+      "longitude": 16.7678401263594,
+      "distance_from_city_km": 1108.4041079955907,
+      "temperature_c": 4.62521819121564
+    },
+    {
+      "time": "2026-11-24T18:00:00+00:00",
+      "hours_before_arrival": 53.0,
+      "latitude": 38.197351358473014,
+      "longitude": 16.589133448634367,
+      "distance_from_city_km": 1115.5732551302503,
+      "temperature_c": 4.70309989414509
+    },
+    {
+      "time": "2026-11-24T17:00:00+00:00",
+      "hours_before_arrival": 54.0,
+      "latitude": 38.19105952934847,
+      "longitude": 16.40935996550378,
+      "distance_from_city_km": 1121.6575601172954,
+      "temperature_c": 4.930799292803467
+    },
+    {
+      "time": "2026-11-24T16:00:00+00:00",
+      "hours_before_arrival": 55.0,
+      "latitude": 38.19681393689537,
+      "longitude": 16.228401158402626,
+      "distance_from_city_km": 1126.687138422834,
+      "temperature_c": 5.165883142273362
+    },
+    {
+      "time": "2026-11-24T15:00:00+00:00",
+      "hours_before_arrival": 56.0,
+      "latitude": 38.210541118396186,
+      "longitude": 16.044083167314636,
+      "distance_from_city_km": 1131.1701180475793,
+      "temperature_c": 5.288192983549143
+    },
+    {
+      "time": "2026-11-24T14:00:00+00:00",
+      "hours_before_arrival": 57.0,
+      "latitude": 38.22515205018245,
+      "longitude": 15.85554839971925,
+      "distance_from_city_km": 1135.8818843369331,
+      "temperature_c": 5.323241743999643
+    },
+    {
+      "time": "2026-11-24T13:00:00+00:00",
+      "hours_before_arrival": 58.0,
+      "latitude": 38.23824960972604,
+      "longitude": 15.663595788591495,
+      "distance_from_city_km": 1141.0507922578388,
+      "temperature_c": 5.354522070764652
+    },
+    {
+      "time": "2026-11-24T12:00:00+00:00",
+      "hours_before_arrival": 59.0,
+      "latitude": 38.2601095241259,
+      "longitude": 15.466605173205453,
+      "distance_from_city_km": 1145.6940189330635,
+      "temperature_c": 5.394923836871527
+    },
+    {
+      "time": "2026-11-24T11:00:00+00:00",
+      "hours_before_arrival": 60.0,
+      "latitude": 38.289377477384384,
+      "longitude": 15.271223914677897,
+      "distance_from_city_km": 1149.7332164928653,
+      "temperature_c": 5.312111797851847
+    },
+    {
+      "time": "2026-11-24T10:00:00+00:00",
+      "hours_before_arrival": 61.0,
+      "latitude": 38.32579721897625,
+      "longitude": 15.09150833467602,
+      "distance_from_city_km": 1152.6754119642326,
+      "temperature_c": 5.417698634746776
+    },
+    {
+      "time": "2026-11-24T09:00:00+00:00",
+      "hours_before_arrival": 62.0,
+      "latitude": 38.37823022724305,
+      "longitude": 14.921591849859485,
+      "distance_from_city_km": 1153.8254711502598,
+      "temperature_c": 5.34004996850256
+    },
+    {
+      "time": "2026-11-24T08:00:00+00:00",
+      "hours_before_arrival": 63.0,
+      "latitude": 38.45164875313342,
+      "longitude": 14.763055474913635,
+      "distance_from_city_km": 1152.6272961338304,
+      "temperature_c": 5.540171440594714
+    },
+    {
+      "time": "2026-11-24T07:00:00+00:00",
+      "hours_before_arrival": 64.0,
+      "latitude": 38.549956839262514,
+      "longitude": 14.612271191477921,
+      "distance_from_city_km": 1148.8470169468915,
+      "temperature_c": 5.482318788781878
+    },
+    {
+      "time": "2026-11-24T06:00:00+00:00",
+      "hours_before_arrival": 65.0,
+      "latitude": 38.66983235383559,
+      "longitude": 14.45527990054086,
+      "distance_from_city_km": 1143.409899283301,
+      "temperature_c": 5.469965305489749
+    },
+    {
+      "time": "2026-11-24T05:00:00+00:00",
+      "hours_before_arrival": 66.0,
+      "latitude": 38.80975499758404,
+      "longitude": 14.29712583451591,
+      "distance_from_city_km": 1136.3202708007652,
+      "temperature_c": 5.415205533276335
+    },
+    {
+      "time": "2026-11-24T04:00:00+00:00",
+      "hours_before_arrival": 67.0,
+      "latitude": 38.962213380235525,
+      "longitude": 14.131836478262732,
+      "distance_from_city_km": 1128.6164346843261,
+      "temperature_c": 5.242207241606834
+    },
+    {
+      "time": "2026-11-24T03:00:00+00:00",
+      "hours_before_arrival": 68.0,
+      "latitude": 39.12038409361458,
+      "longitude": 13.955417939872474,
+      "distance_from_city_km": 1121.189842291659,
+      "temperature_c": 5.22848513995124
+    },
+    {
+      "time": "2026-11-24T02:00:00+00:00",
+      "hours_before_arrival": 69.0,
+      "latitude": 39.281784524426435,
+      "longitude": 13.75796181846377,
+      "distance_from_city_km": 1114.7899863715797,
+      "temperature_c": 5.12234309830707
+    },
+    {
+      "time": "2026-11-24T01:00:00+00:00",
+      "hours_before_arrival": 70.0,
+      "latitude": 39.437629472012155,
+      "longitude": 13.551411271982332,
+      "distance_from_city_km": 1109.769966194999,
+      "temperature_c": 4.926544687406241
+    },
+    {
+      "time": "2026-11-24T00:00:00+00:00",
+      "hours_before_arrival": 71.0,
+      "latitude": 39.591657062054914,
+      "longitude": 13.343665303162739,
+      "distance_from_city_km": 1105.4251222228856,
+      "temperature_c": 4.680339748346558
+    },
+    {
+      "time": "2026-11-23T23:00:00+00:00",
+      "hours_before_arrival": 72.0,
+      "latitude": 39.74396357419831,
+      "longitude": 13.108263344715045,
+      "distance_from_city_km": 1103.0603699865321,
+      "temperature_c": 4.411251829831964
+    }
+  ],
+  "origin_sector": "south-west",
+  "origin_distance_km": 1103.0603699865321,
+  "path_length_km": 1552.7434429236584,
+  "mean_speed_ms": 5.9905225421437445,
+  "temperature_change_c": -3.5647136627208478,
+  "left_domain": false,
+  "notes": [
+    "Back-trajectory wind field at 850 hPa on a 3-degree grid from Open-Meteo.",
+    "A kinematic trajectory at one pressure level: it follows the horizontal wind and does not track vertical motion, so it indicates origin rather than parcel history."
+  ]
+}
